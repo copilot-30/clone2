@@ -29,7 +29,7 @@ class AuditListener
     {
         AuditLog::create([
             'user_id' => $event->userId,
-            'event_type' => $event->eventType,
+            'action' => $event->eventType,
             'auditable_id' => $event->auditableId,
             'auditable_type' => $event->auditableType,
             'old_values' => $event->oldValues,

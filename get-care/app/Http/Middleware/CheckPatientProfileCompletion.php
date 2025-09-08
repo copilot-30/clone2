@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Http\Middleware;
+use Illuminate\Support\Facades\Auth;
 
 use Closure;
+use App\Patient;
 
 class CheckPatientProfileCompletion
 {
@@ -15,10 +17,11 @@ class CheckPatientProfileCompletion
      */
     public function handle($request, Closure $next)
     {
-        if (Auth::check() && Auth::user()->user_type === 'patient') {
+ 
+        if (Auth::check() && strtolower(Auth::user()->role )=== 'patient') {
             // Check if patient profile exists
             $patient = Patient::where('user_id', Auth::id())->first();
-
+      
             if (!$patient) {
                 // If patient profile does not exist, redirect to the fill-up form
                 return redirect('/patient-details');
