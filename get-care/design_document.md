@@ -163,71 +163,7 @@ erDiagram
     USERS ||--o{ MODEL_HAS_ROLES : "has many"
 ```
 
-## 3. API Endpoints
-
-The API will be RESTful, using JSON for requests and responses, and authenticated via token-based authentication (e.g., Laravel Passport or Sanctum).
-
-### Authentication & Authorization
-
-*   **POST /api/login:** User login.
-*   **POST /api/register:** Patient registration.
-*   **POST /api/admin/doctors:** Admin creates doctor account.
-*   **POST /api/logout:** User logout.
-
-### User Management (Admin)
-
-*   **GET /api/admin/doctors:** Retrieve all doctor accounts.
-*   **GET /api/admin/doctors/{id}:** Retrieve specific doctor details.
-*   **PUT /api/admin/doctors/{id}:** Update doctor account.
-*   **DELETE /api/admin/doctors/{id}:** Delete doctor account.
-*   **GET /api/admin/patients:** Retrieve all patient accounts.
-*   **GET /api/admin/patients/{id}:** Retrieve specific patient details.
-
-### Doctor Module
-
-*   **GET /api/doctor/profile:** Retrieve authenticated doctor's profile.
-*   **PUT /api/doctor/profile:** Update authenticated doctor's profile.
-*   **POST /api/doctor/availability:** Configure doctor's availability.
-*   **GET /api/doctor/availability:** Retrieve doctor's availability.
-
-### Patient Module
-
-*   **GET /api/patient/profile:** Retrieve authenticated patient's profile.
-*   **PUT /api/patient/profile:** Update authenticated patient's profile.
-*   **GET /api/patient/my-doctors:** Retrieve patient's assigned doctors.
-*   **GET /api/patient/health-records:** Retrieve patient's health records with AI recommendations.
-
-### Appointment Management
-
-*   **POST /api/appointments:** Book an appointment.
-*   **GET /api/admin/appointments:** Retrieve all appointments (Admin).
-*   **GET /api/doctor/appointments:** Retrieve doctor's appointments.
-*   **GET /api/patient/appointments:** Retrieve patient's appointments.
-*   **PUT /api/appointments/{id}/status:** Update appointment status.
-*   **PUT /api/appointments/{id}/reschedule:** Reschedule an appointment.
-
-### Consultation & AI Integration
-
-*   **POST /api/consultations/start:** Initiate a consultation session.
-*   **PUT /api/consultations/{id}/notes:** Add/update consultation notes.
-*   **POST /api/consultations/ai-recommendations:** Request AI recommendations for patient record data.
-*   **POST /api/prescriptions:** Create new prescription.
-*   **POST /api/lab-requests:** Create new lab request.
-
-### Payment & Subscription
-
-*   **GET /api/patient/subscriptions:** Retrieve patient's subscription history.
-*   **POST /api/subscriptions:** Create new patient subscription.
-*   **GET /api/doctor/earnings:** Retrieve doctor's earnings.
-*   **POST /api/payments/callback:** Endpoint for payment gateway webhooks.
-
-### Reporting & Monitoring (Admin)
-
-*   **GET /api/admin/consultations:** Retrieve all consultation records.
-*   **GET /api/admin/doctors/{id}/performance:** Retrieve performance metrics for a specific doctor.
-*   **GET /api/admin/audit-logs:** Retrieve system audit logs.
-
-## 4. User Interface Components
+## 3. User Interface Components
 
 The frontend will likely be a React/Next.js application, consuming the Laravel API.
 
