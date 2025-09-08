@@ -48,41 +48,8 @@
                 />
               </div>
             </div>
-
-            {{-- First Name Field --}}
-            <div class="relative">
-              <div class="flex items-center border-b-2 border-gray-300 focus-within:border-emerald-500 transition-colors">
-                {{-- User Icon --}}
-                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <input
-                  type="text"
-                  placeholder="Enter your first name"
-                  name="first_name"
-                  value="{{ old('first_name') }}"
-                  class="flex-1 py-3 bg-transparent outline-none text-slate-700 placeholder-gray-400"
-                  required
-                />
-              </div>
-            </div>
-
-            {{-- Last Name Field --}}
-            <div class="relative">
-              <div class="flex items-center border-b-2 border-gray-300 focus-within:border-emerald-500 transition-colors">
-                {{-- User Icon --}}
-                <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <input
-                  type="text"
-                  placeholder="Enter your last name"
-                  name="last_name"
-                  value="{{ old('last_name') }}"
-                  class="flex-1 py-3 bg-transparent outline-none text-slate-700 placeholder-gray-400"
-                  required
-                />
-              </div>
-            </div>
-            
-            {{-- Password Field --}}
-            <div class="relative">
+{{-- Password Field --}}
+            <div class="relative mb-6"> {{-- Added mb-6 for consistent spacing --}}
               <div class="flex items-center border-b-2 border-gray-300 focus-within:border-emerald-500 transition-colors">
                 {{-- Lock Icon --}}
                 <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -98,7 +65,7 @@
             </div>
 
             {{-- Confirm Password Field --}}
-            <div class="relative">
+            <div class="relative mb-6"> {{-- Added mb-6 for consistent spacing --}}
               <div class="flex items-center border-b-2 border-gray-300 focus-within:border-emerald-500 transition-colors">
                 {{-- Lock Icon --}}
                 <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-4a2 2 0 00-2-2H6a2 2 0 00-2 2v4a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
@@ -112,7 +79,6 @@
                 {{-- No show/hide password button in Blade unless custom JS is added --}}
               </div>
             </div>
-
             {{-- No privacy consent checkbox needed based on AuthController refactor --}}
 
             {{-- Submit Button --}}

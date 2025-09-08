@@ -17,8 +17,6 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'first_name' => 'required|string|max:255',
-            'last_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -35,8 +33,6 @@ class AuthController extends Controller
         // Create a corresponding patient profile
         Patient::create([
             'user_id' => $user->id,
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
             // Other patient profile fields can be added here from registration form if available
         ]);
 

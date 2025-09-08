@@ -33,13 +33,22 @@ Route::get('/privacy-policy', function () {
     return view('privacy_policy');
 });
 
-Route::get('/dashboard', function () {
-    return view('components/dashboard');
+Route::middleware(['auth:sanctum', 'patient.profile.check'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('components/dashboard');
+    });
 });
 
 Route::post('/login', 'AuthController@login');
 Route::post('/register', 'AuthController@register');
 Route::post('/account-recovery', 'AuthController@sendPasswordResetEmail'); // Assuming a method for account recovery
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/patient-details', function () {
+        return view('components/patient-details-form');
+    })->name('patient-details'); // Add a name to the route for easy redirection
+    Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
+});
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', function (Request $request) {
