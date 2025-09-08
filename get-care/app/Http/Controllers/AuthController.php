@@ -30,11 +30,7 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        // Create a corresponding patient profile
-        Patient::create([
-            'user_id' => $user->id,
-            // Other patient profile fields can be added here from registration form if available
-        ]);
+  
 
         // Dispatch audit event
         event(new AuditableEvent($user->id, 'user_registered', [

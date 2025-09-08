@@ -13,7 +13,7 @@ services:
     depends_on:
       db:
         condition: service_started
-    command: sh -c "chmod -R 775 storage bootstrap/cache && php-fpm"
+    command: sh -c "chown -R www-data:www-data storage bootstrap && chmod -R 775 storage bootstrap && php-fpm"
   nginx:
     image: nginx:alpine
     container_name: getcare_nginx
@@ -39,10 +39,14 @@ services:
       POSTGRES_USER: getcare_user
       POSTGRES_PASSWORD: getcare_password
     volumes:
-      - ./db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
     networks:
       - getcare_network
 
 networks:
   getcare_network:
     driver: bridge
+
+volumes:
+  db_data:
+    driver: local

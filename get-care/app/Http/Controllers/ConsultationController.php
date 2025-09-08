@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Appointment;
+use App\Consultation;
+use App\Patient;
 use App\PatientVisit; // Import PatientVisit model
 use Google\Client;
 use Google\Service\Calendar;
@@ -107,13 +109,19 @@ class ConsultationController extends Controller
     public function updateNotes(Request $request, Consultation $consultation)
     {
         $request->validate([
-            'notes' => 'required|string',
+            'consultation_notes' => 'sometimes|string',
+            'ai_recommendations' => 'sometimes|string',
         ]);
 
-        $consultation->consultation_notes = $request->notes;
+        if ($request->has('consultation_notes')) {
+            $consultation->consultation_notes = $request->consultation_notes;
+        }
+        if ($request->has('ai_recommendations')) {
+            $consultation->ai_recommendations = $request->ai_recommendations;
+        }
         $consultation->save();
 
-        return redirect()->back()->with('success', 'Consultation notes updated');
+        return response()->json(['message' => 'Consultation notes updated successfully', 'consultation' => $consultation]);
     }
 
     /**
@@ -135,5 +143,16 @@ class ConsultationController extends Controller
         $dummyRecommendation = "Based on the provided health data, consider checking for potential correlations with chronic fatigue. Recommend additional blood tests for specific markers and a follow-up with a sleep specialist if symptoms persist.";
 
         return redirect()->back()->with('ai_recommendations', $dummyRecommendation);
+    }
+    public function viewPatientHealthRecord($patientId)
+    {
+        $patient = Patient::with(['medicalBackgrounds', 'patientVisits', 'appointments.consultation.prescriptions', 'appointments.consultation.labRequests'])
+                          ->find($patientId);
+
+        if (!$patient) {
+            return response()->json(['message' => 'Patient not found'], 404);
+        }
+
+        return response()->json(['patient_health_record' => $patient]);
     }
 }

@@ -2,7 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Doctor;
+use App\Patient;
+use App\Appointment;
+use App\Consultation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -59,5 +64,32 @@ class ReportController extends Controller
     public function destroy($id)
     {
         //
+    }
+    public function doctorPerformanceMetrics(Request $request)
+    {
+        $doctors = Doctor::with('user')->get();
+        $metrics = [];
+
+        foreach ($doctors as $doctor) {
+            $totalAppointments = Appointment::where('doctor_id', $doctor->id)->count();
+            $completedAppointments = Appointment::where('doctor_id', $doctor->id)->where('status', 'completed')->count();
+            $metrics[] = [
+                'doctor_id' => $doctor->id,
+                'doctor_name' => $doctor->user->name,
+                'total_appointments' => $totalAppointments,
+                'completed_appointments' => $completedAppointments,
+            ];
+        }
+
+        return response()->json(['doctor_performance_metrics' => $metrics]);
+    }
+
+    public function consultationHistory(Request $request)
+    {
+        $consultations = Consultation::with('appointment.patient.user', 'appointment.doctor.user')
+            ->orderBy('consultation_datetime', 'desc')
+            ->get();
+
+        return response()->json(['consultation_history' => $consultations]);
     }
 }

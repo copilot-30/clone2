@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Doctor;
+use App\Patient;
+use App\Consultation;
+use App\Payment;
+use App\Subscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -70,5 +74,248 @@ class AdminController extends Controller
 
             return redirect()->back()->with('success', 'Doctor account created successfully');
         });
+    }
+    public function listDoctors()
+    {
+        $doctors = Doctor::with('user')->get();
+        return response()->json(['doctors' => $doctors]);
+    }
+
+    public function editDoctor(Request $request, $id)
+    {
+        $doctor = Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'specialization' => 'sometimes|required|string|max:255',
+            'years_of_experience' => 'nullable|integer',
+            'certifications' => 'nullable|string',
+            'first_name' => 'sometimes|required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'sex' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'prc_license_number' => 'sometimes|required|string|unique:doctor_profiles,prc_license_number,' . $id,
+            'ptr_license_number' => 'sometimes|required|string|unique:doctor_profiles,ptr_license_number,' . $id,
+            'affiliated_hospital' => 'nullable|string',
+            'training' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $doctor->update($request->all());
+
+        event(new AuditableEvent(auth()->id(), 'doctor_updated', [
+            'doctor_id' => $doctor->id,
+            'user_id' => $doctor->user_id,
+            'email' => $doctor->email,
+        ]));
+
+        return response()->json(['message' => 'Doctor updated successfully', 'doctor' => $doctor]);
+    }
+
+    public function deleteDoctor($id)
+    {
+        $doctor = Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        DB::transaction(function () use ($doctor) {
+            $user_id = $doctor->user_id;
+            $email = $doctor->email;
+            $doctor->delete();
+            User::where('id', $user_id)->delete();
+
+            event(new AuditableEvent(auth()->id(), 'doctor_deleted', [
+                'user_id' => $user_id,
+                'email' => $email,
+            ]));
+        });
+
+        return response()->json(['message' => 'Doctor deleted successfully']);
+    }
+    public function listPatients()
+    {
+        $patients = Patient::with('user')->get();
+        return response()->json(['patients' => $patients]);
+    }
+
+    public function viewPatientDetails($id)
+    {
+        $patient = Patient::with('user', 'medicalBackgrounds', 'patientVisits', 'appointments.consultation')
+                          ->find($id);
+
+        if (!$patient) {
+            return response()->json(['message' => 'Patient not found'], 404);
+        }
+
+        return response()->json(['patient' => $patient]);
+    }
+
+    public function listAllAppointments(Request $request)
+    {
+        $appointments = \App\Appointment::with('patient.user', 'doctor.user')
+            ->orderBy('appointment_datetime', 'desc')
+            ->get();
+
+        return response()->json(['appointments' => $appointments]);
+    }
+
+    public function filterAppointments(Request $request)
+    {
+        $query = \App\Appointment::with('patient.user', 'doctor.user');
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+        if ($request->has('type')) {
+            $query->where('type', $request->type);
+        }
+        if ($request->has('doctor_id')) {
+            $query->where('doctor_id', $request->doctor_id);
+        }
+        if ($request->has('patient_id')) {
+            $query->where('patient_id', $request->patient_id);
+        }
+        if ($request->has('start_date') && $request->has('end_date')) {
+            $startDate = \Carbon\Carbon::parse($request->start_date)->startOfDay();
+            $endDate = \Carbon\Carbon::parse($request->end_date)->endOfDay();
+            $query->whereBetween('appointment_datetime', [$startDate, $endDate]);
+        }
+
+        $appointments = $query->orderBy('appointment_datetime', 'desc')->get();
+
+        return response()->json(['appointments' => $appointments]);
+    }
+
+    public function cancelAppointment($id)
+    {
+        $appointment = \App\Appointment::find($id);
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
+
+        $appointment->status = 'cancelled';
+        $appointment->save();
+
+        event(new AuditableEvent(auth()->id(), 'appointment_cancelled', [
+            'appointment_id' => $appointment->id,
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+        ]));
+
+        return response()->json(['message' => 'Appointment cancelled successfully', 'appointment' => $appointment]);
+    }
+
+    public function rescheduleAppointment(Request $request, $id)
+    {
+        $appointment = \App\Appointment::find($id);
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'appointment_datetime' => 'required|date|after:now',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $oldDateTime = $appointment->appointment_datetime;
+        $appointment->appointment_datetime = $request->appointment_datetime;
+        $appointment->status = 'rescheduled';
+        $appointment->save();
+
+        event(new AuditableEvent(auth()->id(), 'appointment_rescheduled', [
+            'appointment_id' => $appointment->id,
+            'old_datetime' => $oldDateTime,
+            'new_datetime' => $appointment->appointment_datetime,
+        ]));
+
+        return response()->json(['message' => 'Appointment rescheduled successfully', 'appointment' => $appointment]);
+    }
+
+    public function reassignAppointment(Request $request, $id)
+    {
+        $appointment = \App\Appointment::find($id);
+        if (!$appointment) {
+            return response()->json(['message' => 'Appointment not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'new_doctor_id' => 'required|exists:doctors,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $oldDoctorId = $appointment->doctor_id;
+        $appointment->doctor_id = $request->new_doctor_id;
+        $appointment->save();
+
+        event(new AuditableEvent(auth()->id(), 'appointment_reassigned', [
+            'appointment_id' => $appointment->id,
+            'old_doctor_id' => $oldDoctorId,
+            'new_doctor_id' => $appointment->doctor_id,
+        ]));
+
+        return response()->json(['message' => 'Appointment reassigned successfully', 'appointment' => $appointment]);
+    }
+
+    public function viewDoctorPerformanceMetrics($id)
+    {
+        $doctor = \App\Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        $totalAppointments = \App\Appointment::where('doctor_id', $id)->count();
+        $completedAppointments = \App\Appointment::where('doctor_id', $id)->where('status', 'completed')->count();
+        $totalEarnings = \App\Payment::where('payable_type', 'App\\Doctor')->where('payable_id', $id)->where('status', 'completed')->sum('amount');
+
+        return response()->json([
+            'doctor' => $doctor,
+            'metrics' => [
+                'total_appointments' => $totalAppointments,
+                'completed_appointments' => $completedAppointments,
+                'total_earnings' => $totalEarnings,
+            ]
+        ]);
+    }
+
+    public function viewConsultationHistory($id)
+    {
+        $patient = \App\Patient::find($id);
+        if (!$patient) {
+            return response()->json(['message' => 'Patient not found'], 404);
+        }
+
+        $consultations = \App\Consultation::with('appointment.doctor.user', 'appointment.patient.user', 'prescriptions', 'labRequests')
+                                    ->whereHas('appointment', function ($query) use ($id) {
+                                        $query->where('patient_id', $id);
+                                    })
+                                    ->orderBy('consultation_datetime', 'desc')
+                                    ->get();
+
+        return response()->json(['consultations' => $consultations]);
+    }
+
+    public function listSubscriptions()
+    {
+        $subscriptions = \App\Subscription::with('patient.user')->get();
+        return response()->json(['subscriptions' => $subscriptions]);
+    }
+
+    public function monitorTransactions()
+    {
+        $transactions = \App\Payment::with('user')->get();
+        return response()->json(['transactions' => $transactions]);
     }
 }

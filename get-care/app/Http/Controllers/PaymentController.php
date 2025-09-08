@@ -23,7 +23,10 @@ class PaymentController extends Controller
             'patient_id' => 'required|uuid|exists:patients,id',
             'subscription_id' => 'required|uuid|exists:subscriptions,id',
             'amount' => 'required|numeric|min:0',
-            'payment_method' => 'required|in:gcash,card_maya', // bank_transfer handled differently
+            'payment_method' => 'required|in:gcash,card_maya,bank_transfer',
+            'bank_name' => 'required_if:payment_method,bank_transfer|string|max:255',
+            'account_name' => 'required_if:payment_method,bank_transfer|string|max:255',
+            'account_number' => 'required_if:payment_method,bank_transfer|string|max:255',
         ]);
 
         $subscription = Subscription::find($request->subscription_id);
@@ -157,6 +160,12 @@ class PaymentController extends Controller
                 break;
         }
 
+        event(new AuditableEvent(null, 'payment_webhook_received', [
+            'event' => $event,
+            'transaction_id' => $transactionId ?? 'N/A',
+            'status' => $status ?? 'N/A',
+        ]));
+
         return response()->json(['message' => 'Webhook received'], 200);
     }
 
@@ -174,7 +183,12 @@ class PaymentController extends Controller
         // For simplicity, let's assume a fixed percentage or per-consultation fee.
 
         // This logic is highly dependent on the subscription model and payout structure.
-        // For demonstration, let's assume doctors get a share from patient subscriptions.
+        $doctor = $subscription->doctor; // Assuming subscription has a direct doctor relationship
+        if ($doctor) {
+            // Log or add to an earnings table for the doctor
+            // This is a placeholder for actual financial logic
+            Log::info("Doctor {$doctor->id} earned from subscription {$subscription->id}. Amount: {$payment->amount}");
+        }
 
         if ($payment->payable_type === 'App\Subscription' && $payment->payable && $payment->status === 'completed') {
             $subscription = $payment->payable;
@@ -203,7 +217,11 @@ class PaymentController extends Controller
             'doctor_id' => 'required|uuid|exists:doctors,id',
             'amount' => 'required|numeric|min:0',
             'payout_method' => 'required|in:bank_transfer,gcash,maya',
-            // Add validation for bank details, GCash number etc.
+            'bank_name' => 'required_if:payout_method,bank_transfer|string|max:255',
+            'account_name' => 'required_if:payout_method,bank_transfer|string|max:255',
+            'account_number' => 'required_if:payout_method,bank_transfer|string|max:255',
+            'gcash_number' => 'required_if:payout_method,gcash|string|max:255',
+            'maya_number' => 'required_if:payout_method,maya|string|max:255',
         ]);
 
         // In a real scenario:
@@ -213,7 +231,27 @@ class PaymentController extends Controller
 
         Log::info("Initiating payout of {$request->amount} to Doctor ID: {$request->doctor_id} via {$request->payout_method}");
 
-        // Dummy response
-        return response()->json(['message' => 'Payout initiated successfully', 'payout_details' => $request->all()], 200);
+        // Create a payout record (can be in the Payments table or a separate Payouts table)
+        $payout = Payment::create([
+            'user_id' => $request->doctor_id, // Link to doctor's user ID
+            'payable_type' => 'App\Doctor',
+            'payable_id' => $request->doctor_id,
+            'amount' => $request->amount,
+            'currency' => 'PHP', // Or dynamic based on configuration
+            'payment_method' => $request->payout_method,
+            'transaction_id' => 'PAYOUT_' . uniqid(), // Generate a unique transaction ID
+            'status' => 'pending', // Status will change based on actual payout process
+            'payment_date' => now(),
+            'metadata' => $request->except(['doctor_id', 'amount', 'payout_method']) // Store payout details
+        ]);
+
+        event(new AuditableEvent(auth()->id(), 'doctor_payout_initiated', [
+            'doctor_id' => $request->doctor_id,
+            'amount' => $request->amount,
+            'payout_method' => $request->payout_method,
+            'payout_id' => $payout->id,
+        ]));
+
+        return response()->json(['message' => 'Payout initiated successfully', 'payout_details' => $payout], 200);
     }
 }
