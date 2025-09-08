@@ -9,6 +9,8 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <script src="{{ mix('js/app.js') }}" defer></script>
+  
+    @yield('styles')
   </head>
   <body>
     <div id="root" class="flex h-screen">

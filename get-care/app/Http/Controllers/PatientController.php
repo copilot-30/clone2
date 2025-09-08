@@ -10,6 +10,14 @@ use App\PatientNote; // Import the PatientNote model
 
 class PatientController extends Controller
 {
+    public function showProfileForm()
+    {
+        $user = Auth::user();
+        $patient = $user->patient ?? new \App\Patient(); // Retrieve existing patient data or create a new Patient instance
+
+        return view('components/patient-details-form', compact('patient'));
+    }
+
     public function storeProfile(Request $request)
     {
         $user = Auth::user();
@@ -60,7 +68,7 @@ class PatientController extends Controller
             ]
         );
 
-        return redirect('/dashboard')->with('success', 'Patient profile saved successfully!');
+        return redirect(route('patient.dashboard'))->with('success', 'Patient profile saved successfully!');
     }
 
     public function dashboard()
@@ -75,8 +83,8 @@ class PatientController extends Controller
 
         // Fetch upcoming appointments for the authenticated patient
         $upcomingAppointments = Appointment::where('patient_id', $patient->id)
-                                         ->where('appointment_date', '>=', now()) // Use 'appointment_date'
-                                         ->orderBy('appointment_date') // Order by 'appointment_date'
+                                         ->where('appointment_datetime', '>=', now()) // Use 'appointment_date'
+                                         ->orderBy('appointment_datetime') // Order by 'appointment_date'
                                          ->get();
 
         // Fetch recent notes for the authenticated patient

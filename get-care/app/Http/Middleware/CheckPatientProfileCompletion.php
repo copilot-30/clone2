@@ -21,11 +21,12 @@ class CheckPatientProfileCompletion
         if (Auth::check() && strtolower(Auth::user()->role )=== 'patient') {
             // Check if patient profile exists
             $patient = Patient::where('user_id', Auth::id())->first();
-      
+
             if (!$patient) {
                 // If patient profile does not exist, redirect to the fill-up form
                 return redirect('/patient/patient-details');
             }
+
         }
         return $next($request);
     }

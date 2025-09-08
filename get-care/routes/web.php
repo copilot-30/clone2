@@ -13,30 +13,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('components/landing-page');
-});
+Route::get('/', 'PublicController@landingPage')->name('landing');
 
-Route::get('/login', function () {
-    return view('components/login-page');
-});
+Route::get('/login', 'PublicController@loginPage')->name('login');
 
-Route::get('/register', function () {
-    return view('components/register-page');
-});
+Route::get('/register', 'PublicController@registerPage')->name('register');
 
-Route::get('/account-recovery', function () {
-    return view('components/account-recovery');
-});
+Route::get('/account-recovery', 'PublicController@accountRecoveryPage')->name('account-recovery');
 
-Route::get('/privacy-policy', function () {
-    return view('privacy_policy');
-});
+Route::get('/privacy-policy', 'PublicController@privacyPolicyPage')->name('privacy-policy');
 
 
 Route::post('/login', 'AuthController@login');
 Route::post('/register', 'AuthController@register');
-Route::post('/account-recovery', 'AuthController@sendPasswordResetEmail'); // Assuming a method for account recovery
+Route::post('/account-recovery', 'AuthController@sendPasswordResetEmail')->name('send-password-reset-email');
  
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -81,9 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Patient routes
     Route::prefix('patient')->middleware('role:patient')->group(function () {
 
-        Route::get('/patient-details', function () {
-            return view('components/patient-details-form');
-        })->name('patient-details'); // Add a name to the route for easy redirection
+        Route::get('/patient-details', 'PatientController@showProfileForm')->name('patient-details'); // Add a name to the route for easy redirection
         
         Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
 

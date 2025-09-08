@@ -27,11 +27,7 @@
       <tbody class="divide-y divide-gray-200">
         @php
           $appointments = [
-            ['id' => '1', 'dateTime' => 'Mar 10, 2025 / 9:00 AM', 'patient' => 'Juan Dela Cruz', 'mode' => 'Online', 'status' => 'Confirmed'],
-            ['id' => '2', 'dateTime' => 'Mar 10, 2025 / 10:00 AM', 'patient' => 'Juan Dela Cruz', 'mode' => 'Face to Face', 'status' => 'Confirmed'],
-            ['id' => '3', 'dateTime' => 'Mar 10, 2025 / 11:00 AM', 'patient' => 'Maria Clara', 'mode' => 'Cancelled', 'status' => 'Cancelled'],
-            ['id' => '4', 'dateTime' => 'Mar 10, 2025 / 2:00 PM', 'patient' => 'Juan Dela Cruz', 'mode' => 'Face to Face', 'status' => 'Pending'],
-            ['id' => '5', 'dateTime' => 'Mar 11, 2025 / 10:00 AM', 'patient' => 'Susan Ramirez', 'mode' => 'Online', 'status' => 'Confirmed']
+            ['id' => '1', 'dateTime' => 'Mar 10, 2025 / 9:00 AM', 'patient' => 'Juan Dela Cruz', 'mode' => 'Online', 'status' => 'Confirmed'], 
           ];
 
           $getStatusColor = function($status) {
