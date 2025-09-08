@@ -18,8 +18,7 @@ class CreateAppointmentsTable extends Migration
             $table->uuid('patient_id')->nullable();
             $table->uuid('doctor_id')->nullable();
             $table->uuid('clinic_id')->nullable();
-            $table->date('appointment_date');
-            $table->text('appointment_time');
+            $table->dateTime('appointment_datetime');
             $table->integer('duration_minutes')->default(30);
             $table->text('type');
             $table->text('status')->default('PENDING');

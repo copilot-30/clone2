@@ -24,7 +24,7 @@ class CheckPatientProfileCompletion
       
             if (!$patient) {
                 // If patient profile does not exist, redirect to the fill-up form
-                return redirect('/patient-details');
+                return redirect('/patient/patient-details');
             }
         }
         return $next($request);

@@ -30,7 +30,7 @@ class User extends Authenticatable
     protected $fillable = [
         'email',
         'password',
-        'role',
+        'role', // 'admin', 'doctor', 'patient'
         'is_active',
     ];
 
@@ -73,13 +73,13 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class, 'user_id');
     }
 
-    public function patientProfile()
+    public function patient()
     {
-        return $this->hasOne(Patient::class, 'user_id');
+        return $this->hasOne(Patient::class);
     }
 
-    public function doctorProfile()
+    public function doctor()
     {
-        return $this->hasOne(Doctor::class, 'user_id');
+        return $this->hasOne(Doctor::class);
     }
 }

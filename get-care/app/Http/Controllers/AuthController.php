@@ -42,7 +42,17 @@ class AuthController extends Controller
         // Automatically log in the user after registration
         Auth::login($user);
 
-        return redirect('/dashboard')->with('success', 'Registration successful!');
+        // Redirect based on the user's role
+        switch ($user->role) {
+            case 'ADMIN':
+                return redirect('/admin/dashboard')->with('success', 'Admin registration successful!');
+            case 'DOCTOR':
+                return redirect('/doctor/dashboard')->with('success', 'Doctor registration successful!');
+            case 'PATIENT':
+                return redirect('/patient/dashboard')->with('success', 'Registration successful!');
+            default:
+                return redirect('/dashboard')->with('success', 'Registration successful!');
+        }
     }
 
     public function login(Request $request)
@@ -73,7 +83,17 @@ class AuthController extends Controller
             'role' => $user->role,
         ]));
 
-        return redirect('/dashboard'); // Redirect to a dashboard or home page
+        // Redirect based on the user's role
+        switch ($user->role) {
+            case 'ADMIN':
+                return redirect('/admin/dashboard');
+            case 'DOCTOR':
+                return redirect('/doctor/dashboard');
+            case 'PATIENT':
+                return redirect('/patient/dashboard');
+            default:
+                return redirect('/dashboard');
+        }
     }
 public function logout(Request $request)
 {

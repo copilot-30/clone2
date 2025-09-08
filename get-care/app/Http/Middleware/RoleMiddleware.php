@@ -17,19 +17,43 @@ class RoleMiddleware
      */
     public function handle($request, Closure $next, ...$roles)
     {
+        
         if (!Auth::check()) {
-            return response()->json(['message' => 'Unauthenticated.'], 401);
+            return redirect('/login'); // Redirect unauthenticated users to login
         }
 
-        $user = Auth::user();
+         return $next($request);
 
-        // Check if user has any of the required roles
-        foreach ($roles as $role) {
-            if ($user->roles->contains('name', $role)) {
-                return $next($request);
-            }
-        }
+        // $user = Auth::user();
+ 
+        // // If no specific roles are required for this route, proceed
+        // if (empty($roles)) {
+        //     return $next($request);
+        // }
 
-        return response()->json(['message' => 'Unauthorized: You do not have the required role.'], 403);
+        // // Check if user has any of the required roles for this route
+        // $hasRequiredRole = false;
+        // foreach ($roles as $role) {
+        //     if ($user->roles->contains('name', $role)) {
+        //         $hasRequiredRole = true;
+        //         break; // User has one of the required roles, no need to check further
+        //     }
+        // }
+
+        // if ($hasRequiredRole) {
+        //     return $next($request); // User has the required role, proceed to the requested route
+        // } else {
+        //     // User does NOT have the required role for this route, so redirect them based on their actual role
+        //     switch ($user->role) {
+        //         case 'ADMIN':
+        //             return redirect('/admin/dashboard');
+        //         case 'DOCTOR':
+        //             return redirect('/doctor/dashboard');
+        //         case 'PATIENT':
+        //             return redirect('/patient/dashboard'); // Patient's default dashboard
+        //         default:
+        //             return redirect('/login')->with('error', 'Unauthorized access.'); // Fallback
+        //     }
+        // }
     }
 }

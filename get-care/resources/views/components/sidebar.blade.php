@@ -6,7 +6,7 @@
   <nav class="mt-8">
     @php
       $menuItems = [
-        ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard'],
+        ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('patient.dashboard')],
         ['id' => 'patients', 'label' => 'Patients', 'icon' => 'Users'],
         ['id' => 'notes', 'label' => 'Notes', 'icon' => 'FileText'],
         ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle'],
@@ -17,12 +17,12 @@
     @endphp
 
     @foreach ($menuItems as $item)
-      <a href="#" {{-- Replace with actual routes --}}
+      <a href="{{ empty($item['url']) ? '#' : $item['url']  }}" {{-- Replace with actual routes --}}
          class="w-full flex items-center px-6 py-3 text-left hover:bg-emerald-700 transition-colors
            @if(isset($activeItem) && $activeItem === $item['id']) bg-emerald-700 border-r-4 border-white @endif">
         {{-- You would typically include SVG icons directly or use a Blade component for icons --}}
         @if($item['icon'] === 'LayoutDashboard')
-          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"></path></svg>
+          <svg class="w-5 h-5 mr-3" fill="none"  stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12h18M3 6h18M3 18h18"></path></svg>
         @elseif($item['icon'] === 'Users')
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h2a2 2 0 002-2V7a2 2 0 00-2-2H9a2 2 0 00-2 2v10a2 2 0 002 2h2m4 0l3-3m-3 3l-3-3m-6 0v-4m0 0a2 2 0 01-2-2V7a2 2 0 012-2h2m4 0l3-3m-3 3l-3-3"></path></svg>
         @elseif($item['icon'] === 'FileText')

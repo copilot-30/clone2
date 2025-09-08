@@ -10,8 +10,7 @@ class Appointment extends Model
         'patient_id',
         'doctor_id',
         'clinic_id',
-        'appointment_date',
-        'appointment_time',
+        'appointment_datetime',
         'duration_minutes',
         'type',
         'status',
@@ -25,7 +24,7 @@ class Appointment extends Model
 
     protected $casts = [
         'id' => 'string',
-        'appointment_date' => 'date',
+        'appointment_datetime' => 'datetime',
         'is_online' => 'boolean',
     ];
 

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Patient;
+use App\Appointment; // Import the Appointment model
+use App\PatientNote; // Import the PatientNote model
 
 class PatientController extends Controller
 {
@@ -59,5 +61,30 @@ class PatientController extends Controller
         );
 
         return redirect('/dashboard')->with('success', 'Patient profile saved successfully!');
+    }
+
+    public function dashboard()
+    { 
+        $user = Auth::user();
+        $patient = $user->patient; // Assuming a one-to-one relationship between User and Patient
+ 
+        if (!$patient) {
+            // Redirect to profile completion if patient profile is missing
+            return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
+        }
+
+        // Fetch upcoming appointments for the authenticated patient
+        $upcomingAppointments = Appointment::where('patient_id', $patient->id)
+                                         ->where('appointment_date', '>=', now()) // Use 'appointment_date'
+                                         ->orderBy('appointment_date') // Order by 'appointment_date'
+                                         ->get();
+
+        // Fetch recent notes for the authenticated patient
+        $recentNotes = PatientNote::where('patient_id', $patient->id)
+                                  ->orderBy('created_at', 'desc')
+                                  ->take(5) // Get latest 5 notes
+                                  ->get();
+
+        return view('components/dashboard', compact('upcomingAppointments', 'recentNotes'));
     }
 }
