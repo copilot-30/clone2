@@ -22,13 +22,11 @@ class Patient extends Model
         'tag',
         'first_name',
         'last_name',
-        'suffix',
-        'nickname',
+        'suffix', 
         'date_of_birth',
         'age',
         'sex',
-        'primary_mobile',
-        'email',
+        'primary_mobile', 
     ];
 
     protected $casts = [
