@@ -74,17 +74,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patient-details', 'PatientController@showProfileForm')->name('patient-details'); // Add a name to the route for easy redirection
         
         Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
-
-        Route::group(['middleware' => 'patient.profile.check'], function () {
-            Route::get('/dashboard', 'PatientController@dashboard') -> name('patient.dashboard');
-            Route::get('/appointments', 'PatientAppointmentController@index');
-            Route::post('/appointments', 'PatientAppointmentController@store');
-            Route::get('/appointments/{id}', 'PatientAppointmentController@show');
-            Route::put('/appointments/{id}', 'PatientAppointmentController@update');
-            Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
-            Route::get('/profile', 'PatientProfileController@show');
-            Route::put('/profile', 'PatientProfileController@update');
-        });
+Route::group(['middleware' => 'patient.profile.check'], function () {
+    Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
+    Route::get('/appointments', 'PatientAppointmentController@index');
+    Route::post('/appointments', 'PatientAppointmentController@store');
+    Route::get('/appointments/{id}', 'PatientAppointmentController@show');
+    Route::put('/appointments/{id}', 'PatientAppointmentController@update');
+    Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
+    Route::get('/profile', 'PatientProfileController@show');
+    Route::put('/profile', 'PatientProfileController@update');
+    Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+        Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+        
+});
+        
     });
 });
-

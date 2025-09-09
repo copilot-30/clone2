@@ -4,17 +4,23 @@
   </div>
 
   <nav class="mt-8">
-    @php
+  
+
+    @if (Auth::user()->role == 'PATIENT')
+  @php
       $menuItems = [
         ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('patient.dashboard')],
-        ['id' => 'patients', 'label' => 'Patients', 'icon' => 'Users'],
+        ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users'],
         ['id' => 'notes', 'label' => 'Notes', 'icon' => 'FileText'],
-        ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle'],
+        ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle', 'url' => route('patient.chat')],
         ['id' => 'files', 'label' => 'Files', 'icon' => 'Files'],
         ['id' => 'analytics', 'label' => 'Analytics', 'icon' => 'BarChart3'],
         ['id' => 'engagement', 'label' => 'Engagement', 'icon' => 'Heart'],
+        ['id' => 'plan', 'label' => 'Plan', 'icon' => 'CreditCard'],
       ];
     @endphp
+
+    @endif
 
     @foreach ($menuItems as $item)
       <a href="{{ empty($item['url']) ? '#' : $item['url']  }}" {{-- Replace with actual routes --}}
@@ -35,6 +41,9 @@
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.944 9.944 0 0112 3c5.4 0 9.772 4.372 9.772 9.772C21.772 17.143 17.4 21.516 12 21.516c-5.4 0-9.772-4.373-9.772-9.772C2.228 7.855 6.6 3.483 12 3.483zm0 0v-2.428m0 2.428h2.428m-2.428 0a.5.5 0 00-.5.5v.925"></path></svg>
         @elseif($item['icon'] === 'Heart')
           <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 22l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+        @elseif($item['icon'] === 'CreditCard') 
+          <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12.01" y2="8"></line><rect x="7" y="9" width="10" height="5" rx="1"></rect></svg>
+          
         @endif
         <span>{{ $item['label'] }}</span>
       </a>

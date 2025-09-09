@@ -95,4 +95,9 @@ class PatientController extends Controller
 
         return view('components/dashboard', compact('upcomingAppointments', 'recentNotes'));
     }
+
+    public function chat()
+    {
+        return view('components/chat-interface');
+    }
 }
