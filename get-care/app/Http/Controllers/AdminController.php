@@ -22,7 +22,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|string|in:admin,doctor,patient',
+            'role' => 'required|string|in:ADMIN,DOCTOR,PATIENT',
             'is_active' => 'boolean',
         ]);
 
@@ -60,9 +60,7 @@ class AdminController extends Controller
 
     public function editUser(Request $request, $id)
     {
-      
-
-
+    
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
@@ -96,7 +94,7 @@ class AdminController extends Controller
         $validator = Validator::make($request->all(), [
             'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'sometimes|required|string|in:admin,doctor,patient',
+            'role' => 'required|string|in:ADMIN,DOCTOR,PATIENT',
             'is_active' => 'boolean',
         ]);
 
