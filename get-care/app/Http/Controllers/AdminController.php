@@ -77,8 +77,7 @@ class AdminController extends Controller
     }
     public function listDoctors()
     {
-        $doctors = Doctor::with('user')->get();
-        return response()->json(['doctors' => $doctors]);
+        return view('admin.admin-doctor-management');
     }
 
     public function editDoctor(Request $request, $id)
@@ -141,8 +140,7 @@ class AdminController extends Controller
     }
     public function listPatients()
     {
-        $patients = Patient::with('user')->get();
-        return response()->json(['patients' => $patients]);
+        return view('admin.admin-patient-management');
     }
 
     public function viewPatientDetails($id)
@@ -157,13 +155,9 @@ class AdminController extends Controller
         return response()->json(['patient' => $patient]);
     }
 
-    public function listAllAppointments(Request $request)
+    public function listAllAppointments()
     {
-        $appointments = \App\Appointment::with('patient.user', 'doctor.user')
-            ->orderBy('appointment_datetime', 'desc')
-            ->get();
-
-        return response()->json(['appointments' => $appointments]);
+        return view('admin.admin-appointment-oversight');
     }
 
     public function filterAppointments(Request $request)
@@ -309,13 +303,21 @@ class AdminController extends Controller
 
     public function listSubscriptions()
     {
-        $subscriptions = \App\Subscription::with('patient.user')->get();
-        return response()->json(['subscriptions' => $subscriptions]);
+        return view('admin.admin-subscriptions'); // Assuming you'll create this
     }
 
     public function monitorTransactions()
     {
-        $transactions = \App\Payment::with('user')->get();
-        return response()->json(['transactions' => $transactions]);
+        return view('admin.admin-transactions'); // Assuming you'll create this
+    }
+
+    public function viewAuditLogs()
+    {
+        return view('admin.admin-audit-log-viewer');
+    }
+
+    public function dashboard()
+    {
+        return view('admin.admin-dashboard');
     }
 }

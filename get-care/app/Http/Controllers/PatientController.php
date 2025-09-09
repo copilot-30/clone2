@@ -15,7 +15,7 @@ class PatientController extends Controller
         $user = Auth::user();
         $patient = $user->patient ?? new \App\Patient(); // Retrieve existing patient data or create a new Patient instance
 
-        return view('components/patient-details-form', compact('patient'));
+        return view('patient.patient-details-form', compact('patient'));
     }
 
     public function storeProfile(Request $request)
@@ -93,11 +93,11 @@ class PatientController extends Controller
                                   ->take(5) // Get latest 5 notes
                                   ->get();
 
-        return view('components/dashboard', compact('upcomingAppointments', 'recentNotes'));
+        return view('patient.dashboard', compact('upcomingAppointments', 'recentNotes'));
     }
 
     public function chat()
     {
-        return view('components/chat-interface');
+        return view('patient.chat-interface');
     }
 }

@@ -8,22 +8,22 @@ class PublicController extends Controller
 {
     public function landingPage()
     {
-        return view('components/landing-page');
+        return view('public.landing-page');
     }
 
     public function loginPage()
     {
-        return view('components/login-page');
+        return view('public.login-page');
     }
 
     public function registerPage()
     {
-        return view('components/register-page');
+        return view('public.register-page');
     }
 
     public function accountRecoveryPage()
     {
-        return view('components/account-recovery');
+        return view('public.account-recovery');
     }
 
     public function privacyPolicyPage()

@@ -37,21 +37,23 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Admin routes
     Route::prefix('admin')->middleware('role:admin')->group(function () {
+        Route::get('/dashboard', 'AdminController@dashboard')->name('admin.dashboard');
         Route::post('/doctors', 'AdminController@createDoctor');
-        Route::get('/doctors', 'AdminController@listDoctors');
+        Route::get('/doctors', 'AdminController@listDoctors')->name('admin.doctors');
         Route::put('/doctors/{id}', 'AdminController@editDoctor');
         Route::delete('/doctors/{id}', 'AdminController@deleteDoctor');
-        Route::get('/patients', 'AdminController@listPatients');
+        Route::get('/patients', 'AdminController@listPatients')->name('admin.patients');
         Route::get('/patients/{id}', 'AdminController@viewPatientDetails');
-        Route::get('/appointments', 'AdminController@listAllAppointments');
+        Route::get('/appointments', 'AdminController@listAllAppointments')->name('admin.appointments');
         Route::get('/appointments/filter', 'AdminController@filterAppointments');
         Route::put('/appointments/{id}/cancel', 'AdminController@cancelAppointment');
         Route::put('/appointments/{id}/reschedule', 'AdminController@rescheduleAppointment');
         Route::put('/appointments/{id}/reassign', 'AdminController@reassignAppointment');
         Route::get('/doctors/{id}/performance', 'AdminController@viewDoctorPerformanceMetrics');
         Route::get('/patients/{id}/consultation-history', 'AdminController@viewConsultationHistory');
-        Route::get('/subscriptions', 'AdminController@listSubscriptions');
-        Route::get('/transactions', 'AdminController@monitorTransactions');
+        Route::get('/subscriptions', 'AdminController@listSubscriptions')->name('admin.subscriptions');
+        Route::get('/transactions', 'AdminController@monitorTransactions')->name('admin.transactions');
+        Route::get('/audit-logs', 'AdminController@viewAuditLogs')->name('admin.audit_logs');
     });
 
     // Doctor routes
@@ -74,19 +76,17 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patient-details', 'PatientController@showProfileForm')->name('patient-details'); // Add a name to the route for easy redirection
         
         Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
-Route::group(['middleware' => 'patient.profile.check'], function () {
-    Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
-    Route::get('/appointments', 'PatientAppointmentController@index');
-    Route::post('/appointments', 'PatientAppointmentController@store');
-    Route::get('/appointments/{id}', 'PatientAppointmentController@show');
-    Route::put('/appointments/{id}', 'PatientAppointmentController@update');
-    Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
-    Route::get('/profile', 'PatientProfileController@show');
-    Route::put('/profile', 'PatientProfileController@update');
-    Route::get('/chat', 'PatientController@chat')->name('patient.chat');
-        Route::get('/chat', 'PatientController@chat')->name('patient.chat');
-        
-});
+        Route::group(['middleware' => 'patient.profile.check'], function () {
+            Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
+            Route::get('/appointments', 'PatientAppointmentController@index');
+            Route::post('/appointments', 'PatientAppointmentController@store');
+            Route::get('/appointments/{id}', 'PatientAppointmentController@show');
+            Route::put('/appointments/{id}', 'PatientAppointmentController@update');
+            Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
+            Route::get('/profile', 'PatientProfileController@show');
+            Route::put('/profile', 'PatientProfileController@update');
+            Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+        });
         
     });
 });

@@ -34,7 +34,7 @@ CREATE TABLE public.appointments (
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT appointments_pkey PRIMARY KEY (id),
   CONSTRAINT appointments_clinic_id_fkey FOREIGN KEY (clinic_id) REFERENCES public.clinics(id),
-  CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id),
+  CONSTRAINT appointments_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
   CONSTRAINT appointments_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id)
 );
 CREATE TABLE public.clinics (
@@ -62,7 +62,7 @@ CREATE TABLE public.conversations (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT conversations_pkey PRIMARY KEY (id),
   CONSTRAINT conversations_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id),
-  CONSTRAINT conversations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id)
+  CONSTRAINT conversations_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.doctor_availability (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -74,7 +74,7 @@ CREATE TABLE public.doctor_availability (
   is_active boolean NOT NULL DEFAULT true,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT doctor_availability_pkey PRIMARY KEY (id),
-  CONSTRAINT doctor_availability_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id),
+  CONSTRAINT doctor_availability_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
   CONSTRAINT doctor_availability_clinic_id_fkey FOREIGN KEY (clinic_id) REFERENCES public.clinics(id)
 );
 CREATE TABLE public.doctor_clinics (
@@ -88,9 +88,9 @@ CREATE TABLE public.doctor_clinics (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT doctor_clinics_pkey PRIMARY KEY (id),
   CONSTRAINT doctor_clinics_clinic_id_fkey FOREIGN KEY (clinic_id) REFERENCES public.clinics(id),
-  CONSTRAINT doctor_clinics_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id)
+  CONSTRAINT doctor_clinics_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
-CREATE TABLE public.doctor_profiles (
+CREATE TABLE public.doctors (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid UNIQUE,
   specialization text NOT NULL,
@@ -108,8 +108,8 @@ CREATE TABLE public.doctor_profiles (
   ptr_license_number text NOT NULL,
   affiliated_hospital text,
   training text,
-  CONSTRAINT doctor_profiles_pkey PRIMARY KEY (id),
-  CONSTRAINT doctor_profiles_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
+  CONSTRAINT doctors_pkey PRIMARY KEY (id),
+  CONSTRAINT doctors_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 CREATE TABLE public.file_attachments (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -153,7 +153,7 @@ CREATE TABLE public.lab_test_requests (
   CONSTRAINT lab_test_requests_pkey PRIMARY KEY (id),
   CONSTRAINT lab_test_requests_soap_note_id_fkey FOREIGN KEY (soap_note_id) REFERENCES public.soap_notes(id),
   CONSTRAINT lab_test_requests_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id),
-  CONSTRAINT lab_test_requests_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id)
+  CONSTRAINT lab_test_requests_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.medical_backgrounds (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -207,7 +207,7 @@ CREATE TABLE public.patient_notes (
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   updated_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT patient_notes_pkey PRIMARY KEY (id),
-  CONSTRAINT patient_notes_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id),
+  CONSTRAINT patient_notes_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
   CONSTRAINT patient_notes_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patient_profiles(id)
 );
 CREATE TABLE public.patients (
@@ -251,7 +251,7 @@ CREATE TABLE public.patient_visits (
   CONSTRAINT patient_visits_pkey PRIMARY KEY (id),
   CONSTRAINT patient_visits_appointment_id_fkey FOREIGN KEY (appointment_id) REFERENCES public.appointments(id),
   CONSTRAINT patient_visits_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id),
-  CONSTRAINT patient_visits_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id)
+  CONSTRAINT patient_visits_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.prescriptions (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
@@ -267,7 +267,7 @@ CREATE TABLE public.prescriptions (
   is_sent_to_patient boolean NOT NULL DEFAULT false,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT prescriptions_pkey PRIMARY KEY (id),
-  CONSTRAINT prescriptions_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id),
+  CONSTRAINT prescriptions_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id),
   CONSTRAINT prescriptions_soap_note_id_fkey FOREIGN KEY (soap_note_id) REFERENCES public.soap_notes(id),
   CONSTRAINT prescriptions_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id)
 );
@@ -283,8 +283,8 @@ CREATE TABLE public.shared_cases (
   expires_at timestamp with time zone,
   created_at timestamp with time zone NOT NULL DEFAULT now(),
   CONSTRAINT shared_cases_pkey PRIMARY KEY (id),
-  CONSTRAINT shared_cases_sharing_doctor_id_fkey FOREIGN KEY (sharing_doctor_id) REFERENCES public.doctor_profiles(id),
-  CONSTRAINT shared_cases_receiving_doctor_id_fkey FOREIGN KEY (receiving_doctor_id) REFERENCES public.doctor_profiles(id),
+  CONSTRAINT shared_cases_sharing_doctor_id_fkey FOREIGN KEY (sharing_doctor_id) REFERENCES public.doctors(id),
+  CONSTRAINT shared_cases_receiving_doctor_id_fkey FOREIGN KEY (receiving_doctor_id) REFERENCES public.doctors(id),
   CONSTRAINT shared_cases_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id)
 );
 CREATE TABLE public.soap_notes (
@@ -312,7 +312,7 @@ CREATE TABLE public.soap_notes (
   CONSTRAINT soap_notes_pkey PRIMARY KEY (id),
   CONSTRAINT soap_notes_patient_id_fkey FOREIGN KEY (patient_id) REFERENCES public.patients(id),
   CONSTRAINT soap_notes_visit_id_fkey FOREIGN KEY (visit_id) REFERENCES public.patient_visits(id),
-  CONSTRAINT soap_notes_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctor_profiles(id)
+  CONSTRAINT soap_notes_doctor_id_fkey FOREIGN KEY (doctor_id) REFERENCES public.doctors(id)
 );
 CREATE TABLE public.users (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
