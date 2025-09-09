@@ -38,12 +38,37 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', 'AdminController@dashboard')->name('admin.dashboard');
+
+        // Doctor Management Routes
         Route::post('/doctors', 'AdminController@createDoctor');
         Route::get('/doctors', 'AdminController@listDoctors')->name('admin.doctors');
         Route::put('/doctors/{id}', 'AdminController@editDoctor');
         Route::delete('/doctors/{id}', 'AdminController@deleteDoctor');
+
+        // User Management Routes
+        Route::get('/users', 'AdminController@listUsers')->name('admin.users');
+        Route::get('/users/create', function () {
+            return view('admin.create-user');
+        })->name('admin.users.create');
+        Route::post('/users', 'AdminController@createUser')->name('admin.users.store');
+        Route::get('/users/{id}/edit', 'AdminController@editUser')->name('admin.users.edit');
+        Route::put('/users/{id}', 'AdminController@editUser')->name('admin.users.update');
+        Route::delete('/users/{id}', 'AdminController@deleteUser')->name('admin.users.delete');
         Route::get('/patients', 'AdminController@listPatients')->name('admin.patients');
         Route::get('/patients/{id}', 'AdminController@viewPatientDetails');
+        Route::get('/patients/{user_id}/create-details', function ($user_id) {
+            $user = App\User::findOrFail($user_id);
+            return view('admin.patient-details-form', compact('user'));
+        })->name('admin.patients.create_details');
+        Route::post('/patients/{user_id}/store-details', 'AdminController@storePatientDetails')->name('admin.patients.store_details');
+        Route::put('/patients/{user_id}/update-details', 'AdminController@updatePatientDetails')->name('admin.patients.update_details');
+
+        Route::get('/doctors/{user_id}/create-details', function ($user_id) {
+            $user = App\User::findOrFail($user_id);
+            return view('admin.doctor-details-form', compact('user'));
+        })->name('admin.doctors.create_details');
+        Route::post('/doctors/{user_id}/store-details', 'AdminController@storeDoctorDetails')->name('admin.doctors.store_details');
+        Route::put('/doctors/{user_id}/update-details', 'AdminController@editDoctor')->name('admin.doctors.update_details');
         Route::get('/appointments', 'AdminController@listAllAppointments')->name('admin.appointments');
         Route::get('/appointments/filter', 'AdminController@filterAppointments');
         Route::put('/appointments/{id}/cancel', 'AdminController@cancelAppointment');
