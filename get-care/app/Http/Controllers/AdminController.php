@@ -43,9 +43,9 @@ class AdminController extends Controller
             'role' => $user->role,
         ]));
 
-        if ($user->role === 'patient') {
+        if ($user->role === 'PATIENT') {
             return redirect()->route('admin.patients.create_details', ['user_id' => $user->id])->with('success', 'Patient user created. Please fill in patient details.');
-        } elseif ($user->role === 'doctor') {
+        } elseif ($user->role === 'DOCTOR') {
             return redirect()->route('admin.doctors.create_details', ['user_id' => $user->id])->with('success', 'Doctor user created. Please fill in doctor details.');
         }
 
@@ -472,7 +472,7 @@ class AdminController extends Controller
             'email' => $user->email,
         ]));
 
-        return redirect()->back()->with('success', 'Doctor details updated successfully.');
+        return redirect()->back()->with('success', 'Doctor information updated successfully.');
     }
 
     public function listPatients()

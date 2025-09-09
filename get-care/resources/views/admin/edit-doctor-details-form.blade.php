@@ -1,10 +1,7 @@
  
 <!-- <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4"> -->
     <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-5xl">
-        <h2 class="text-3xl font-bold text-emerald-600 mb-8 text-center">Edit Doctor Profile for User: {{ $user->email }}</h2>
-        <br/>
-        <hr/>
-        <br/>
+       <h2 class="text-3xl font-bold text-emerald-600 mb-8 text-center">Doctor Information</h2> 
         <form action="{{ route('admin.doctors.update_details', ['user_id' => $user->id]) }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-8">
             @csrf {{-- Laravel CSRF token --}}
             @method('PUT')

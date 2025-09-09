@@ -43,6 +43,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/doctors', 'AdminController@createDoctor');
         Route::get('/doctors', 'AdminController@listDoctors')->name('admin.doctors');
         Route::put('/doctors/{id}', 'AdminController@editDoctor');
+        Route::post('/doctors/{user_id}/store-details', 'AdminController@storeDoctorDetails')->name('admin.doctors.store_details');
+        Route::put('/doctors/{user_id}/update', 'AdminController@updateDoctorDetails')->name('admin.doctors.update_details');
         Route::delete('/doctors/{id}', 'AdminController@deleteDoctor');
 
         // User Management Routes
@@ -67,8 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
             $user = App\User::findOrFail($user_id);
             return view('admin.doctor-details-form', compact('user'));
         })->name('admin.doctors.create_details');
-        Route::post('/doctors/{user_id}/store-details', 'AdminController@storeDoctorDetails')->name('admin.doctors.store_details');
-        Route::put('/doctors/{user_id}/update-details', 'AdminController@editDoctor')->name('admin.doctors.update_details');
+        
         Route::get('/appointments', 'AdminController@listAllAppointments')->name('admin.appointments');
         Route::get('/appointments/filter', 'AdminController@filterAppointments');
         Route::put('/appointments/{id}/cancel', 'AdminController@cancelAppointment');
