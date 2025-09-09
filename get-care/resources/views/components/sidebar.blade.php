@@ -5,33 +5,46 @@
 
   <nav class="mt-8">
   
+    @php $menuItems = []; @endphp
 
-    @if (Auth::user()->role == 'PATIENT')
-  @php
-      $menuItems = [
-        ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('patient.dashboard')],
-        ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users'],
-        ['id' => 'notes', 'label' => 'Notes', 'icon' => 'FileText'],
-        ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle', 'url' => route('patient.chat')],
-        ['id' => 'files', 'label' => 'Files', 'icon' => 'Files'],
-        ['id' => 'analytics', 'label' => 'Analytics', 'icon' => 'BarChart3'],
-        ['id' => 'engagement', 'label' => 'Engagement', 'icon' => 'Heart'],
-        ['id' => 'plan', 'label' => 'Plan', 'icon' => 'CreditCard'],
-      ];
-    @endphp
-    @elseif (Auth::user()->role == 'ADMIN')
-        @php
-            $menuItems = [
-                ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('admin.dashboard')],
-                ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users', 'url' => route('admin.doctors')],
-                ['id' => 'patients', 'label' => 'Patients', 'icon' => 'Users', 'url' => route('admin.patients')],
-                ['id' => 'users', 'label' => 'Users', 'icon' => 'Users', 'url' => route('admin.users')],
-                ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('admin.appointments')],
-                ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit_logs')],
-                ['id' => 'subscriptions', 'label' => 'Subscriptions', 'icon' => 'CreditCard', 'url' => route('admin.subscriptions')],
-                ['id' => 'transactions', 'label' => 'Transactions', 'icon' => 'DollarSign', 'url' => route('admin.transactions')],
-            ];
-        @endphp
+    @if (Auth::check())
+        @if (Auth::user()->role == 'PATIENT')
+            @php
+                $menuItems = [
+                    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('patient.dashboard')],
+                    ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users'],
+                    ['id' => 'notes', 'label' => 'Notes', 'icon' => 'FileText'],
+                    ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle', 'url' => route('patient.chat')],
+                    ['id' => 'files', 'label' => 'Files', 'icon' => 'Files'],
+                    ['id' => 'analytics', 'label' => 'Analytics', 'icon' => 'BarChart3'],
+                    ['id' => 'engagement', 'label' => 'Engagement', 'icon' => 'Heart'],
+                    ['id' => 'plan', 'label' => 'Plan', 'icon' => 'CreditCard'],
+                ];
+            @endphp
+        @elseif (Auth::user()->role == 'ADMIN')
+            @php
+                $menuItems = [
+                    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('admin.dashboard')],
+                    ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users', 'url' => route('admin.doctors')],
+                    ['id' => 'patients', 'label' => 'Patients', 'icon' => 'Users', 'url' => route('admin.patients')],
+                    ['id' => 'users', 'label' => 'Users', 'icon' => 'Users', 'url' => route('admin.users')],
+                    ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('admin.appointments')],
+                    ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit_logs')],
+                    ['id' => 'subscriptions', 'label' => 'Subscriptions', 'icon' => 'CreditCard', 'url' => route('admin.subscriptions')],
+                    ['id' => 'transactions', 'label' => 'Transactions', 'icon' => 'DollarSign', 'url' => route('admin.transactions')],
+                ];
+            @endphp
+        @elseif (Auth::user()->role == 'DOCTOR')
+            @php
+                $menuItems = [
+                    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('doctor.dashboard')],
+                    ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar'],
+                    ['id' => 'patients', 'label' => 'My Patients', 'icon' => 'Users'],
+                    ['id' => 'availability', 'label' => 'Availability', 'icon' => 'Calendar', 'url' => route('doctor.availability.show')],
+                    // Add other doctor-specific menu items as needed
+                ];
+            @endphp
+        @endif
     @endif
 
     @foreach ($menuItems as $item)
