@@ -8,6 +8,7 @@ use App\Patient;
 use App\Appointment;
 use App\Payment;
 use App\DoctorAvailability;
+use App\Clinic;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -140,7 +141,6 @@ class DoctorController extends Controller
  
 
 
-
     private static $dayMapping = [
         'Monday' => 1,
         'Tuesday' => 2,
@@ -175,8 +175,10 @@ class DoctorController extends Controller
             $organizedAvailability[$dayName][] = [
                 'start_time' => $slot->start_time,
                 'end_time' => $slot->end_time,
-                'is_available' => $slot->is_available,
+                'is_available' => $slot->is_active, // Use is_active as per model
                 'id' => $slot->id,
+                'type' => $slot->clinic_id ? 'face_to_face' : 'online_consultation', // Derive type
+                'clinic_id' => $slot->clinic_id,
             ];
         }
 
@@ -192,8 +194,9 @@ class DoctorController extends Controller
         // For now, let's assume a default 'enabled' if not explicitly set.
         $availability_status = Auth::user()->doctor->online_availability_enabled ?? true;
 
+        $clinics = Clinic::where('is_active', true)->get();
 
-        return view('doctor.availability', compact('organizedAvailability', 'availability_status'));
+        return view('doctor.availability', compact('organizedAvailability', 'availability_status', 'clinics'));
     }
 
     public function updateAvailability(Request $request)
@@ -207,12 +210,29 @@ class DoctorController extends Controller
             'availability.*.day_of_week' => 'required|string', // day_of_week is now part of each slot
             'availability.*.start_time' => 'required|date_format:H:i',
             'availability.*.end_time' => 'required|date_format:H:i|after:availability.*.start_time',
-            'availability.*.is_available' => 'boolean',
             'availability.*.id' => 'nullable|string', // For existing records
+            'availability.*.type' => 'required|in:online_consultation,face_to_face',
+            'availability.*.clinic_id' => 'nullable|uuid',
         ]);
         // Custom rule to validate day_of_week values
         $validator->sometimes('availability.*.day_of_week', ['in:' . implode(',', array_keys(self::$dayMapping))], function ($input) {
             return is_array($input['availability']) && count($input['availability']) > 0;
+        });
+
+        $validator->sometimes('availability.*.clinic_id', 'required', function ($input) {
+            // Check if 'type' is 'face_to_face' for the current availability slot
+            return isset($input['availability']) && is_array($input['availability']) && collect($input['availability'])->contains(function ($slot) {
+                return $slot['type'] === 'face_to_face';
+            });
+        });
+
+        // Add a rule to ensure clinic_id is null for online_consultation
+        $validator->after(function ($validator) {
+            foreach ($validator->getData()['availability'] ?? [] as $index => $slot) {
+                if ($slot['type'] === 'online_consultation' && !empty($slot['clinic_id'])) {
+                    $validator->errors()->add("availability.{$index}.clinic_id", 'Clinic ID must be null for online consultations.');
+                }
+            }
         });
 
         if ($validator->fails()) {
@@ -235,7 +255,8 @@ class DoctorController extends Controller
                     'day_of_week' => self::$dayMapping[$slotData['day_of_week']], // Convert string day to integer
                     'start_time' => $slotData['start_time'],
                     'end_time' => $slotData['end_time'],
-                    'is_available' => $slotData['is_available'],
+                    'is_active' => $slotData['is_available'] ?? false, // Use is_active and default to false
+                    'clinic_id' => ($slotData['type'] === 'face_to_face') ? $slotData['clinic_id'] : null,
                 ]);
             }
         });

@@ -65,7 +65,7 @@
                             @include('components.availability-slot', ['day' => $day, 'uniqueSlotIndex' => $uniqueSlotIndex++, 'slot' => $slot])
                             @php $hasSlotsForDay = true; @endphp
                         @endforeach
-                        
+            
 
                         <button type="button" class="add-new-slot-btn mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded">
                             Add New
@@ -90,42 +90,81 @@
         // This ensures new slots get a unique, incrementing index.
         let globalSlotIndex = {{ $uniqueSlotIndex }};
 
-        // Function to create a new slot HTML
-        function createNewSlotHtml(day, slot = { start_time: '09:00', end_time: '17:00', is_available: true, id: null }) {
+        const clinics = @json($clinics); // Define clinics array once here
+
+        function createNewSlotHtml(day, slot = { start_time: '09:00', end_time: '17:00', is_active: true, id: null, type: 'online_consultation', clinic_id: null }) {
             const currentUniqueIndex = globalSlotIndex++;
+            
+            let clinicsOptionsHtml = ``;
+            clinics.forEach(clinic => {
+                const selected = (slot.clinic_id === clinic.id) ? 'selected' : '';
+                clinicsOptionsHtml += `<option value="${clinic.id}" ${selected}>${clinic.name}</option>`;
+            });
+
             return `
                 <div class="flex items-center space-x-4 mb-3 availability-slot" data-slot-id="${slot.id || ''}">
                     <input type="hidden" name="availability[${currentUniqueIndex}][day_of_week]" value="${day}">
                     <input type="hidden" name="availability[${currentUniqueIndex}][id]" value="${slot.id || ''}">
 
-                    <div class="w-1/4">
+                    <div class="w-1/5">
+                        <label for="type_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Type</label>
+                        <select name="availability[${currentUniqueIndex}][type]"
+                                id="type_${day}_${currentUniqueIndex}"
+                                class="w-full border p-2 rounded type-select" required>
+                            <option value="online_consultation" ${slot.type === 'online_consultation' ? 'selected' : ''}>Online Consultation</option>
+                            <option value="face_to_face" ${slot.type === 'face_to_face' ? 'selected' : ''}>Face to Face Consultation</option>
+                        </select>
+                    </div>
+                    <div class="w-1/5">
                         <label for="start_time_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Start Time</label>
                         <input type="time" name="availability[${currentUniqueIndex}][start_time]"
                                id="start_time_${day}_${currentUniqueIndex}"
                                class="w-full border p-2 rounded"
                                value="${slot.start_time}" required>
                     </div>
-                    <div class="w-1/4">
+                    <div class="w-1/5">
                         <label for="end_time_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">End Time</label>
                         <input type="time" name="availability[${currentUniqueIndex}][end_time]"
                                id="end_time_${day}_${currentUniqueIndex}"
                                class="w-full border p-2 rounded"
                                value="${slot.end_time}" required>
                     </div>
-                    <div class="w-1/4">
-                        <label for="is_available_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Available?</label>
-                        <input type="checkbox" name="availability[${currentUniqueIndex}][is_available]"
-                               id="is_available_${day}_${currentUniqueIndex}"
-                               class="form-checkbox h-5 w-5 text-emerald-600 mt-2"
-                               value="1" ${slot.is_available ? 'checked' : ''}>
+                    <div class="w-1/5 clinic-field" style="display: ${slot.type === 'face_to_face' ? 'block' : 'none'};">
+                        <label for="clinic_id_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Clinic</label>
+                        <select name="availability[${currentUniqueIndex}][clinic_id]"
+                                id="clinic_id_${day}_${currentUniqueIndex}"
+                                class="w-full border p-2 rounded">
+                            <option value="">Select Clinic</option>
+                            ${clinicsOptionsHtml}
+                        </select>
                     </div>
-                    <div class="w-1/4 flex justify-end items-end">
+                    <div class="w-1/5">
+                        <label for="is_active_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Available?</label>
+                        <input type="checkbox" name="availability[${currentUniqueIndex}][is_active]"
+                               id="is_active_${day}_${currentUniqueIndex}"
+                               class="form-checkbox h-5 w-5 text-emerald-600 mt-2"
+                               value="1" ${slot.is_active ? 'checked' : ''}>
+                    </div>
+                    <div class="w-1/5 flex justify-end items-end">
                         <button type="button" class="remove-slot-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">
                             Remove
                         </button>
                     </div>
                 </div>
             `;
+        }
+
+        // Function to toggle clinic field visibility
+        function toggleClinicField(typeSelectElement) {
+            const clinicField = typeSelectElement.closest('.availability-slot').querySelector('.clinic-field');
+            if (typeSelectElement.value === 'face_to_face') {
+                clinicField.style.display = 'block';
+                clinicField.querySelector('select').setAttribute('required', 'required');
+            } else {
+                clinicField.style.display = 'none';
+                clinicField.querySelector('select').removeAttribute('required');
+                clinicField.querySelector('select').value = ''; // Clear selected clinic for online
+            }
         }
 
         // Add new slot button handler
@@ -135,6 +174,12 @@
                 const day = daySlotGroup.dataset.day;
                 const newSlotHtml = createNewSlotHtml(day);
                 daySlotGroup.querySelector('h4').insertAdjacentHTML('afterend', newSlotHtml); // Insert after the h4 for the day
+                
+                // Initialize clinic field visibility for the newly added slot
+                const newSlotElement = daySlotGroup.querySelector('.availability-slot:first-of-type');
+                const newTypeSelect = newSlotElement.querySelector('.type-select');
+                toggleClinicField(newTypeSelect);
+                newTypeSelect.addEventListener('change', () => toggleClinicField(newTypeSelect));
             }
         });
 
@@ -157,6 +202,12 @@
                         if (daySlotGroup.querySelectorAll('.availability-slot').length === 0) {
                             const newSlotHtml = createNewSlotHtml(day);
                             daySlotGroup.querySelector('h4').insertAdjacentHTML('afterend', newSlotHtml);
+                            
+                            // Initialize clinic field visibility for the newly added slot
+                            const newSlotElement = daySlotGroup.querySelector('.availability-slot:first-of-type');
+                            const newTypeSelect = newSlotElement.querySelector('.type-select');
+                            toggleClinicField(newTypeSelect);
+                            newTypeSelect.addEventListener('change', () => toggleClinicField(newTypeSelect));
                         }
                     } else {
                         daySlotGroup.style.display = 'none';
@@ -171,6 +222,12 @@
                 daySlotGroup.style.display = 'none';
             }
         });
-            });
+
+        // Initialize clinic field visibility for existing slots on page load
+        document.querySelectorAll('.type-select').forEach(typeSelect => {
+            toggleClinicField(typeSelect);
+            typeSelect.addEventListener('change', () => toggleClinicField(typeSelect));
+        });
+    });
 </script>
 @endsection
