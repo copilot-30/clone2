@@ -66,10 +66,6 @@
                             @php $hasSlotsForDay = true; @endphp
                         @endforeach
                         
-                        @if (!$hasSlotsForDay)
-                            {{-- Initial empty slot for days without existing data --}}
-                            @include('components.availability-slot', ['day' => $day, 'uniqueSlotIndex' => $uniqueSlotIndex++, 'slot' => ['start_time' => '09:00', 'end_time' => '17:00', 'is_available' => true, 'id' => null]])
-                        @endif
 
                         <button type="button" class="add-new-slot-btn mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded">
                             Add New
