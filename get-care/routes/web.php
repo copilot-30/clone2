@@ -85,21 +85,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/create-doctor', 'DoctorController@createDoctor')->name('doctor.create');
         Route::post('/store-doctor', 'DoctorController@storeDoctorDetails')->name('doctor.store');
         Route::group(['middleware' => 'doctor.profile.check'], function () {
+
+            Route::get('/', 'DoctorController@dashboard')->name('doctor.dashboard');
             
             Route::get('/edit-doctor', 'DoctorController@editDoctor')->name('doctor.edit');
             Route::put('/update-doctor', 'DoctorController@updateDoctorDetails')->name('doctor.update');
 
+            Route::get('/availability', 'DoctorController@editAvailability')->name('doctor.availability.edit');
+            Route::put('/availability', 'DoctorController@updateAvailability')->name('doctor.availability.update');
 
-            Route::get('/', 'DoctorController@dashboard')->name('doctor.dashboard');
-            Route::get('/availability', 'DoctorAvailabilityController@show')->name('doctor.availability.show');
-            Route::put('/availability', 'DoctorAvailabilityController@update')->name('doctor.availability.update');
+
             Route::get('/appointments', 'DoctorAppointmentController@index');
             Route::post('/appointments', 'DoctorAppointmentController@store');
             Route::get('/appointments/{id}', 'DoctorAppointmentController@show');
             Route::put('/appointments/{id}', 'DoctorAppointmentController@update');
             Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy');
-            Route::get('/profile/{id}', 'DoctorProfileController@show')->name('doctor.profile.show');
-            Route::put('/profile/{id}', 'DoctorProfileController@update');
+        
             Route::get('/patients', 'DoctorController@listAssignedPatients');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
             Route::post('/patient-notes', 'PatientNoteController@store');
