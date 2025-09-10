@@ -45,17 +45,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/doctors/{id}', 'DoctorController@editDoctor');
         Route::post('/doctors/{user_id}/store-details', 'DoctorController@storeDoctorDetails')->name('admin.doctors.store_details');
         Route::put('/doctors/{user_id}/update-details', 'DoctorController@updateDoctorDetails')->name('admin.doctors.update_details');
+        // Route::get('/doctors/{user_id}/create-details', 'DoctorController@createDetailsForm')->name('admin.doctors.create_details');
+        
         Route::delete('/doctors/{id}', 'DoctorController@deleteDoctor');
 
         // User Management Routes
         Route::get('/users', 'AdminController@listUsers')->name('admin.users');
-        Route::get('/users/create', function () {
-            return view('admin.create-user');
-        })->name('admin.users.create');
-        Route::post('/users', 'AdminController@createUser')->name('admin.users.store');
+        Route::get('/users/create','AdminController@createUser')->name('admin.users.create');
+        Route::post('/users', 'AdminController@storeUser')->name('admin.users.store');
         Route::get('/users/{id}/edit', 'AdminController@editUser')->name('admin.users.edit');
         Route::put('/users/{id}', 'AdminController@editUser')->name('admin.users.update');
         Route::delete('/users/{id}', 'AdminController@deleteUser')->name('admin.users.delete');
+        
+        
         Route::get('/patients', 'AdminController@listPatients')->name('admin.patients');
         Route::get('/patients/{id}', 'AdminController@viewPatientDetails');
         Route::get('/patients/{user_id}/create-details', function ($user_id) {
@@ -65,7 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/patients/{user_id}/store-details', 'AdminController@storePatientDetails')->name('admin.patients.store_details');
         Route::put('/patients/{user_id}/update-details', 'AdminController@updatePatientDetails')->name('admin.patients.update_details');
 
-        Route::get('/doctors/{user_id}/create-details', 'DoctorController@createDetails')->name('admin.doctors.create_details');
         Route::get('/doctors/{id}/performance', 'DoctorController@viewDoctorPerformanceMetrics')->name('admin.doctors.performance');
         
         Route::get('/appointments', 'AdminController@listAllAppointments')->name('admin.appointments');
@@ -81,19 +82,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Doctor routes
     Route::prefix('doctor')->middleware('role:doctor')->group(function () {
-        Route::get('/dashboard', 'DoctorController@dashboard')->name('doctor.dashboard');
-        Route::get('/availability', 'DoctorAvailabilityController@show')->name('doctor.availability.show');
-        Route::put('/availability', 'DoctorAvailabilityController@update')->name('doctor.availability.update');
-        Route::get('/appointments', 'DoctorAppointmentController@index');
-        Route::post('/appointments', 'DoctorAppointmentController@store');
-        Route::get('/appointments/{id}', 'DoctorAppointmentController@show');
-        Route::put('/appointments/{id}', 'DoctorAppointmentController@update');
-        Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy');
-        Route::get('/profile/{id}', 'DoctorProfileController@show');
-        Route::put('/profile/{id}', 'DoctorProfileController@update');
-        Route::get('/patients', 'DoctorController@listAssignedPatients');
-        Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
-        Route::post('/patient-notes', 'PatientNoteController@store');
+        Route::get('/create-doctor', 'DoctorController@createDoctor')->name('doctor.create');
+        Route::post('/store-doctor', 'DoctorController@storeDoctorDetails')->name('doctor.store');
+        Route::group(['middleware' => 'doctor.profile.check'], function () {
+            
+            Route::get('/edit-doctor', 'DoctorController@editDoctor')->name('doctor.edit');
+            Route::put('/update-doctor', 'DoctorController@updateDoctorDetails')->name('doctor.update');
+
+
+            Route::get('/', 'DoctorController@dashboard')->name('doctor.dashboard');
+            Route::get('/availability', 'DoctorAvailabilityController@show')->name('doctor.availability.show');
+            Route::put('/availability', 'DoctorAvailabilityController@update')->name('doctor.availability.update');
+            Route::get('/appointments', 'DoctorAppointmentController@index');
+            Route::post('/appointments', 'DoctorAppointmentController@store');
+            Route::get('/appointments/{id}', 'DoctorAppointmentController@show');
+            Route::put('/appointments/{id}', 'DoctorAppointmentController@update');
+            Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy');
+            Route::get('/profile/{id}', 'DoctorProfileController@show')->name('doctor.profile.show');
+            Route::put('/profile/{id}', 'DoctorProfileController@update');
+            Route::get('/patients', 'DoctorController@listAssignedPatients');
+            Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
+            Route::post('/patient-notes', 'PatientNoteController@store');
+        });
     });
 
     // Patient routes

@@ -17,7 +17,17 @@ use App\Events\AuditableEvent; // Import the event
 
 class AdminController extends Controller
 {
-    public function createUser(Request $request)
+    public function listUsers()
+    {
+        $users = User::all();
+        return view('admin.admin-user-management', compact('users'));
+    }
+
+    public function createUser(){
+        return view('admin.create-user');
+    }
+
+    public function storeUser(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255|unique:users',
@@ -43,20 +53,14 @@ class AdminController extends Controller
             'role' => $user->role,
         ]));
 
-        if ($user->role === 'PATIENT') {
-            return redirect()->route('admin.patients.create_details', ['user_id' => $user->id])->with('success', 'Patient user created. Please fill in patient details.');
-        } elseif ($user->role === 'DOCTOR') {
-            return redirect()->route('admin.doctors.create_details', ['user_id' => $user->id])->with('success', 'Doctor user created. Please fill in doctor details.');
+        if ($user->role === 'PATIENT' || $user->role === 'DOCTOR') {
+            return redirect()->route('admin.users.edit', ['id' => $user->id])->with('success', 'User created. Please fill in '.strtolower($user->role).' details.');
         }
 
         return redirect()->back()->with('success', 'User account created successfully.');
     }
 
-    public function listUsers()
-    {
-        $users = User::all();
-        return view('admin.admin-user-management', compact('users'));
-    }
+
 
     public function editUser(Request $request, $id)
     {
@@ -124,7 +128,7 @@ class AdminController extends Controller
     {
         $user = User::find($id);
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return redirect()->back()->with(['message' => 'User not found']);
         }
 
         DB::transaction(function () use ($user) {
@@ -138,7 +142,7 @@ class AdminController extends Controller
             ]));
         });
 
-        return response()->json(['message' => 'User deleted successfully']);
+        return  redirect()->back()->with(['message' => 'User deleted successfully']);
     }
 
     public function storePatientDetails(Request $request, $user_id)
@@ -415,5 +419,180 @@ class AdminController extends Controller
     public function dashboard()
     {
         return view('admin.admin-dashboard');
+    }
+
+    public function editDoctor(Request $request, $id)
+    {
+        $doctor = Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'specialization' => 'sometimes|required|string|max:255',
+            'years_of_experience' => 'nullable|integer',
+            'certifications' => 'nullable|string',
+            'first_name' => 'sometimes|required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'sex' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'prc_license_number' => 'sometimes|required|string|unique:doctor_profiles,prc_license_number,' . $id,
+            'ptr_license_number' => 'sometimes|required|string|unique:doctor_profiles,ptr_license_number,' . $id,
+            'affiliated_hospital' => 'nullable|string',
+            'training' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $doctor->update($request->all());
+
+        event(new AuditableEvent(auth()->id(), 'doctor_updated', [
+            'doctor_id' => $doctor->id,
+            'user_id' => $doctor->user_id,
+            'email' => $doctor->email,
+        ]));
+
+        return response()->json(['message' => 'Doctor updated successfully', 'doctor' => $doctor]);
+    }
+
+    public function deleteDoctor($id)
+    {
+        $doctor = Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        DB::transaction(function () use ($doctor) {
+            $user_id = $doctor->user_id;
+            $email = $doctor->email;
+            $doctor->delete();
+            User::where('id', $user_id)->delete();
+
+            event(new AuditableEvent(auth()->id(), 'doctor_deleted', [
+                'user_id' => $user_id,
+                'email' => $email,
+            ]));
+        });
+
+        return response()->json(['message' => 'Doctor deleted successfully']);
+    }
+
+    public function storeDoctorDetails(Request $request, $user_id)
+    {
+        $user = User::findOrFail($user_id);
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'sex' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'specialization' => 'required|string|max:255',
+            'years_of_experience' => 'nullable|integer',
+            'certifications' => 'nullable|string',
+            'prc_license_number' => 'required|string|unique:doctor_profiles,prc_license_number',
+            'ptr_license_number' => 'required|string|unique:doctor_profiles,ptr_license_number',
+            'affiliated_hospital' => 'nullable|string',
+            'training' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        Doctor::create([
+            'user_id' => $user->id,
+            'first_name' => $request->input('first_name'),
+            'middle_name' => $request->input('middle_name'),
+            'last_name' => $request->input('last_name'),
+            'sex' => $request->input('sex'),
+            'phone_number' => $request->input('phone_number'),
+            'email' => $user->email,
+            'specialization' => $request->input('specialization'),
+            'years_of_experience' => $request->input('years_of_experience'),
+            'certifications' => $request->input('certifications'),
+            'prc_license_number' => $request->input('prc_license_number'),
+            'ptr_license_number' => $request->input('ptr_license_number'),
+            'affiliated_hospital' => $request->input('affiliated_hospital'),
+            'training' => $request->input('training'),
+        ]);
+
+        event(new AuditableEvent(auth()->id(), 'doctor_details_added', [
+            'doctor_user_id' => $user->id,
+            'email' => $user->email,
+        ]));
+
+        return redirect()->route('admin.users')->with('success', 'Doctor details added successfully.');
+    }
+
+    public function updateDoctorDetails(Request $request, $user_id)
+    {
+        $user = User::findOrFail($user_id);
+        $doctor = Doctor::where('user_id', $user->id)->firstOrFail();
+
+        $validator = Validator::make($request->all(), [
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'sex' => 'nullable|string',
+            'phone_number' => 'nullable|string',
+            'specialization' => 'required|string|max:255',
+            'years_of_experience' => 'nullable|integer',
+            'certifications' => 'nullable|string',
+            'prc_license_number' => 'required|string|unique:doctor_profiles,prc_license_number,' . $doctor->id,
+            'ptr_license_number' => 'required|string|unique:doctor_profiles,ptr_license_number,' . $doctor->id,
+            'affiliated_hospital' => 'nullable|string',
+            'training' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $doctor->update([
+            'first_name' => $request->input('first_name'),
+            'middle_name' => $request->input('middle_name'),
+            'last_name' => $request->input('last_name'),
+            'sex' => $request->input('sex'),
+            'phone_number' => $request->input('phone_number'),
+            'specialization' => $request->input('specialization'),
+            'years_of_experience' => $request->input('years_of_experience'),
+            'certifications' => $request->input('certifications'),
+            'prc_license_number' => $request->input('prc_license_number'),
+            'ptr_license_number' => $request->input('ptr_license_number'),
+            'affiliated_hospital' => $request->input('affiliated_hospital'),
+            'training' => $request->input('training'),
+        ]);
+
+        event(new AuditableEvent(auth()->id(), 'doctor_details_updated', [
+            'doctor_user_id' => $user->id,
+            'email' => $user->email,
+        ]));
+
+        return redirect()->back()->with('success', 'Doctor details updated successfully.');
+    }
+
+    public function viewDoctorPerformanceMetrics($id)
+    {
+        $doctor = Doctor::find($id);
+        if (!$doctor) {
+            return response()->json(['message' => 'Doctor not found'], 404);
+        }
+
+        $totalAppointments = Appointment::where('doctor_id', $id)->count();
+        $completedAppointments = Appointment::where('doctor_id', $id)->where('status', 'completed')->count();
+        $totalEarnings = Payment::where('payable_type', 'App\\Doctor')->where('payable_id', $id)->where('status', 'completed')->sum('amount');
+
+        return response()->json([
+            'doctor' => $doctor,
+            'metrics' => [
+                'total_appointments' => $totalAppointments,
+                'completed_appointments' => $completedAppointments,
+                'total_earnings' => $totalEarnings,
+            ]
+        ]);
     }
 }

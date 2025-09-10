@@ -91,8 +91,8 @@ class DoctorAvailabilityController extends Controller
         DB::transaction(function () use ($request, $doctor_id) {
             // Update overall availability status on Doctor model
             $doctor = Auth::user()->doctor;
-            // $doctor->online_availability_enabled = $request->input('status');
-            // $doctor->save();
+            $doctor->online_availability_enabled = $request->input('status');
+            $doctor->save();
 
             // First, delete existing availability for the doctor to handle removals
             DoctorAvailability::where('doctor_id', $doctor_id)->delete();

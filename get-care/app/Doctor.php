@@ -23,6 +23,7 @@ class Doctor extends Model
         'ptr_license_number',
         'affiliated_hospital',
         'training',
+        'online_availability_enabled',
     ];
 
     protected $casts = [
