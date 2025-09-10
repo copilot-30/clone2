@@ -106,4 +106,9 @@ class Doctor extends Model
     {
         return $this->hasMany(Consultation::class, 'doctor_id');
     }
+
+    public function attendingPhysicians()
+    {
+        return $this->hasMany(AttendingPhysician::class, 'doctor_id');
+    }
 }

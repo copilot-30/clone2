@@ -105,4 +105,9 @@ class Patient extends Model
     {
         return $this->hasMany(Consultation::class, 'patient_id');
     }
+
+    public function attendingPhysicians()
+    {
+        return $this->hasMany(AttendingPhysician::class, 'patient_id');
+    }
 }

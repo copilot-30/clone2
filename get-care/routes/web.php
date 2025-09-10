@@ -134,6 +134,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/profile', 'PatientProfileController@show');
             Route::put('/profile', 'PatientProfileController@update');
             Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+            Route::get('/select-doctor', 'PatientController@showDoctorSelectionForm')->name('patient.select-doctor');
+            Route::post('/attending-physician', 'PatientController@storeAttendingPhysician')->name('patient.storeAttendingPhysician');
+            Route::get('/appointments/select-type/{doctor_id}', 'PatientController@showAppointmentTypeForm')->name('patient.select-appointment-type');
+            Route::get('/appointments/select-date-time', 'PatientController@showDateTimeSelectionForm')->name('patient.show-date-time-selection');
+            Route::post('/appointments/store', 'PatientController@storeAppointment')->name('patient.store-appointment');
+            Route::get('/appointments/confirmation/{appointment_id}', 'PatientController@showAppointmentConfirmation')->name('patient.appointment-confirmed');
+            Route::get('/attending-physician-details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
         });
         
     });
