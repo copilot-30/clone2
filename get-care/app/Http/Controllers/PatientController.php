@@ -108,7 +108,8 @@ class PatientController extends Controller
 
     public function showDoctorSelectionForm()
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient; // Patient will be lazily loaded here
 
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
@@ -123,13 +124,14 @@ class PatientController extends Controller
         }
 
         // Otherwise, show the doctor selection form for active doctors
-        $doctors = Doctor::all();
+        $doctors = Doctor::whereNull('deleted_at')->get(); // Filter active doctors
         return view('patient.select-doctor', compact('doctors'));
     }
 
     public function storeAttendingPhysician(Request $request)
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
 
         if (!$patient) {
             return back()->with('error', 'Patient profile not found.');
@@ -153,7 +155,8 @@ class PatientController extends Controller
 
     public function showAppointmentTypeForm($doctor_id)
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
         }
@@ -174,7 +177,8 @@ class PatientController extends Controller
 
     public function showDateTimeSelectionForm(Request $request)
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
         }
@@ -206,6 +210,7 @@ class PatientController extends Controller
 
         // Group availabilities by day of week
         $groupedAvailabilities = $availabilities->groupBy('day_of_week');
+
 
         // Generate possible slots for the next 30 days
         $slots = [];
@@ -243,7 +248,8 @@ class PatientController extends Controller
 
     public function storeAppointment(Request $request)
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
         }
@@ -251,7 +257,7 @@ class PatientController extends Controller
         $validatedData = $request->validate([
             'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
             'appointment_type' => 'required|string|in:online,clinic',
-            'clinic_id' => 'nullable|uuid|exists:clinics,id',
+            'clinic_id' => 'required_if:appointment_type,clinic|nullable|uuid|exists:clinics,id',
             'appointment_datetime' => 'required|date_format:Y-m-d H:i',
             'chief_complaint' => 'nullable|string|max:1000',
         ]);
@@ -269,15 +275,21 @@ class PatientController extends Controller
         $dayOfWeek = $requestedDateTime->dayOfWeekIso;
         $requestedTime = $requestedDateTime->format('H:i:s');
 
-        $availableSlot = DoctorAvailability::where('doctor_id', $doctor->id)
+        $q = DoctorAvailability::where('doctor_id', $doctor->id)
                                         ->where('is_active', true)
                                         ->where('day_of_week', $dayOfWeek)
                                         ->where('start_time', '<=', $requestedTime)
-                                        ->where('end_time', '>', $requestedTime)
-                                        ->when($validatedData['clinic_id'], function ($query, $clinicId) {
-                                            return $query->where('clinic_id', $clinicId);
-                                        })
-                                        ->first();
+                                        ->where('end_time', '>', $requestedTime);
+        
+        
+        if ($validatedData['appointment_type'] === 'clinic') {
+            $q->where('clinic_id', $validatedData['clinic_id']);
+        }
+
+      
+                                        
+                                        
+        $availableSlot = $q ->first();
 
         if (!$availableSlot) {
             return back()->withErrors(['appointment_datetime' => 'Selected time slot is not available. Please choose another one.']);
@@ -295,7 +307,7 @@ class PatientController extends Controller
         $appointment = Appointment::create([
             'patient_id' => $patient->id,
             'doctor_id' => $doctor->id,
-            'clinic_id' => $validatedData['clinic_id'],
+            'clinic_id' => isset($validatedData['clinic_id']) ? $validatedData['clinic_id'] : null,
             'appointment_datetime' => $validatedData['appointment_datetime'],
             'type' => $validatedData['appointment_type'], // 'online' or 'clinic'
             'status' => 'pending', // or 'scheduled'
@@ -310,9 +322,11 @@ class PatientController extends Controller
 
     public function showAppointmentConfirmation($appointment_id)
     {
-        $appointment = Appointment::with(['patient', 'doctor', 'clinic'])->findOrFail($appointment_id);
+        $user = Auth::user();
+        $patient = $user->patient;
+        $appointment = Appointment::findOrFail($appointment_id);
 
-        if ($appointment->patient_id !== Auth::user()->patient->id) {
+        if ($appointment->patient_id !== $patient->id) { // Use the correctly loaded patient ID
             abort(403); // Ensure patient can only see their own appointments
         }
 
@@ -321,7 +335,8 @@ class PatientController extends Controller
 
     public function showAttendingPhysicianDetails()
     {
-        $patient = Auth::user()->patient;
+        $user = Auth::user();
+        $patient = $user->patient;
 
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');

@@ -9,7 +9,6 @@
         </p>
 
         <form action="{{ route('patient.show-date-time-selection') }}" method="GET">
-            @csrf
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">

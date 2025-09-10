@@ -128,9 +128,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
             Route::get('/appointments', 'PatientAppointmentController@index');
             Route::post('/appointments', 'PatientAppointmentController@store');
-            Route::get('/appointments/{id}', 'PatientAppointmentController@show');
-            Route::put('/appointments/{id}', 'PatientAppointmentController@update');
-            Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
+            // Route::get('/appointments/{id}', 'PatientAppointmentController@show');
+            // Route::put('/appointments/{id}', 'PatientAppointmentController@update');
+            // Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
             Route::get('/profile', 'PatientProfileController@show');
             Route::put('/profile', 'PatientProfileController@update');
             Route::get('/chat', 'PatientController@chat')->name('patient.chat');
