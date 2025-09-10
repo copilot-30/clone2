@@ -93,6 +93,8 @@
         const clinics = @json($clinics); // Define clinics array once here
 
         function createNewSlotHtml(day, slot = { start_time: '09:00', end_time: '17:00', is_active: true, id: null, type: 'online_consultation', clinic_id: null }) {
+            // Ensure is_active is explicitly boolean for default slot creation
+            slot.is_active = slot.is_active === true;
             const currentUniqueIndex = globalSlotIndex++;
             
             let clinicsOptionsHtml = ``;

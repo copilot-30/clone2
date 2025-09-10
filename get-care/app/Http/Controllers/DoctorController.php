@@ -175,7 +175,7 @@ class DoctorController extends Controller
             $organizedAvailability[$dayName][] = [
                 'start_time' => $slot->start_time,
                 'end_time' => $slot->end_time,
-                'is_available' => $slot->is_active, // Use is_active as per model
+                'is_active' => $slot->is_active, // Ensure consistency
                 'id' => $slot->id,
                 'type' => $slot->clinic_id ? 'face_to_face' : 'online_consultation', // Derive type
                 'clinic_id' => $slot->clinic_id,
@@ -213,6 +213,7 @@ class DoctorController extends Controller
             'availability.*.id' => 'nullable|string', // For existing records
             'availability.*.type' => 'required|in:online_consultation,face_to_face',
             'availability.*.clinic_id' => 'nullable|uuid',
+            'availability.*.is_active' => 'nullable|boolean', // Add validation for is_active
         ]);
         // Custom rule to validate day_of_week values
         $validator->sometimes('availability.*.day_of_week', ['in:' . implode(',', array_keys(self::$dayMapping))], function ($input) {
@@ -255,7 +256,7 @@ class DoctorController extends Controller
                     'day_of_week' => self::$dayMapping[$slotData['day_of_week']], // Convert string day to integer
                     'start_time' => $slotData['start_time'],
                     'end_time' => $slotData['end_time'],
-                    'is_active' => $slotData['is_available'] ?? false, // Use is_active and default to false
+                    'is_active' => isset($slotData['is_active']), // Correctly handle checkbox value
                     'clinic_id' => ($slotData['type'] === 'face_to_face') ? $slotData['clinic_id'] : null,
                 ]);
             }
@@ -264,4 +265,133 @@ class DoctorController extends Controller
         return redirect()->back()->with('success', 'Availability updated successfully!');
     }
 
+    public function listClinics()
+    {
+        $clinics = Clinic::all();
+        return view('doctor.clinic-list', compact('clinics'));
+    }
+
+    public function createClinic()
+    {
+        return view('doctor.clinic-create');
+    }
+
+    public function storeClinic(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'state' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:20',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'operating_hours' => 'nullable|array',
+            'operating_hours.*.start' => 'nullable|date_format:H:i',
+            'operating_hours.*.end' => 'nullable|date_format:H:i|after:operating_hours.*.start',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validatedData = $validator->validated();
+
+        // Handle operating_hours and facilities conversion
+        $operatingHours = [];
+        if (isset($validatedData['operating_hours'])) {
+            foreach ($validatedData['operating_hours'] as $day => $times) {
+                if (!empty($times['start']) && !empty($times['end'])) {
+                    $operatingHours[$day] = $times;
+                }
+            }
+        }
+        $validatedData['operating_hours'] = $operatingHours;
+
+        $facilities = [];
+        if (isset($validatedData['facilities'])) {
+            $facilities = array_values(array_filter($validatedData['facilities'])); // Remove empty and re-index
+        }
+        $validatedData['facilities'] = $facilities;
+
+        $clinic = Clinic::create($validatedData);
+
+        event(new AuditableEvent(auth()->id(), 'clinic_created', [
+            'clinic_id' => $clinic->id,
+            'clinic_name' => $clinic->name,
+        ]));
+
+        return redirect()->route('doctor.clinics.list')->with('success', 'Clinic created successfully.');
+    }
+
+    public function editClinic(Clinic $clinic)
+    {
+        return view('doctor.clinic-edit', compact('clinic'));
+    }
+
+    public function updateClinic(Request $request, Clinic $clinic)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'state' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:20',
+            'phone' => 'nullable|string|max:20',
+            'email' => 'nullable|email|max:255',
+            'operating_hours' => 'nullable|array',
+            'operating_hours.*.start' => 'nullable|date_format:H:i',
+            'operating_hours.*.end' => 'nullable|date_format:H:i|after:operating_hours.*.start',
+            'facilities' => 'nullable|array',
+            'facilities.*' => 'nullable|string|max:255',
+            'is_active' => 'boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $validatedData = $validator->validated();
+
+        // Handle operating_hours and facilities conversion
+        $operatingHours = [];
+        if (isset($validatedData['operating_hours'])) {
+            foreach ($validatedData['operating_hours'] as $day => $times) {
+                if (!empty($times['start']) && !empty($times['end'])) {
+                    $operatingHours[$day] = $times;
+                }
+            }
+        }
+        $validatedData['operating_hours'] = $operatingHours;
+
+        $facilities = [];
+        if (isset($validatedData['facilities'])) {
+            $facilities = array_values(array_filter($validatedData['facilities'])); // Remove empty and re-index
+        }
+        $validatedData['facilities'] = $facilities;
+
+        $clinic->update($validatedData);
+
+        event(new AuditableEvent(auth()->id(), 'clinic_updated', [
+            'clinic_id' => $clinic->id,
+            'clinic_name' => $clinic->name,
+        ]));
+
+        return redirect()->route('doctor.clinics.list')->with('success', 'Clinic updated successfully.');
+    }
+
+    public function deleteClinic(Clinic $clinic)
+    {
+        $clinic->delete();
+
+        event(new AuditableEvent(auth()->id(), 'clinic_deleted', [
+            'clinic_id' => $clinic->id,
+            'clinic_name' => $clinic->name,
+        ]));
+
+        return redirect()->route('doctor.clinics.list')->with('success', 'Clinic deleted successfully.');
+    }
 }

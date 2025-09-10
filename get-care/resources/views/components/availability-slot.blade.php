@@ -40,7 +40,7 @@
     <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][is_active]"
            id="is_active_{{ $day }}_{{ $uniqueSlotIndex }}"
            class="form-checkbox h-5 w-5 text-emerald-600 mt-2"
-           value="1" {{ ($slot['is_active'] ?? true) ? 'checked' : '' }}>
+           value="1" {{ $slot['is_active'] ? 'checked' : '' }}>
 </div>
 <div class="w-1/5 flex justify-end items-end">
     <button type="button" class="remove-slot-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">

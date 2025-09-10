@@ -94,6 +94,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/availability', 'DoctorController@editAvailability')->name('doctor.availability.edit');
             Route::put('/availability', 'DoctorController@updateAvailability')->name('doctor.availability.update');
 
+            // Clinic Management Routes
+            Route::get('/clinics', 'DoctorController@listClinics')->name('doctor.clinics.list');
+            Route::get('/clinics/create', 'DoctorController@createClinic')->name('doctor.clinics.create');
+            Route::post('/clinics', 'DoctorController@storeClinic')->name('doctor.clinics.store');
+            Route::get('/clinics/{clinic}/edit', 'DoctorController@editClinic')->name('doctor.clinics.edit');
+            Route::put('/clinics/{clinic}', 'DoctorController@updateClinic')->name('doctor.clinics.update');
+            Route::delete('/clinics/{clinic}', 'DoctorController@deleteClinic')->name('doctor.clinics.delete');
+
 
             Route::get('/appointments', 'DoctorAppointmentController@index');
             Route::post('/appointments', 'DoctorAppointmentController@store');
