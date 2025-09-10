@@ -92,9 +92,11 @@
 
         const clinics = @json($clinics); // Define clinics array once here
 
-        function createNewSlotHtml(day, slot = { start_time: '09:00', end_time: '17:00', is_active: true, id: null, type: 'online_consultation', clinic_id: null }) {
-            // Ensure is_active is explicitly boolean for default slot creation
-            slot.is_active = slot.is_active === true;
+        function createNewSlotHtml(day, slot = { start_time: '09:00', end_time: '17:00', is_active: true, id: null, type: 'online_consultation', clinic_id: null, availability_type: [] }) {
+            // Ensure is_active is explicitly boolean for default slot creation and when reading existing data
+            slot.is_active = !!slot.is_active; // Convert to boolean
+            // Ensure availability_type is an array
+            slot.availability_type = slot.availability_type || [];
             const currentUniqueIndex = globalSlotIndex++;
             
             let clinicsOptionsHtml = ``;
@@ -102,6 +104,11 @@
                 const selected = (slot.clinic_id === clinic.id) ? 'selected' : '';
                 clinicsOptionsHtml += `<option value="${clinic.id}" ${selected}>${clinic.name}</option>`;
             });
+
+           // Default availability type for new slots
+           if (!slot.availability_type || slot.availability_type.length === 0) {
+               slot.availability_type = ['appointment'];
+           }
 
             return `
                 <div class="flex items-center space-x-4 mb-3 availability-slot" data-slot-id="${slot.id || ''}">
@@ -131,6 +138,19 @@
                                class="w-full border p-2 rounded"
                                value="${slot.end_time}" required>
                     </div>
+                   <div class="w-1/5">
+                       <label class="block text-gray-700 text-xs font-bold mb-1">Availability Type</label>
+                       <div class="flex flex-col">
+                           <label class="inline-flex items-center">
+                               <input type="checkbox" name="availability[${currentUniqueIndex}][availability_type][]" value="appointment" class="form-checkbox h-4 w-4 text-emerald-600" ${slot.availability_type && slot.availability_type.includes('appointment') ? 'checked' : ''}>
+                               <span class="ml-2 text-gray-700 text-sm">Appointment</span>
+                           </label>
+                           <label class="inline-flex items-center">
+                               <input type="checkbox" name="availability[${currentUniqueIndex}][availability_type][]" value="follow-up" class="form-checkbox h-4 w-4 text-emerald-600" ${slot.availability_type && slot.availability_type.includes('follow-up') ? 'checked' : ''}>
+                               <span class="ml-2 text-gray-700 text-sm">Follow-up</span>
+                           </label>
+                       </div>
+                   </div>
                     <div class="w-1/5 clinic-field" style="display: ${slot.type === 'face_to_face' ? 'block' : 'none'};">
                         <label for="clinic_id_${day}_${currentUniqueIndex}" class="block text-gray-700 text-xs font-bold mb-1">Clinic</label>
                         <select name="availability[${currentUniqueIndex}][clinic_id]"

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Events\AuditableEvent;
 use Auth;
+use Illuminate\Support\Str;
 class DoctorController extends Controller
 {
     public function dashboard()
@@ -179,6 +180,7 @@ class DoctorController extends Controller
                 'id' => $slot->id,
                 'type' => $slot->clinic_id ? 'face_to_face' : 'online_consultation', // Derive type
                 'clinic_id' => $slot->clinic_id,
+                'availability_type' => $slot->availability_type,
             ];
         }
 
@@ -213,29 +215,32 @@ class DoctorController extends Controller
             'availability.*.id' => 'nullable|string', // For existing records
             'availability.*.type' => 'required|in:online_consultation,face_to_face',
             'availability.*.clinic_id' => 'nullable|uuid',
+            'availability.*.clinic_id' => 'nullable|uuid',
             'availability.*.is_active' => 'nullable|boolean', // Add validation for is_active
+            'availability.*.availability_type' => 'nullable|array', // New: Add validation for availability_type
+            'availability.*.availability_type.*' => 'string|in:appointment,follow-up', // Validate array elements
         ]);
         // Custom rule to validate day_of_week values
         $validator->sometimes('availability.*.day_of_week', ['in:' . implode(',', array_keys(self::$dayMapping))], function ($input) {
             return is_array($input['availability']) && count($input['availability']) > 0;
         });
 
-        $validator->sometimes('availability.*.clinic_id', 'required', function ($input) {
-            // Check if 'type' is 'face_to_face' for the current availability slot
-            return isset($input['availability']) && is_array($input['availability']) && collect($input['availability'])->contains(function ($slot) {
-                return $slot['type'] === 'face_to_face';
-            });
-        });
-
-        // Add a rule to ensure clinic_id is null for online_consultation
+        // Add a rule to ensure clinic_id is valid based on the consultation type
         $validator->after(function ($validator) {
             foreach ($validator->getData()['availability'] ?? [] as $index => $slot) {
-                if ($slot['type'] === 'online_consultation' && !empty($slot['clinic_id'])) {
-                    $validator->errors()->add("availability.{$index}.clinic_id", 'Clinic ID must be null for online consultations.');
+                if ($slot['type'] === 'online_consultation') {
+                    if (!empty($slot['clinic_id'])) {
+                        $validator->errors()->add("availability.{$index}.clinic_id", 'Clinic ID must be null for online consultations.');
+                    }
+                } elseif ($slot['type'] === 'face_to_face') {
+                    if (empty($slot['clinic_id'])) {
+                        $validator->errors()->add("availability.{$index}.clinic_id", 'Clinic ID is required for face-to-face consultations.');
+                    } elseif (!Str::isUuid($slot['clinic_id'])) {
+                        $validator->errors()->add("availability.{$index}.clinic_id", 'Invalid Clinic ID format.');
+                    }
                 }
             }
         });
-
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
@@ -258,6 +263,7 @@ class DoctorController extends Controller
                     'end_time' => $slotData['end_time'],
                     'is_active' => isset($slotData['is_active']), // Correctly handle checkbox value
                     'clinic_id' => ($slotData['type'] === 'face_to_face') ? $slotData['clinic_id'] : null,
+                    'availability_type' => $slotData['availability_type'] ?? [], // Save availability type
                 ]);
             }
         });
@@ -393,5 +399,54 @@ class DoctorController extends Controller
         ]));
 
         return redirect()->route('doctor.clinics.list')->with('success', 'Clinic deleted successfully.');
+    }
+    public function listAppointments()
+    {
+        $doctor = Auth::user()->doctor;
+        $appointments = Appointment::where('doctor_id', $doctor->id)
+            ->with(['patient', 'clinic'])
+            ->orderBy('appointment_datetime', 'desc')
+            ->get();
+
+        return view('doctor.appointments-list', compact('appointments'));
+    }
+
+    public function viewAppointment(Appointment $appointment)
+    {
+        // Ensure the appointment belongs to the authenticated doctor
+        if ($appointment->doctor_id !== Auth::user()->doctor->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return view('doctor.appointment-details', compact('appointment'));
+    }
+
+    public function cancelAppointment(Request $request, Appointment $appointment)
+    {
+        // Ensure the appointment belongs to the authenticated doctor
+        if ($appointment->doctor_id !== Auth::user()->doctor->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validator = Validator::make($request->all(), [
+            'cancellation_reason' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $appointment->update([
+            'status' => 'cancelled',
+            'cancellation_reason' => $request->input('cancellation_reason'),
+        ]);
+
+        event(new AuditableEvent(auth()->id(), 'doctor_appointment_cancelled', [
+            'appointment_id' => $appointment->id,
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+        ]));
+
+        return redirect()->route('doctor.appointments.list')->with('success', 'Appointment cancelled successfully.');
     }
 }

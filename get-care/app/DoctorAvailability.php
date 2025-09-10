@@ -16,12 +16,14 @@ class DoctorAvailability extends Model
         'end_time',
         'clinic_id',
         'is_active',
+        'availability_type',
     ];
 
     protected $casts = [
         'id' => 'string',
         'is_active' => 'boolean',
         'day_of_week' => 'integer',
+        'availability_type' => 'array', // Cast to array for JSON column
     ];
 
     public $incrementing = false;

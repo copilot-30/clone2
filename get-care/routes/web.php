@@ -103,11 +103,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/clinics/{clinic}', 'DoctorController@deleteClinic')->name('doctor.clinics.delete');
 
 
-            Route::get('/appointments', 'DoctorAppointmentController@index');
-            Route::post('/appointments', 'DoctorAppointmentController@store');
-            Route::get('/appointments/{id}', 'DoctorAppointmentController@show');
-            Route::put('/appointments/{id}', 'DoctorAppointmentController@update');
-            Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy');
+            Route::get('/appointments', 'DoctorController@listAppointments')->name('doctor.appointments.list');
+            Route::get('/appointments/{appointment}', 'DoctorController@viewAppointment')->name('doctor.appointments.view');
+            Route::put('/appointments/{appointment}/cancel', 'DoctorController@cancelAppointment')->name('doctor.appointments.cancel');
+            // Route::get('/appointments', 'DoctorAppointmentController@index'); // Keep existing if needed
+            // Route::post('/appointments', 'DoctorAppointmentController@store'); // Keep existing if needed
+            // Route::get('/appointments/{id}', 'DoctorAppointmentController@show'); // Keep existing if needed
+            // Route::put('/appointments/{id}', 'DoctorAppointmentController@update'); // Keep existing if needed
+            // Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy'); // Keep existing if needed
         
             Route::get('/patients', 'DoctorController@listAssignedPatients');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');

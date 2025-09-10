@@ -24,6 +24,19 @@
            class="w-full border p-2 rounded"
            value="{{ $slot['end_time'] ?? '17:00' }}" required>
 </div>
+<div class="w-1/5">
+    <label class="block text-gray-700 text-xs font-bold mb-1">Availability Type</label>
+    <div class="flex flex-col">
+        <label class="inline-flex items-center">
+            <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][availability_type][]" value="appointment" class="form-checkbox h-4 w-4 text-emerald-600" {{ ($slot['availability_type'] ?? false) && in_array('appointment', $slot['availability_type']) ? 'checked' : '' }}>
+            <span class="ml-2 text-gray-700 text-sm">Appointment</span>
+        </label>
+        <label class="inline-flex items-center">
+            <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][availability_type][]" value="follow-up" class="form-checkbox h-4 w-4 text-emerald-600" {{ ($slot['availability_type'] ?? false) && in_array('follow-up', $slot['availability_type']) ? 'checked' : '' }}>
+            <span class="ml-2 text-gray-700 text-sm">Follow-up</span>
+        </label>
+    </div>
+</div>
 <div class="w-1/5 clinic-field" style="display: {{ ($slot['type'] ?? 'online_consultation') === 'face_to_face' ? 'block' : 'none' }};">
     <label for="clinic_id_{{ $day }}_{{ $uniqueSlotIndex }}" class="block text-gray-700 text-xs font-bold mb-1">Clinic</label>
     <select name="availability[{{ $uniqueSlotIndex }}][clinic_id]"
@@ -40,12 +53,11 @@
     <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][is_active]"
            id="is_active_{{ $day }}_{{ $uniqueSlotIndex }}"
            class="form-checkbox h-5 w-5 text-emerald-600 mt-2"
-           value="1" {{ $slot['is_active'] ? 'checked' : '' }}>
+           value="1" {{ $slot['is_active'] === true ? 'checked' : '' }}>
 </div>
 <div class="w-1/5 flex justify-end items-end">
     <button type="button" class="remove-slot-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">
         Remove
     </button>
-</div>
 </div>
 </div>
