@@ -115,7 +115,7 @@ class PatientController extends Controller
         }
 
         // Fetch the patient's current attending physician, if any
-        $attendingPhysician = $patient->attendingPhysicians()->whereNull('end_date')->first();
+        $attendingPhysician = $patient->attendingPhysician;
 
         // If an attending physician is set, directly proceed to selecting appointment type for that doctor
         if ($attendingPhysician) {
@@ -123,7 +123,7 @@ class PatientController extends Controller
         }
 
         // Otherwise, show the doctor selection form for active doctors
-        $doctors = Doctor::whereNull('deleted_at')->get();
+        $doctors = Doctor::all();
         return view('patient.select-doctor', compact('doctors'));
     }
 
@@ -139,22 +139,16 @@ class PatientController extends Controller
             'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
         ]);
 
-        // Check if this patient-doctor relationship already exists
-        $existingAttendingPhysician = AttendingPhysician::where('patient_id', $patient->id)
-                                                        ->where('doctor_id', $validatedData['doctor_id'])
-                                                        ->first();
+        AttendingPhysician::updateOrCreate(
+            ['patient_id' => $patient->id], // Find by patient_id
+            [
+                'doctor_id' => $validatedData['doctor_id'],
+                'start_date' => now(), // Update start date (or keep original if already set)
+                // 'end_date' => null, // Ensure it's current
+            ]
+        );
 
-        if ($existingAttendingPhysician) {
-            return back()->with('error', 'This doctor is already set as your attending physician.');
-        }
-
-        AttendingPhysician::create([
-            'patient_id' => $patient->id,
-            'doctor_id' => $validatedData['doctor_id'],
-            'start_date' => now(), // Set the start date to now
-        ]);
-
-        return redirect()->route('patient.dashboard')->with('success', 'Attending physician assigned successfully!');
+        return redirect()->route('patient.select-appointment-type', ['doctor_id' => $validatedData['doctor_id']])->with('success', 'Attending physician assigned successfully!');
     }
 
     public function showAppointmentTypeForm($doctor_id)
@@ -167,8 +161,11 @@ class PatientController extends Controller
         $doctor = Doctor::findOrFail($doctor_id);
 
         // Check if the patient has this doctor as their attending physician, or allow selection if no attending physician is set
-        $isAttendingPhysician = $patient->attendingPhysicians()->where('doctor_id', $doctor->id)->whereNull('end_date')->exists();
-        if (!$isAttendingPhysician && $patient->attendingPhysicians()->whereNull('end_date')->exists()) {
+        $currentAttendingPhysician = $patient->attendingPhysician;
+
+        // If there's an assigned attending physician AND it's not the doctor we're trying to book with,
+        // prevent booking and redirect.
+        if ($currentAttendingPhysician && $currentAttendingPhysician->doctor_id !== $doctor->id) {
             return redirect()->route('patient.dashboard')->with('error', 'You can only book appointments with your assigned attending physician, or select a new one first.');
         }
         
@@ -262,8 +259,8 @@ class PatientController extends Controller
         $doctor = Doctor::findOrFail($validatedData['doctor_id']);
 
         // Check if the patient has this doctor as their attending physician, or allow selection if no attending physician is set
-        $isAttendingPhysician = $patient->attendingPhysicians()->where('doctor_id', $doctor->id)->whereNull('end_date')->exists();
-        if (!$isAttendingPhysician && $patient->attendingPhysicians()->whereNull('end_date')->exists()) {
+        $currentAttendingPhysician = $patient->attendingPhysician;
+        if ($currentAttendingPhysician && $currentAttendingPhysician->doctor_id !== $doctor->id) {
             return redirect()->route('patient.dashboard')->with('error', 'You can only book appointments with your assigned attending physician, or select a new one first.');
         }
 
@@ -330,7 +327,11 @@ class PatientController extends Controller
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
         }
 
-        $attendingPhysician = $patient->attendingPhysicians()->with('doctor')->whereNull('end_date')->first();
+         
+
+        $attendingPhysician = $patient->attendingPhysician;
+        // The patient->attendingPhysician already loads the related Doctor if it was eager loaded before
+        // or it will lazily load it. If you need the doctor directly, you can access $attendingPhysician->doctor
 
         return view('patient.attending-physician-details', compact('attendingPhysician'));
     }

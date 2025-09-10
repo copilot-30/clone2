@@ -8,20 +8,7 @@
     @php $menuItems = []; @endphp
 
     @if (Auth::check())
-        @if (Auth::user()->role == 'PATIENT')
-            @php
-                $menuItems = [
-                    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('patient.dashboard')],
-                    ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users'],
-                    ['id' => 'notes', 'label' => 'Notes', 'icon' => 'FileText'],
-                    ['id' => 'chat', 'label' => 'Chat', 'icon' => 'MessageCircle', 'url' => route('patient.chat')],
-                    ['id' => 'files', 'label' => 'Files', 'icon' => 'Files'],
-                    ['id' => 'analytics', 'label' => 'Analytics', 'icon' => 'BarChart3'],
-                    ['id' => 'engagement', 'label' => 'Engagement', 'icon' => 'Heart'],
-                    ['id' => 'plan', 'label' => 'Plan', 'icon' => 'CreditCard'],
-                ];
-            @endphp
-        @elseif (Auth::user()->role == 'ADMIN')
+        @if (Auth::user()->role == 'ADMIN')
             @php
                 $menuItems = [
                     ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('admin.dashboard')],

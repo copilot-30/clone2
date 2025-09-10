@@ -1,4 +1,4 @@
-@extends('admin_layout')
+@extends('patient_layout')
 
 @section('content')
 <div class="container mx-auto p-6">
@@ -58,10 +58,14 @@
         </div>
 
         <!-- Pagination/Navigation (Next/Cancel buttons) -->
-        <div class="flex justify-between mt-8">
-            <button class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-400 focus:outline-none">Cancel</button>
-            <button id="nextButton" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none" disabled>Next</button>
-        </div>
+        <form id="selectDoctorForm" method="POST" action="{{ route('patient.storeAttendingPhysician') }}">
+            @csrf
+            <input type="hidden" name="doctor_id" id="selectedDoctorId">
+            <div class="flex justify-between mt-8">
+                <button type="button" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-400 focus:outline-none">Cancel</button>
+                <button type="submit" id="nextButton" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none" disabled>Next</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -71,23 +75,21 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const doctorCards = document.querySelectorAll('.doctor-card');
-        let selectedDoctorId = null;
+        const selectedDoctorIdInput = document.getElementById('selectedDoctorId');
+        const selectDoctorForm = document.getElementById('selectDoctorForm');
         const nextButton = document.getElementById('nextButton');
 
         doctorCards.forEach(card => {
             card.addEventListener('click', function() {
                 doctorCards.forEach(dc => dc.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500'));
                 this.classList.add('border-blue-500', 'ring-2', 'ring-blue-500');
-                selectedDoctorId = this.dataset.doctorId;
+                selectedDoctorIdInput.value = this.dataset.doctorId;
                 nextButton.disabled = false;
             });
         });
+        // No explicit click listener on nextButton needed here,
+        // as it's a submit button for the form.
 
-        nextButton.addEventListener('click', function() {
-            if (selectedDoctorId) {
-                window.location.href = "{{ route('patient.select-appointment-type', ['doctor_id' => '__doctor_id__']) }}".replace('__doctor_id__', selectedDoctorId);
-            }
-        });
     });
 </script>
 @endpush

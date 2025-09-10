@@ -15,13 +15,13 @@ class AttendingPhysician extends Model
         'end_date',
     ];
 
+    public $incrementing = false; // Primary key is not auto-incrementing
+
     protected $casts = [
-        'id' => 'string',
+        'id' => 'string', // Cast id to string
         'start_date' => 'date',
         'end_date' => 'date',
     ];
-
-    public $incrementing = false;
 
     protected static function boot()
     {

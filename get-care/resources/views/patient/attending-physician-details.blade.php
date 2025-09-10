@@ -1,4 +1,4 @@
-@extends('admin_layout')
+@extends('patient_layout')
 
 @section('content')
 <div class="container mx-auto p-6">
