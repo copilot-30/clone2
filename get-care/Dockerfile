@@ -36,5 +36,15 @@ RUN composer install --no-dev --optimize-autoloader
 # Expose port 9000 for PHP-FPM
 EXPOSE 9000
 
+# Install shadow package for user/group management
+RUN apk add --no-cache shadow
+
+# Create group for shared access with host
+RUN groupadd -g 1001 getcare && usermod -a -G getcare www-data
+
+# Set ownership and permissions for shared directories
+RUN chown -R www-data:getcare /var/www/html/database/migrations
+RUN chmod -R 775 /var/www/html/database/migrations
+
 # Start PHP-FPM
 CMD ["php-fpm"]

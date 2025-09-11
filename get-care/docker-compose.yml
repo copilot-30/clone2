@@ -13,7 +13,7 @@ services:
     depends_on:
       db:
         condition: service_started
-    command: sh -c "chown -R www-data:www-data storage bootstrap && chmod -R 775 storage bootstrap && php-fpm"
+    command: sh -c "groupadd -g 1001 getcare && usermod -a -G getcare www-data || true && chown -R www-data:www-data storage bootstrap && chmod -R 775 storage bootstrap && php-fpm"
   nginx:
     image: nginx:alpine
     container_name: getcare_nginx

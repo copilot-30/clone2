@@ -31,7 +31,9 @@
                         <p class="flex justify-between items-start"><strong class="font-semibold">Location:</strong> <span class="text-gray-800 text-right">{{ $appointment->clinic->name }} <br>({{ $appointment->clinic->address }})</span></p>
                     @elseif($appointment->type === 'online' && $appointment->meet_link)
                         <p class="flex justify-between items-center"><strong class="font-semibold">Google Meet Link:</strong> <a href="{{ $appointment->meet_link }}" class="text-blue-600 hover:underline break-all ml-4 text-right" target="_blank">{{ $appointment->meet_link }}</a></p>
-                    @endif
+                    @else 
+                       {{ $appointment->type === 'online' }} => {{$appointment->meet_link}}
+                        @endif
                 </div>
 
                 <div class="bg-blue-50 border-l-4 border-blue-400 text-blue-800 p-4 rounded-md mt-8" role="alert">

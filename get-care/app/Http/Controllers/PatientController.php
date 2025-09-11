@@ -325,19 +325,6 @@ class PatientController extends Controller
             return back()->withErrors(['appointment_datetime' => 'Selected time slot is already booked. Please choose another one.']);
         }
         
-        // Create the appointment
-        $appointment = Appointment::create([
-            'patient_id' => $patient->id,
-            'doctor_id' => $doctor->id,
-            'clinic_id' => isset($validatedData['clinic_id']) ? $validatedData['clinic_id'] : null,
-            'appointment_datetime' => $validatedData['appointment_datetime'],
-            'type' => $validatedData['appointment_type'], // 'online' or 'clinic'
-            'status' => 'pending', // or 'scheduled'
-            'is_online' => ($validatedData['appointment_type'] === 'online'),
-            'chief_complaint' => $validatedData['chief_complaint'],
-            'duration_minutes' => 30, // Assuming 30-minute slots
-        ]);
-
         $meetLink = null;
 
         // Generate Google Meet link if the appointment is online
