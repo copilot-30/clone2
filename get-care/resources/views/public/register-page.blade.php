@@ -15,14 +15,13 @@
       <div class="lg:w-1/2 bg-gradient-to-br from-emerald-500 to-emerald-600 p-12 flex items-center justify-center">
         <div class="text-center text-white">
           <h1 class="text-4xl lg:text-5xl font-bold mb-4">
-            Hello!
+            <blockquote class="text-2xl lg:text-3xl font-semibold italic">
+              Health is not valued until sickness comes.
+            </blockquote>
           </h1>
-          <h2 class="text-3xl lg:text-4xl font-bold">
-            Welcome to
-          </h2>
-          <h2 class="text-3xl lg:text-4xl font-bold">
-            GetCare.
-          </h2>
+          <p class="text-2xl lg:text-3xl font-medium">
+            Join us and take control of your health.
+          </p>
         </div>
       </div>
 
@@ -117,7 +116,7 @@
         </div>
         <!-- Modal body - Load privacy_policy.blade.php content here -->
         <div class="mt-2 text-gray-600" style="max-height: 70vh; overflow-y: auto;">
-            @include('privacy_policy')
+            <!-- include('privacy_policy') -->
         </div>
         <!-- Modal footer -->
         <div class="flex justify-end pt-4">
@@ -126,8 +125,10 @@
             </button>
         </div>
     </div>
-</div>
+</div> 
 
+@endsection
+@push('scripts')
 <script>
     function showPrivacyModal() {
         document.getElementById('privacy-modal').classList.remove('hidden');
@@ -137,4 +138,4 @@
         document.getElementById('privacy-modal').classList.add('hidden');
     }
 </script>
-@endsection
+@endpush

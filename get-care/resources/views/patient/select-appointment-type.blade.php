@@ -57,7 +57,7 @@
 
         <!-- Google OAuth Login Section (Initially hidden) -->
 
-        <div id="googleAuthSection" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center hidden">
+        <div id="googleAuthSection" class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg text-center hidden">
             @if (!Auth::user()->patient->google_access_token)
             <p class="text-sm text-gray-700 mb-4">
                 To enable automatic Google Meet link generation for online consultations, please link your Google account.
@@ -72,9 +72,31 @@
                 Login with Google
             </a>
             @else 
-                <p class="text-sm text-gray-700 mb-4">
-                    You are already linked to your Google account.
-                </p>
+                <div class="flex flex-col items-center justify-center p-4">
+                    <div class="w-16 h-16 flex items-center justify-center bg-green-100 rounded-full text-white text-3xl mb-4">
+                        <svg class="w-12 h-12" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M44.5 20H24V28.5H35.8C35.2 31.8 33.1 34.6 30.1 36.5L30 36.4L37.1 41.9L37.2 41.9C41.7 37.9 44.5 31.9 44.5 24C44.5 22.6 44.3 21.3 44.0 20Z" fill="#4285F4"/>
+                            <path d="M24 45C30.5 45 36 42.8 39.8 39.1L30 31.4C27.3 33.3 23.9 34.5 20 34.5C13.2 34.5 7.6 30 5.5 23.6L5.4 23.9L-0.5 19.3L-0.3 19.4C1.9 28.5 12.1 34.5 24 34.5Z" fill="#34A853"/>
+                            <path d="M10.2 27.6C9.6 25.8 9.2 23.9 9.2 22C9.2 20.1 9.6 18.2 10.2 16.4L10.1 16.1L3.9 11.3L3.8 11.4C1.8 15.4 0.6 19.6 0.6 24C0.6 28.4 1.8 32.6 3.8 36.6L10.2 27.6Z" fill="#FBBC04"/>
+                            <path d="M24 9.5C27.5 9.5 30.5 10.8 32.8 13.1L37.3 8.6C34.5 5.9 30.5 4.5 24 4.5C12.1 4.5 1.9 10.5 0.3 19.4L6.6 24.3C7.6 17.9 13.2 13.5 20 13.5C21.7 13.5 23.3 13.8 24 14.2V9.5Z" fill="#EA4335"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Google Meet Link Ready</h3>
+                    <p class="text-sm text-gray-600 text-center mb-4">
+                        A secure Google Meet link will be automatically generated for your appointment. You'll receive the meeting details via email and SMS before your scheduled time.
+                    </p>
+                    <div class="flex items-center justify-center space-x-4 text-gray-500 text-xs">
+                        <span class="flex items-center">
+                            <i class="fas fa-lock mr-1"></i> End-to-end encrypted
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-video mr-1"></i> HD video quality
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-share-square mr-1"></i> Screen sharing available
+                        </span>
+                    </div>
+                </div>
             @endif
         </div>
           
@@ -156,12 +178,12 @@
 
 <input type="hidden" name="appointment_type" id="appointmentTypeInput">
 
-<div class="flex justify-between mt-8">
-    <button type="button" onclick="window.history.back()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+<div class="flex justify-center mt-8">
+    <!-- <button type="button" onclick="window.history.back()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
         Back
-    </button>
+    </button> -->
     <button type="submit" id="nextButton" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" disabled>
-        Next
+        Select Date and Time
     </button>
 </div>
 

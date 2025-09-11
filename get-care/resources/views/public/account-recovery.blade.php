@@ -18,7 +18,7 @@
             Hello!
           </h1>
           <h2 class="text-3xl lg:text-4xl font-bold">
-            Welcome to
+            Welcome back to
           </h2>
           <h2 class="text-3xl lg:text-4xl font-bold">
             GetCare.

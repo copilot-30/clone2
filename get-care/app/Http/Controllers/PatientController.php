@@ -190,8 +190,14 @@ class PatientController extends Controller
         $clinics = [];
 
         foreach ($sched as $s) {
-            $clinics[] = $s->clinic;
+            if ($s->clinic && !in_array($s->clinic, $clinics)) {
+                $clinics[] = $s->clinic;
+            }
+           
         } 
+
+       
+
  
         
         return view('patient.select-appointment-type', compact('doctor', 'clinics'));
@@ -502,7 +508,7 @@ class PatientController extends Controller
         $doctor_clinics = [];
 
         foreach ($attendingPhysician->doctor->doctorAvailability as $availability) {
-            if ($availability->clinic) {
+            if ($availability->clinic && !in_array($availability->clinic->id, $doctor_clinics)) {
                 $doctor_clinics[] = $availability->clinic;
             }
         }
