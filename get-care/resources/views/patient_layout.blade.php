@@ -12,15 +12,17 @@
   
     @yield('styles')
   </head>
-  <body>
+  <body class="bg-gray-100">
     <div id="root" class="flex flex-col h-screen">
       <!-- Patient Header -->
       @include('components.patient-header')
 
       <div class="flex flex-col flex-1">
         <!-- Main Content -->
-        <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-          @yield('content')
+        <main class="flex-1 overflow-x-hidden overflow-y-auto ">
+          <div class="container mx-auto px-4 py-6">
+            @yield('content')
+          </div>
         </main>
       </div>
     </div>
