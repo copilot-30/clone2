@@ -82,7 +82,7 @@
         <!-- Clinic Cards Container - Initially hidden -->
         <div id="clinicSelection" class="mt-4 hidden">
             <h4 class="text-md font-semibold text-gray-700 mb-3">Select Clinic Location:</h4>
-            <div id="clinicCardsContainer" class="grid grid-cols-1 gap-4">
+            <div id="clinicCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl">
                 @foreach ($clinics as $doctorClinic)
                     @php
                         $clinic = $doctorClinic;
@@ -91,9 +91,53 @@
                         data-clinic-id="{{ $clinic->id }}"
                         data-clinic-name="{{ $clinic->name }}"
                         data-clinic-address="{{ $clinic->address }}">
-                        <h5 class="font-semibold text-gray-800">{{ $clinic->name }}</h5>
-                        <p class="text-sm text-gray-600">{{ $clinic->address }}</p>
-                        @if($clinic->opening_time && $clinic->closing_time)
+                        <h5 class="font-semibold text-gray-800">{{ ucfirst(str_replace(' ', ' ', ucwords(str_replace('-', ' ', strtolower($clinic->name))))) }}</h5>
+              
+                        <p class="text-sm text-gray-600">{{ $clinic->address }} , {{ $clinic->city }}, {{ $clinic->state }} {{ $clinic->postal_code }}</p>
+
+                        <div class="flex items-center mt-2">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                            <p class="text-sm font-medium text-gray-800">{{ $clinic->phone }}</p>
+                            <button type="button" class="ml-2 text-gray-500 hover:text-blue-500 focus:outline-none copy-phone-btn" data-phone="{{ $clinic->phone }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                        <div class="flex items-center mt-1">
+                            <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <p class="text-sm font-medium text-gray-800">{{ $clinic->email }}</p>
+                            <button type="button" class="ml-2 text-gray-500 hover:text-blue-500 focus:outline-none copy-email-btn" data-email="{{ $clinic->email }}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Facilities Section -->
+                        @if(isset($clinic->facilities) && is_array($clinic->facilities) && count($clinic->facilities) > 0)
+                        <div class="mt-3">
+                            <h6 class="text-xs font-semibold text-gray-700 mb-1">Facilities:</h6>
+                            <div class="flex flex-wrap gap-1">
+                                @foreach($clinic->facilities as $facility)
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ ucwords(str_replace('-', ' ', strtolower($facility))) }}</span>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Operating Hours Section -->
+                        @if(isset($clinic->operating_hours) && is_array($clinic->operating_hours) && count($clinic->operating_hours) > 0)
+                        <div class="mt-3">
+                            <h6 class="text-xs font-semibold text-gray-700 mb-1">Operating Hours:</h6>
+                            <div class="text-xs text-gray-600">
+                                @foreach($clinic->operating_hours as $day => $hours)
+                                    @if(isset($hours['start']) && isset($hours['end']))
+                                        <div class="flex justify-between">
+                                            <span class="font-medium">{{ $day }}:</span>
+                                            <span>{{ \Carbon\Carbon::parse($hours['start'])->format('g:i A') }} - {{ \Carbon\Carbon::parse($hours['end'])->format('g:i A') }}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                        @elseif($clinic->opening_time && $clinic->closing_time)
                             <p class="text-xs text-gray-500 mt-1">
                                 {{ \Carbon\Carbon::parse($clinic->opening_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($clinic->closing_time)->format('g:i A') }}
                             </p>
@@ -256,6 +300,36 @@
         // Initial state update
         updateNextButtonState();
         updateSelectedChoiceDisplay();
+
+        // Add event listeners for copy buttons
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.copy-phone-btn')) {
+                const button = e.target.closest('.copy-phone-btn');
+                const phone = button.dataset.phone;
+                copyToClipboard(phone, button);
+            }
+            
+            if (e.target.closest('.copy-email-btn')) {
+                const button = e.target.closest('.copy-email-btn');
+                const email = button.dataset.email;
+                copyToClipboard(email, button);
+            }
+        });
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(function() {
+                // Show visual feedback
+                const originalContent = button.innerHTML;
+                button.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+                
+                // Reset button after 2 seconds
+                setTimeout(function() {
+                    button.innerHTML = originalContent;
+                }, 2000);
+            }).catch(function(err) {
+                console.error('Failed to copy: ', err);
+            });
+        }
     });
 </script>
 @endpush
