@@ -100,7 +100,7 @@
                 dayDiv.textContent = day;
                 dayDiv.classList.add('p-2', 'cursor-pointer', 'rounded-lg', 'hover:bg-blue-200');
 
-                if (date < new Date(new Date().setHours(0,0,0,0))) { // Disable past dates
+                if (date <= new Date(new Date().setHours(0,0,0,0))) { // Disable today and past dates (1-day lead time)
                     dayDiv.classList.add('text-gray-400', 'cursor-not-allowed');
                 } else if (slotsData[dateString] && slotsData[dateString].length > 0) { // Highlight dates with available slots
                     dayDiv.classList.add('font-semibold', 'bg-blue-100');

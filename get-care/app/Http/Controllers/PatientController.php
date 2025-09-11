@@ -235,10 +235,11 @@ class PatientController extends Controller
 
 
         // Generate possible slots for the next 30 days
+        // Generate possible slots for the next 30 days, starting from tomorrow (1-day lead time)
         $slots = [];
-        $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
         for ($i = 0; $i < 30; $i++) {
-            $date = $today->copy()->addDays($i);
+            $date = $tomorrow->copy()->addDays($i);
             $dayOfWeek = $date->dayOfWeekIso; // 1 for Monday, 7 for Sunday
 
             if ($groupedAvailabilities->has($dayOfWeek)) {
@@ -264,7 +265,6 @@ class PatientController extends Controller
                 }
             }
         }
-        
         return view('patient.select-date-time', compact('doctor', 'appointmentType', 'clinic', 'slots'));
     }
 
