@@ -1,6 +1,6 @@
 <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
     <div class="flex items-center">
-        <h1 class="text-2xl font-bold text-gray-800">GetCare</h1>
+        <h1 class="text-2xl font-bold text-gray-800"><span style="color:#306547">Get</span><span style="color:#6A9CF1">Care</span></h1>
     </div>
     <nav class="flex space-x-6">
         @php
@@ -20,7 +20,7 @@
 
         @foreach ($menuItems as $item)
             <a href="{{ $item['url'] ?? '#' }}"
-               class="text-green-600 hover:text-green-800 font-semibold
+               class="text-green-600 hover:text-green-800 
                  {{-- Add active state if needed based on current route --}}
                  @if(isset($activeItem) && $activeItem === $item['id']) border-b-2 border-green-600 @endif">
                 {{ $item['label'] }}
@@ -29,7 +29,7 @@
 
         <a href="{{ route('logout') }}"
            onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
-           class="text-green-600 hover:text-green-800 font-semibold">
+           class="text-green-600 hover:text-green-800 ">
             Logout
         </a>
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">

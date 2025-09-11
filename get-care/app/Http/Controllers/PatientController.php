@@ -12,6 +12,18 @@ use App\AttendingPhysician; // Import the AttendingPhysician model
 use App\DoctorAvailability; // Import the DoctorAvailability model
 use App\Clinic; // Import the Clinic model
 use Carbon\Carbon; // For date/time calculations
+use Illuminate\Support\Str; // For generating unique IDs
+
+// Google API Client Library imports
+use Google\Client;
+use Google\Service\Calendar;
+use Google\Service\Calendar\Event;
+use Google\Service\Calendar\EventDateTime;
+use Google\Service\Calendar\EventAttendee;
+use Google\Service\Calendar\ConferenceData;
+use Google\Service\Calendar\CreateConferenceRequest;
+use Google\Service\Calendar\ConferenceSolutionKey;
+use Socialite; // Import Socialite
 
 class PatientController extends Controller
 {
@@ -171,8 +183,18 @@ class PatientController extends Controller
         if ($currentAttendingPhysician && $currentAttendingPhysician->doctor_id !== $doctor->id) {
             return redirect()->route('patient.dashboard')->with('error', 'You can only book appointments with your assigned attending physician, or select a new one first.');
         }
+
+    
+        $sched = $doctor -> doctorAvailability()->whereNotNull('clinic_id')->get();
+
+        $clinics = [];
+
+        foreach ($sched as $s) {
+            $clinics[] = $s->clinic;
+        } 
+ 
         
-        return view('patient.select-appointment-type', compact('doctor'));
+        return view('patient.select-appointment-type', compact('doctor', 'clinics'));
     }
 
     public function showDateTimeSelectionForm(Request $request)
@@ -312,9 +334,143 @@ class PatientController extends Controller
             'type' => $validatedData['appointment_type'], // 'online' or 'clinic'
             'status' => 'pending', // or 'scheduled'
             'is_online' => ($validatedData['appointment_type'] === 'online'),
-            'meet_link' => ($validatedData['appointment_type'] === 'online') ? 'https://meet.google.com/example' : null, // Generate actual link
             'chief_complaint' => $validatedData['chief_complaint'],
             'duration_minutes' => 30, // Assuming 30-minute slots
+        ]);
+
+        $meetLink = null;
+
+        // Generate Google Meet link if the appointment is online
+        if ($validatedData['appointment_type'] === 'online') {
+            try {
+                // Initialize Google Client
+                $client = new Client();
+                // IMPORTANT: Configure your Google Client with credentials.
+                // This typically involves setting the path to your service account key file,
+                // or setting up OAuth 2.0 with client ID and secret.
+                // For a Laravel app, you might load this from config/services.php or .env
+                // Example for service account:
+                // $client->setAuthConfig(config('services.google.service_account_key_file'));
+                // $client->addScope(Calendar::CALENDAR_EVENTS);
+
+                // Example for OAuth 2.0 (assuming you have a token or an existing flow):
+                // $client->setClientId(config('services.google.client_id'));
+                // $client->setClientSecret(config('services.google.client_secret'));
+                // $client->setRedirectUri(config('services.google.redirect_uri'));
+                // $client->setAccessType('offline');
+                // $client->setPrompt('select_account consent');
+                // // You would typically store and retrieve the access token/refresh token for the user
+                // $accessToken = Patient::find($patient->id)->google_access_token; // Example: assuming patient has a token field
+                // if ($accessToken) {
+                //     $client->setAccessToken($accessToken);
+                // } else {
+                //     // Handle obtaining a new access token (redirect user to auth URL, then exchange code)
+                //     // For background processing (like this), a service account is often more suitable.
+                //     throw new \Exception('Google access token not found for patient.');
+                // }
+                // For simplicity in this direct implementation, we assume authentication is set up.
+                // A service account approach is often preferred for server-to-server interactions.
+
+                // Placeholder for actual client setup
+                // You MUST configure $client appropriately for your application's authentication method.
+                // For instance, if using a service account:
+                // $client->setAuthConfig(storage_path('app/google-service-account-key.json')); // Path to your JSON key file
+                // $client->addScope(Calendar::CALENDAR_EVENTS);
+
+                // For this example, let's assume a simplified service account like setup for demonstration
+                // YOU NEED TO REPLACE THIS WITH YOUR ACTUAL GOOGLE API CLIENT CONFIGURATION
+                // For example, from your .env or config/services.php:
+                $client->setClientId(env('GOOGLE_CLIENT_ID'));
+                $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+                // $client->setRedirectUri(env('GOOGLE_REDIRECT_URI')); // Or leave empty for CLI
+                // $client->addScope(Calendar::CALENDAR_EVENTS);
+                // $client->setAccessToken($yourStoredAccessToken); // If using user-based OAuth
+
+                // Use patient's stored Google tokens for authentication
+                $accessToken = $patient->google_access_token;
+                $refreshToken = $patient->google_refresh_token;
+
+                if (!$accessToken || !$refreshToken) {
+                    throw new \Exception('Google account not linked or tokens missing. Please link your Google account to enable online consultations.');
+                }
+
+                $client->setAccessToken($accessToken);
+
+                // Check if the access token is expired and refresh if necessary
+                if ($client->isAccessTokenExpired()) {
+                    if ($refreshToken) {
+                        $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                        $newAccessToken = $client->getAccessToken();
+                        $patient->google_access_token = $newAccessToken['access_token'];
+                        if (isset($newAccessToken['refresh_token'])) { // Refresh token might not be returned on refresh
+                            $patient->google_refresh_token = $newAccessToken['refresh_token'];
+                        }
+                        $patient->save(); // Save updated tokens
+                    } else {
+                        throw new \Exception('Google access token expired and no refresh token available. Please re-link your Google account.');
+                    }
+                }
+
+                $client->addScope(Calendar::CALENDAR_EVENTS);
+
+
+                $service = new Calendar($client);
+
+                $event = new Event(array(
+                    'summary' => 'Appointment with Dr. ' . $doctor->last_name,
+                    'description' => $validatedData['chief_complaint'] ?? 'Online consultation',
+                    'start' => new EventDateTime([
+                        'dateTime' => Carbon::parse($validatedData['appointment_datetime'])->toIso8601String(),
+                        'timeZone' => config('app.timezone'), // Use your app's timezone
+                    ]),
+                    'end' => new EventDateTime([
+                        'dateTime' => Carbon::parse($validatedData['appointment_datetime'])->addMinutes(30)->toIso8601String(),
+                        'timeZone' => config('app.timezone'),
+                    ]),
+                    'attendees' => array(
+                        new EventAttendee(['email' => $patient->user->email]), // Patient's email
+                        new EventAttendee(['email' => $doctor->user->email]),  // Doctor's email
+                    ),
+                    'conferenceData' => new ConferenceData([
+                        'createRequest' => new CreateConferenceRequest([
+                            'requestId' => (string) Str::uuid(), // Unique request ID
+                            'conferenceSolutionKey' => new ConferenceSolutionKey([
+                                'type' => 'hangoutsMeet',
+                            ]),
+                        ]),
+                    ]),
+                ));
+
+                $calendarId = 'primary'; // Or a specific calendar ID for the doctor/system
+                $createdEvent = $service->events->insert($calendarId, $event, ['conferenceDataVersion' => 1]);
+
+                if ($createdEvent->getConferenceData() && $createdEvent->getConferenceData()->getEntryPoints()) {
+                    foreach ($createdEvent->getConferenceData()->getEntryPoints() as $entryPoint) {
+                        if ($entryPoint->getEntryPointType() === 'video') {
+                            $meetLink = $entryPoint->getUri();
+                            break;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Log the error and handle it gracefully
+                \Log::error('Google Meet generation failed: ' . $e->getMessage());
+                // Optionally, inform the user or fall back to a different appointment type
+                return back()->withErrors(['google_meet_error' => 'Failed to generate Google Meet link. Please try again or select a clinic appointment.']);
+            }
+        }
+
+        // Create the appointment
+        $appointment = Appointment::create([
+            'patient_id' => $patient->id,
+            'doctor_id' => $doctor->id,
+            'clinic_id' => isset($validatedData['clinic_id']) ? $validatedData['clinic_id'] : null,
+            'appointment_datetime' => $validatedData['appointment_datetime'],
+            'type' => $validatedData['appointment_type'], // 'online' or 'clinic'
+            'status' => 'pending', // or 'scheduled'
+            'is_online' => ($validatedData['appointment_type'] === 'online'),
+            'meet_link' => $meetLink, // Use the generated link
+            'chief_complaint' => $validatedData['chief_complaint'],
         ]);
 
         return redirect()->route('patient.appointment-confirmed', ['appointment_id' => $appointment->id])->with('success', 'Appointment booked successfully!');
@@ -349,5 +505,52 @@ class PatientController extends Controller
         // or it will lazily load it. If you need the doctor directly, you can access $attendingPhysician->doctor
 
         return view('patient.attending-physician-details', compact('attendingPhysician'));
+    }
+
+    /**
+     * Redirect the user to the Google authentication page.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->scopes([
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/userinfo.email',
+        ])->with(['access_type' => 'offline', 'prompt' => 'consent'])->redirect();
+    }
+
+    /**
+     * Obtain the user's information from Google.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function handleGoogleCallback()
+    {
+        try {
+            $user = Socialite::driver('google')->user();
+            $authenticatedPatientUser = Auth::user(); // Get the currently authenticated user (patient)
+
+            // Find the patient record associated with the authenticated user
+            $patient = $authenticatedPatientUser->patient;
+
+            if ($patient) {
+
+                // dd($user->token, $user->refresh_token);
+                // Store Google access token and refresh token for the patient
+                // Ensure your 'patients' table has 'google_access_token' and 'google_refresh_token' columns
+                $patient->google_access_token = $user->token;
+                $patient->google_refresh_token = $user->refreshToken; // Will be null if access_type 'offline' not used or already consented
+                $patient->save();
+
+                return redirect()->route('patient.select-appointment-type', ['doctor_id' => session('doctor_id_for_google_auth')])->with('success', 'Google account linked successfully!');
+            } else {
+                return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Google OAuth failed: ' . $e->getMessage());
+            return redirect()->route('patient.dashboard')->with('error', 'Failed to link Google account. Please try again.');
+        }
     }
 }

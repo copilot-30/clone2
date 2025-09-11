@@ -35,6 +35,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::post('/logout', 'AuthController@logout')->name('logout');
 
+    // Google OAuth Routes
+    Route::get('/auth/google/redirect', 'PatientController@redirectToGoogle')->name('google.auth.redirect');
+    Route::get('/auth/google/callback', 'PatientController@handleGoogleCallback')->name('google.auth.callback');
+
     // Admin routes
     Route::prefix('admin')->middleware('role:admin')->group(function () {
         Route::get('/dashboard', 'AdminController@dashboard')->name('admin.dashboard');
@@ -87,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::group(['middleware' => 'doctor.profile.check'], function () {
 
             Route::get('/', 'DoctorController@dashboard')->name('doctor.dashboard');
+            Route::get('/dashboard', 'DoctorController@dashboard')->name('doctor.dashboard');
             
             Route::get('/edit-doctor', 'DoctorController@editDoctor')->name('doctor.edit');
             Route::put('/update-doctor', 'DoctorController@updateDoctorDetails')->name('doctor.update');
