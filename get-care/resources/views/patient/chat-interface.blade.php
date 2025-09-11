@@ -1,4 +1,4 @@
-@extends('admin_layout')
+@extends('patient_layout')
 
 @section('content')
 <div class="flex h-screen antialiased text-gray-800">
