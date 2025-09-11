@@ -56,8 +56,9 @@
             </div>
 
         <!-- Google OAuth Login Section (Initially hidden) -->
-        @if (!Auth::user()->patient->google_access_token)
+
         <div id="googleAuthSection" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center hidden">
+            @if (!Auth::user()->patient->google_access_token)
             <p class="text-sm text-gray-700 mb-4">
                 To enable automatic Google Meet link generation for online consultations, please link your Google account.
             </p>
@@ -70,8 +71,13 @@
                 </svg>
                 Login with Google
             </a>
+            @else 
+                <p class="text-sm text-gray-700 mb-4">
+                    You are already linked to your Google account.
+                </p>
+            @endif
         </div>
-        @endif
+          
 
         <!-- Clinic Cards Container - Initially hidden -->
         <div id="clinicSelection" class="mt-4 hidden">
