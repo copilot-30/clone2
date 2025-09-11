@@ -126,8 +126,6 @@
 @push('scripts')
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        const hasGoogleAccessToken = {{ Auth::user()->patient->google_access_token ? 'true' : 'false' }};
-
         const typeCards = document.querySelectorAll('.appointment-type-card');
         const appointmentTypeInput = document.getElementById('appointmentTypeInput');
         const googleAuthSection = document.getElementById('googleAuthSection');
@@ -223,9 +221,10 @@
                     selectedClinicId = null;
                     clinicIdInput.value = '';
                     clinicCards.forEach(cc => cc.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500'));
-                    
+         
                     // Show Google Auth section if user doesn't have token
-                    if (googleAuthSection && !hasGoogleAccessToken) {
+                    if (googleAuthSection ) {
+                        console.log("showing google auth section");
                         googleAuthSection.classList.remove('hidden');
                     }
                 }
