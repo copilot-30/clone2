@@ -6,8 +6,7 @@
     @include('patient.patient-profile-display')
     {{-- Top Section - Appointments and Patients --}}
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
-        @include('patient.upcoming-appointments')
-        @include('patient.assigned-patients')
+        @include('patient.upcoming-appointments') 
 
   {{-- Bottom Section - Recent Notes --}}
   @include('patient.recent-notes')

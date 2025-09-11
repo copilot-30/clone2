@@ -46,4 +46,8 @@ class DoctorAvailability extends Model
     {
         return $this->belongsTo(Clinic::class, 'clinic_id');
     }
+
+    public function clinics(){
+        return $this->hasMany(Clinic::class);
+    }
 }

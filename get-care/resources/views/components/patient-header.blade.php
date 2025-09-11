@@ -1,6 +1,10 @@
 <header class="bg-white shadow-md py-4 px-6 flex justify-between items-center">
     <div class="flex items-center">
-        <h1 class="text-2xl font-bold text-gray-800"><span style="color:#306547">Get</span><span style="color:#6A9CF1">Care</span></h1>
+        <h1 class="text-2xl font-bold text-gray-800">
+            <a href="{{ route('patient.dashboard') }}">
+                <span style="color:#306547">Get</span><span style="color:#6A9CF1">Care</span>
+            </a>
+        </h1>
     </div>
     <nav class="flex space-x-6">
         @php

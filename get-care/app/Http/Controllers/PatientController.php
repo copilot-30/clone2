@@ -501,10 +501,26 @@ class PatientController extends Controller
          
 
         $attendingPhysician = $patient->attendingPhysician;
+ 
         // The patient->attendingPhysician already loads the related Doctor if it was eager loaded before
         // or it will lazily load it. If you need the doctor directly, you can access $attendingPhysician->doctor
 
-        return view('patient.attending-physician-details', compact('attendingPhysician'));
+        // Load additional relationships for a more comprehensive view
+        // if ($attendingPhysician && $attendingPhysician->doctor) {
+        //     $attendingPhysician->doctor->load([ 
+        //         'doctorAvailability.clinic'
+        //     ]);
+        // }
+
+        $doctor_clinics = [];
+
+        foreach ($attendingPhysician->doctor->doctorAvailability as $availability) {
+            if ($availability->clinic) {
+                $doctor_clinics[] = $availability->clinic;
+            }
+        }
+
+        return view('patient.attending-physician-details', compact('attendingPhysician','doctor_clinics'));
     }
 
     /**
