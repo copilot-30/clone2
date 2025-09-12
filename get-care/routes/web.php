@@ -122,6 +122,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
             Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');
+            Route::post('/shared-cases/store', 'DoctorController@storeSharedCase')->name('doctor.shared-cases.store');
+            Route::get('/shared-cases/invitations', 'DoctorController@listSharedCaseInvitations')->name('doctor.shared-cases.invitations');
+            Route::post('/shared-cases/{sharedCase}/accept', 'DoctorController@acceptSharedCaseInvitation')->name('doctor.shared-cases.accept');
+            Route::post('/shared-cases/{sharedCase}/cancel', 'DoctorController@cancelSharedCaseInvitation')->name('doctor.shared-cases.cancel');
+            Route::get('/search-doctors', 'DoctorController@searchDoctors')->name('doctor.search-doctors');
         });
     });
 

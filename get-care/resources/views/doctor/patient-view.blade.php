@@ -190,26 +190,85 @@
                             @endif
 
                             <!-- Referring Doctors -->
-                            @forelse($selectedPatient->sharedCases as $sharedCase)
+                            @forelse($selectedPatient->sharedCases->where('status', 'ACCEPTED') as $sharedCase)
                                 <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center text-purple-700 font-bold mr-3">
-                                            {{ strtoupper(substr($sharedCase->doctor->first_name, 0, 1) . substr($sharedCase->doctor->last_name, 0, 1)) }}
+                                            {{ strtoupper(substr($sharedCase->sharingDoctor->first_name, 0, 1) . substr($sharedCase->sharingDoctor->last_name, 0, 1)) }}
                                         </div>
                                         <div>
-                                            <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->doctor->first_name }} {{ $sharedCase->doctor->last_name }}</p>
+                                            <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->sharingDoctor->first_name }} {{ $sharedCase->sharingDoctor->last_name }}</p>
                                             <p class="text-sm text-gray-600">Referring Doctor</p>
-                                            <p class="text-sm text-emerald-600">{{ $sharedCase->doctor->specialization }}</p>
-                                            <p class="text-sm text-gray-500">{{ $sharedCase->doctor->email }}</p>
+                                            <p class="text-sm text-emerald-600">{{ $sharedCase->sharingDoctor->specialization ?? 'N/A' }}</p>
+                                            <p class="text-sm text-gray-500">{{ $sharedCase->sharingDoctor->email }}</p>
                                         </div>
                                     </div>
                                     <button class="text-red-600 hover:text-red-800 text-sm">Remove</button>
                                 </div>
+                                @if($sharedCase->receivingDoctor)
+                                    <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between mt-2">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-bold mr-3">
+                                                {{ strtoupper(substr($sharedCase->receivingDoctor->first_name, 0, 1) . substr($sharedCase->receivingDoctor->last_name, 0, 1)) }}
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }}</p>
+                                                <p class="text-sm text-gray-600">Receiving Doctor</p>
+                                                <p class="text-sm text-emerald-600">{{ $sharedCase->receivingDoctor->specialization ?? 'N/A' }}</p>
+                                                <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->email }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             @empty
-                                <p class="text-gray-500">No referring doctors.</p>
+                                <p class="text-gray-500">No accepted shared cases.</p>
                             @endforelse
                         </div>
-                        <button class="mt-6 px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow hover:bg-gray-700">Add Doctor</button>
+
+                        <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3">Pending Invitations</h4>
+                        <div class="space-y-4">
+                            @forelse($selectedPatient->sharedCases->where('status', 'PENDING') as $sharedCase)
+                                <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-orange-200 rounded-full flex items-center justify-center text-orange-700 font-bold mr-3">
+                                            {{ strtoupper(substr($sharedCase->receivingDoctor->first_name, 0, 1) . substr($sharedCase->receivingDoctor->last_name, 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }}</p>
+                                            <p class="text-sm text-gray-600">Pending Invitation</p>
+                                            <p class="text-sm text-orange-600">{{ $sharedCase->receivingDoctor->specialization ?? 'N/A' }}</p>
+                                            <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->email }}</p>
+                                        </div>
+                                    </div>
+                                    <button class="text-red-600 hover:text-red-800 text-sm cancel-invite-btn" data-shared-case-id="{{ $sharedCase->id }}">Cancel Invite</button>
+                                </div>
+                            @empty
+                                <p class="text-gray-500">No pending invitations.</p>
+                            @endforelse
+                        </div>
+
+                        <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3">Rejected Invitations</h4>
+                        <div class="space-y-4">
+                            @forelse($selectedPatient->sharedCases->where('status', 'REJECTED') as $sharedCase)
+                                <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between">
+                                    <div class="flex items-center">
+                                        <div class="w-10 h-10 bg-red-200 rounded-full flex items-center justify-center text-red-700 font-bold mr-3">
+                                            {{ strtoupper(substr($sharedCase->receivingDoctor->first_name, 0, 1) . substr($sharedCase->receivingDoctor->last_name, 0, 1)) }}
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }}</p>
+                                            <p class="text-sm text-gray-600">Rejected Invitation</p>
+                                            <p class="text-sm text-red-600">{{ $sharedCase->receivingDoctor->specialization ?? 'N/A' }}</p>
+                                            <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->email }}</p>
+                                        </div>
+                                    </div>
+                                    <button class="text-gray-600 hover:text-gray-800 text-sm">Remove from List</button>
+                                </div>
+                            @empty
+                                <p class="text-gray-500">No rejected invitations.</p>
+                            @endforelse
+                        </div>
+                        <button id="openAddDoctorModalBtn" class="mt-6 px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow hover:bg-gray-700">Add Doctor</button>
                     @endif
                 </div>
             </div>
@@ -321,15 +380,32 @@ const openPatientNoteModalBtn = document.getElementById('openPatientNoteModal');
 const closePatientNoteModalBtn = document.getElementById('closePatientNoteModal');
 const patientNoteModal = document.getElementById('patientNoteModal');
 
+// Add Doctor Modal functionality
+const openAddDoctorModalBtn = document.getElementById('openAddDoctorModalBtn');
+const closeAddDoctorModalBtn = document.getElementById('closeAddDoctorModal');
+const addDoctorModal = document.getElementById('addDoctorModal');
+
 if (openPatientNoteModalBtn) {
     openPatientNoteModalBtn.addEventListener('click', function() {
         patientNoteModal.classList.remove('hidden');
     });
 }
 
+if (openAddDoctorModalBtn) {
+    openAddDoctorModalBtn.addEventListener('click', function() {
+        addDoctorModal.classList.remove('hidden');
+    });
+}
+
 if (closePatientNoteModalBtn) {
     closePatientNoteModalBtn.addEventListener('click', function() {
         patientNoteModal.classList.add('hidden');
+    });
+}
+
+if (closeAddDoctorModalBtn) {
+    closeAddDoctorModalBtn.addEventListener('click', function() {
+        addDoctorModal.classList.add('hidden');
     });
 }
 
@@ -341,9 +417,54 @@ if (patientNoteModal) {
         }
     });
 }
+
+// Close add doctor modal when clicking outside
+if (addDoctorModal) {
+    addDoctorModal.addEventListener('click', function(event) {
+        if (event.target === addDoctorModal) {
+            addDoctorModal.classList.add('hidden');
+        }
+    });
+}
+});
+
+// Handle Cancel Invite button clicks
+document.querySelectorAll('.cancel-invite-btn').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default button action
+        const sharedCaseId = this.dataset.sharedCaseId;
+
+        if (confirm('Are you sure you want to cancel this invitation?')) {
+            fetch(`/doctor/shared-cases/${sharedCaseId}/cancel`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Invitation cancelled successfully!');
+                    window.location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + (data.message || 'Could not cancel invitation.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while cancelling the invitation.');
+            });
+        }
+    });
 });
 </script>
-
 <!-- Patient Note Modal -->
 <div id="patientNoteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
 <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -352,6 +473,18 @@ if (patientNoteModal) {
 </div>
 @if(isset($selectedPatient))
     @include('doctor.components.patient-note-form', ['selectedPatient' => $selectedPatient])
+@endif
+</div>
+</div>
+
+<!-- Add Doctor Modal -->
+<div id="addDoctorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+<div class="flex justify-end">
+    <button id="closeAddDoctorModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+</div>
+@if(isset($selectedPatient))
+    @include('doctor.components.add-doctor-form', ['selectedPatient' => $selectedPatient])
 @endif
 </div>
 </div>

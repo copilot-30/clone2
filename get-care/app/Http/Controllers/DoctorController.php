@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use App\Events\AuditableEvent;
 use Auth;
 use Illuminate\Support\Str;
+use App\SharedCase; // Add this line
 class DoctorController extends Controller
 {
     public function dashboard()
@@ -448,7 +449,7 @@ class DoctorController extends Controller
             'doctor_id' => $appointment->doctor_id,
         ]));
 
-        return redirect()->route('doctor.appointments.list')->with('success', 'Appointment cancelled successfully.');
+        return response()->json(['success' => true, 'message' => 'Appointment cancelled successfully.']);
     }
 public function storeAppointment(Request $request)
 {
@@ -492,14 +493,14 @@ public function viewPatients(Request $request, $patient_id = null)
             $query->where('doctor_id', $doctor->id);
         });
     })
-    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments'])
+    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
     ->get();
 
     $selectedPatient = null;
 
     if ($patient_id) {
         $selectedPatient = Patient::where('id', $patient_id)
-            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments'])
+            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
             ->first();
 
         if (!$selectedPatient) {
@@ -511,4 +512,120 @@ public function viewPatients(Request $request, $patient_id = null)
 
     return view('doctor.patient-view', compact('patients', 'selectedPatient'));
 }
+
+public function storeSharedCase(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'patient_id' => 'required|uuid|exists:patients,id',
+        'receiving_doctor_id' => 'required|uuid|exists:doctor_profiles,id',
+        'case_description' => 'required|string',
+        'permissions' => 'nullable|array',
+        'expires_at' => 'nullable|date',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+
+    $sharingDoctor = Auth::user()->doctor;
+    $receivingDoctor = Doctor::findOrFail($request->input('receiving_doctor_id'));
+
+    if ($sharingDoctor->id === $receivingDoctor->id) {
+        return redirect()->back()->with('error', 'You cannot share a case with yourself.')->withInput();
+    }
+ 
+
+    SharedCase::create([
+        'patient_id' => $request->input('patient_id'),
+        'sharing_doctor_id' => $sharingDoctor->id,
+        'receiving_doctor_id' => $receivingDoctor->id,
+        'case_description' => $request->input('case_description'),
+        'shared_data' => $request->input('permissions'), // This should be an array of permissions
+        'permissions' => $request->input('permissions'), // Keeping for compatibility, ideally combine with shared_data
+        'status' => 'PENDING',
+        'expires_at' => $request->input('expires_at'),
+    ]);
+
+    event(new AuditableEvent(auth()->id(), 'shared_case_created', [
+        'patient_id' => $request->input('patient_id'),
+        'sharing_doctor_id' => $sharingDoctor->id,
+        'receiving_doctor_id' => $receivingDoctor->id,
+    ]));
+
+    return redirect()->back()->with('success', 'Case shared successfully and is pending acceptance.');
+}
+
+public function listSharedCaseInvitations()
+{
+    $doctor = Auth::user()->doctor;
+    $invitations = SharedCase::where('receiving_doctor_id', $doctor->id)
+                             ->where('status', 'PENDING')
+                             ->with('patient', 'sharingDoctor')
+                             ->get();
+    return view('doctor.shared-cases.invitations', compact('invitations'));
+}
+
+public function acceptSharedCaseInvitation(SharedCase $sharedCase)
+{
+    // Ensure the shared case is pending and for the authenticated doctor
+    if ($sharedCase->receiving_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'PENDING') {
+        abort(403, 'Unauthorized action or invalid shared case status.');
+    }
+
+    $sharedCase->status = 'ACCEPTED';
+    $sharedCase->save();
+
+    event(new AuditableEvent(auth()->id(), 'shared_case_accepted', [
+        'shared_case_id' => $sharedCase->id,
+        'patient_id' => $sharedCase->patient_id,
+        'receiving_doctor_id' => Auth::user()->doctor->id,
+    ]));
+
+    return redirect()->back()->with('success', 'Shared case accepted successfully.');
+}
+
+public function cancelSharedCaseInvitation(SharedCase $sharedCase)
+{
+    // Ensure the shared case is pending and was sent by the authenticated doctor
+    if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'PENDING') {
+        abort(403, 'Unauthorized action or invalid shared case status.');
+    }
+
+    $sharedCase->status = 'CANCELLED';
+    $sharedCase->save();
+
+    event(new AuditableEvent(auth()->id(), 'shared_case_cancelled', [
+        'shared_case_id' => $sharedCase->id,
+        'patient_id' => $sharedCase->patient_id,
+        'sharing_doctor_id' => Auth::user()->doctor->id,
+    ]));
+
+    return response()->json(['success' => true, 'message' => 'Shared case invitation cancelled successfully.']);
+}
+
+public function searchDoctors(Request $request)
+{
+    $query = $request->input('query');
+    $patientId = $request->input('patient_id');
+    $currentDoctorId = Auth::user()->doctor->id;
+
+    $eligibleDoctors = Doctor::where(function($q) use ($query) {
+        $q->where('first_name', 'like', '%' . $query . '%')
+          ->orWhere('last_name', 'like', '%' . $query . '%')
+          ->orWhere('email', 'like', '%' . $query . '%');
+    })
+    ->where('id', '!=', $currentDoctorId) // Exclude current doctor
+    ->whereDoesntHave('attendingPhysicians', function($q) use ($patientId) {
+        $q->where('patient_id', $patientId);
+    }) // Exclude patient's primary physician
+    ->whereDoesntHave('sharedCasesAsReceiver', function($q) use ($patientId) {
+        $q->where('patient_id', $patientId)
+          ->whereIn('status', ['PENDING', 'ACCEPTED']); // Exclude already invited/accepted doctors for this patient
+    })
+    ->limit(10)
+    ->get(['id', 'first_name', 'last_name', 'email']);
+
+    return response()->json($eligibleDoctors);
+}
+
 }
