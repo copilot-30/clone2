@@ -29,12 +29,14 @@ class CreatePatientsTable extends Migration
             $table->timestamps(); // created_at, updated_at
             $table->text('first_name');
             $table->text('last_name');
+            $table->text('middle_name')->nullable();
             $table->text('suffix')->nullable();
+            $table->text('address')->nullable();
             
             $table->date('date_of_birth')->nullable();
             $table->integer('age')->nullable();
             $table->text('sex')->nullable();
-            $table->text('primary_mobile')->nullable(); 
+            $table->text('primary_mobile')->nullable();
         });
     }
 
