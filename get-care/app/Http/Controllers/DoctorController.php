@@ -450,6 +450,37 @@ class DoctorController extends Controller
 
         return redirect()->route('doctor.appointments.list')->with('success', 'Appointment cancelled successfully.');
     }
+public function storeAppointment(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'patient_id' => 'required|uuid|exists:patients,id',
+        'appointment_date' => 'required|date',
+        'appointment_time' => 'required|date_format:H:i',
+        'reason' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
+    }
+
+    $doctor = Auth::user()->doctor;
+
+    Appointment::create([
+        'patient_id' => $request->input('patient_id'),
+        'doctor_id' => $doctor->id,
+        'appointment_datetime' => $request->input('appointment_date') . ' ' . $request->input('appointment_time'),
+        'reason' => $request->input('reason'),
+        'status' => 'scheduled',
+    ]);
+
+    event(new AuditableEvent(auth()->id(), 'doctor_created_appointment', [
+        'patient_id' => $request->input('patient_id'),
+        'doctor_id' => $doctor->id,
+    ]));
+
+    return redirect()->back()->with('success', 'Appointment booked successfully!');
+}
+
 public function viewPatients(Request $request, $patient_id = null)
 {
     $doctor = Auth::user()->doctor;
@@ -461,14 +492,14 @@ public function viewPatients(Request $request, $patient_id = null)
             $query->where('doctor_id', $doctor->id);
         });
     })
-    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes'])
+    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments']) // Added 'appointments'
     ->get();
 
     $selectedPatient = null;
 
     if ($patient_id) {
         $selectedPatient = Patient::where('id', $patient_id)
-            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes'])
+            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments']) // Added 'appointments'
             ->first();
 
         if (!$selectedPatient) {

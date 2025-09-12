@@ -109,6 +109,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
             Route::get('/appointments', 'DoctorController@listAppointments')->name('doctor.appointments.list');
+            Route::post('/appointments', 'DoctorController@storeAppointment')->name('doctor.appointments.store');
             Route::get('/appointments/{appointment}', 'DoctorController@viewAppointment')->name('doctor.appointments.view');
             Route::put('/appointments/{appointment}/cancel', 'DoctorController@cancelAppointment')->name('doctor.appointments.cancel');
             // Route::get('/appointments', 'DoctorAppointmentController@index'); // Keep existing if needed

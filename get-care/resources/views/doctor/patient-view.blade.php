@@ -4,7 +4,7 @@
 <div class="p-4">
     <div class="flex bg-gray-100 rounded-lg shadow-xl min-h-[80vh]">
         <!-- Left Patient List Panel -->
-        <div class="w-1/4 bg-white border-r border-gray-200 p-4">
+        <div class="w-1/5 bg-white border-r border-gray-200 p-4">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">Patients</h2>
             <div class="mb-4">
                 <div class="relative">
@@ -41,8 +41,8 @@
             </div>
         </div>
 
-        <!-- Right Patient Details Panel -->
-        <div class="w-3/4 p-6 bg-white">
+        <!-- Middle Patient Details Panel -->
+        <div class="w-3/5 p-6 bg-white border-r border-gray-200">
             @if(isset($selectedPatient))
             <div class="flex items-center mb-6">
                 <div class="w-16 h-16 bg-purple-200 rounded-full flex items-center justify-center text-purple-700 font-bold text-2xl mr-4">
@@ -64,7 +64,7 @@
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-emerald-600 border-emerald-600" data-tab="basic-information">Basic Information</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="medical-background">Medical Background</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="soap-notes">SOAP Notes</button>
-                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="notes">Notes</button>
+                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="notes">Patient Notes</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="doctors">Doctors</button>
                 </nav>
             </div>
@@ -104,10 +104,11 @@
                             <p><span class="font-semibold">Supplements:</span> {{ $selectedPatient->supplements ?? 'N/A' }}</p>
                         </div>
 
+
+
                     @endif
                     
-
-
+                    
                     @if(isset($selectedPatient) && $selectedPatient->medicalBackground)
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Medical Background</h3>
                         <div class="space-y-2 text-gray-700">
@@ -205,56 +206,107 @@
                 </div>
             </div>
         </div>
+<!-- Right Sidebar Panel for Appointments -->
+<div class="w-1/4 p-4 bg-white">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Appointments</h2>
+    <div class="space-y-4">
+        @if(isset($selectedPatient))
+            <button id="openAppointmentModal" class="w-full bg-emerald-600 text-white p-2 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 mb-4">Book New Appointment</button>
+            @include('doctor.components.past-appointments', ['selectedPatient' => $selectedPatient])
+        @else
+            <p class="text-gray-500 text-center">Select a patient to manage appointments.</p>
+        @endif
     </div>
 </div>
+</div>
+</div>
+
+<!-- Appointment Modal -->
+<div id="appointmentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+<div class="flex justify-end">
+    <button id="closeAppointmentModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+</div>
+@if(isset($selectedPatient))
+    @include('doctor.components.appointment-form', ['selectedPatient' => $selectedPatient])
+@endif
+</div>
+</div>
+
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tabs = document.querySelectorAll('nav button');
-        const tabContent = document.getElementById('tab-content');
+document.addEventListener('DOMContentLoaded', function() {
+const tabs = document.querySelectorAll('nav button');
+const tabContent = document.getElementById('tab-content');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // Remove active class from all tabs
-                tabs.forEach(t => {
-                    t.classList.remove('border-emerald-600', 'text-emerald-600');
-                    t.classList.add('border-transparent', 'text-gray-600', 'hover:text-gray-900');
-                });
-
-                // Add active class to clicked tab
-                this.classList.add('border-emerald-600', 'text-emerald-600');
-                this.classList.remove('border-transparent', 'text-gray-600', 'hover:text-gray-900');
-
-                // Hide all tab panes
-                Array.from(tabContent.children).forEach(pane => {
-                    pane.style.display = 'none';
-                });
-
-                // Show the corresponding tab pane
-                const targetTab = this.dataset.tab;
-                const targetPane = document.getElementById(targetTab + '-tab');
-                if (targetPane) {
-                    targetPane.style.display = 'block';
-                }
-            });
+tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+        // Remove active class from all tabs
+        tabs.forEach(t => {
+            t.classList.remove('border-emerald-600', 'text-emerald-600');
+            t.classList.add('border-transparent', 'text-gray-600', 'hover:text-gray-900');
         });
 
-        // Event listener for patient list item clicks
-        document.querySelectorAll('.flex.items-center.p-3.rounded-lg.shadow-sm.cursor-pointer').forEach(item => {
-            item.addEventListener('click', function() {
-                const patientId = this.dataset.patientId;
-                if (patientId) {
-                    window.location.href = `{{ route('doctor.patients.view') }}/${patientId}`;
-                }
-            });
+        // Add active class to clicked tab
+        this.classList.add('border-emerald-600', 'text-emerald-600');
+        this.classList.remove('border-transparent', 'text-gray-600', 'hover:text-gray-900');
+
+        // Hide all tab panes
+        Array.from(tabContent.children).forEach(pane => {
+            pane.style.display = 'none';
         });
 
-        // Set initial active tab (Basic Information tab)
-        const initialActiveTab = document.querySelector('button[data-tab="basic-information"]');
-        const initialActivePane = document.getElementById('basic-information-tab');
-        if (initialActiveTab && initialActivePane) {
-            initialActiveTab.click(); // This will handle setting the active class and displaying the pane
+        // Show the corresponding tab pane
+        const targetTab = this.dataset.tab;
+        const targetPane = document.getElementById(targetTab + '-tab');
+        if (targetPane) {
+            targetPane.style.display = 'block';
         }
     });
+});
+
+// Event listener for patient list item clicks
+document.querySelectorAll('.flex.items-center.p-3.rounded-lg.shadow-sm.cursor-pointer').forEach(item => {
+    item.addEventListener('click', function() {
+        const patientId = this.dataset.patientId;
+        if (patientId) {
+            window.location.href = `{{ route('doctor.patients.view') }}/${patientId}`;
+        }
+    });
+});
+
+// Set initial active tab (Basic Information tab)
+const initialActiveTab = document.querySelector('button[data-tab="basic-information"]');
+const initialActivePane = document.getElementById('basic-information-tab');
+if (initialActiveTab && initialActivePane) {
+    initialActiveTab.click(); // This will handle setting the active class and displaying the pane
+}
+
+// Modal functionality
+const openModalBtn = document.getElementById('openAppointmentModal');
+const closeModalBtn = document.getElementById('closeAppointmentModal');
+const appointmentModal = document.getElementById('appointmentModal');
+
+if (openModalBtn) {
+    openModalBtn.addEventListener('click', function() {
+        appointmentModal.classList.remove('hidden');
+    });
+}
+
+if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', function() {
+        appointmentModal.classList.add('hidden');
+    });
+}
+
+// Close modal when clicking outside
+if (appointmentModal) {
+    appointmentModal.addEventListener('click', function(event) {
+        if (event.target === appointmentModal) {
+            appointmentModal.classList.add('hidden');
+        }
+    });
+}
+});
 </script>
 @endsection

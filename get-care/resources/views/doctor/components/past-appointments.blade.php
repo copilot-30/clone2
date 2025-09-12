@@ -1,0 +1,13 @@
+<div class="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Past Appointments</h3>
+    @forelse($selectedPatient->appointments->sortByDesc('appointment_date') as $appointment)
+        <div class="mb-3 p-3 bg-white rounded-md shadow-sm border border-gray-200">
+            <p class="font-semibold text-gray-800">Date: {{ \Carbon\Carbon::parse($appointment->appointment_date)->format('M d, Y') }}</p>
+            <p class="text-sm text-gray-600">Time: {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('h:i A') }}</p>
+            <p class="text-sm text-gray-600">Reason: {{ $appointment->reason ?? 'N/A' }}</p>
+            <p class="text-sm text-gray-600">Status: {{ $appointment->status ?? 'N/A' }}</p>
+        </div>
+    @empty
+        <p class="text-gray-500 text-center">No past appointments for this patient.</p>
+    @endforelse
+</div>
