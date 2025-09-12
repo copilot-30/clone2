@@ -26,6 +26,7 @@ class DoctorController extends Controller
     public function createDoctor(Request $request)
     {
         $doctor = Auth::user()->doctor;
+ 
         if (!$doctor) {
             return view('doctor.create-doctor', compact('doctor'));
         }else{

@@ -44,11 +44,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', 'AdminController@dashboard')->name('admin.dashboard');
 
         // Doctor Management Routes
-        Route::post('/doctors', 'DoctorController@createDoctor');
-        Route::get('/doctors', 'DoctorController@listDoctors')->name('admin.doctors');
-        Route::put('/doctors/{id}', 'DoctorController@editDoctor');
-        Route::post('/doctors/{user_id}/store-details', 'DoctorController@storeDoctorDetails')->name('admin.doctors.store_details');
-        Route::put('/doctors/{user_id}/update-details', 'DoctorController@updateDoctorDetails')->name('admin.doctors.update_details');
+        // Route::post('/doctors', 'AdminController@createDoctor');
+        Route::get('/doctors', 'AdminController@listDoctors')->name('admin.doctors');
+        // Route::put('/doctors/{id}', 'AdminController@editDoctor');
+        Route::post('/doctors/{user_id}/store-details', 'AdminController@storeDoctorDetails')->name('admin.doctors.store_details');
+        Route::put('/doctors/{user_id}/update-details', 'AdminController@updateDoctorDetails')->name('admin.doctors.update_details');
         // Route::get('/doctors/{user_id}/create-details', 'DoctorController@createDetailsForm')->name('admin.doctors.create_details');
         
         Route::delete('/doctors/{id}', 'DoctorController@deleteDoctor');

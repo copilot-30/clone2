@@ -26,8 +26,17 @@
             <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Psychiatry</button>
         </div>
 
+         <div class="flex items-center justify-center">
+                @if (count($doctors) == 0)
+                    <p class="text-gray-600 text-center">No doctors found.</p>
+                @endif
+            </div>
+
         <!-- Doctor List -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           
+
+
             @foreach ($doctors as $doctor)
                 <div class="doctor-card bg-white border border-gray-200 rounded-lg shadow-sm p-4 cursor-pointer hover:shadow-md transition-shadow duration-200" data-doctor-id="{{ $doctor->id }}">
                     <div class="flex items-center mb-4">

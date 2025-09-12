@@ -136,7 +136,7 @@ class PatientController extends Controller
         }
 
         // Otherwise, show the doctor selection form for active doctors
-        $doctors = Doctor::whereNull('deleted_at')->get(); // Filter active doctors
+        $doctors = Doctor::all(); // Filter active doctors
         return view('patient.select-doctor', compact('doctors'));
     }
 
@@ -494,6 +494,10 @@ class PatientController extends Controller
          
 
         $attendingPhysician = $patient->attendingPhysician;
+
+        if (!$attendingPhysician) {
+            return redirect()->route('patient.select-doctor')->with('error', 'Please select your preferred attending physician.');
+        }
  
         // The patient->attendingPhysician already loads the related Doctor if it was eager loaded before
         // or it will lazily load it. If you need the doctor directly, you can access $attendingPhysician->doctor

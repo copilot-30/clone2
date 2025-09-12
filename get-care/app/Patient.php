@@ -8,6 +8,8 @@ class Patient extends Model
 {
     protected $table = 'patients';
 
+    protected $keyType = 'string';
+
     protected $fillable = [
         'user_id',
         'blood_type',

@@ -53,6 +53,7 @@ class AdminController extends Controller
             'role' => $user->role,
         ]));
 
+
         if ($user->role === 'PATIENT' || $user->role === 'DOCTOR') {
             return redirect()->route('admin.users.edit', ['id' => $user->id])->with('success', 'User created. Please fill in '.strtolower($user->role).' details.');
         }
@@ -483,6 +484,11 @@ class AdminController extends Controller
     public function storeDoctorDetails(Request $request, $user_id)
     {
         $user = User::findOrFail($user_id);
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found');
+        }
+ 
 
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',

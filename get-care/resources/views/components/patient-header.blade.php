@@ -8,18 +8,22 @@
     </div>
     <nav class="flex space-x-6">
         @php
+         if(Auth::user()->patient && Auth::user()->patient->attendingPhysician){
             $menuItems = [
                 ['id' => 'dashboard', 'label' => 'Dashboard', 'url' => route('patient.dashboard')],
                 ['id' => 'doctors', 'label' => 'Doctors', 'url' => route('patient.select-doctor')],
                 ['id' => 'attending-physician', 'label' => 'My Doctor', 'url' => route('patient.attending-physician-details')],
-                ['id' => 'chat', 'label' => 'Chat', 'url' => route('patient.chat')],
-                // Add other patient-specific menu items as needed
-                // ['id' => 'notes', 'label' => 'Notes'],
-                // ['id' => 'files', 'label' => 'Files'],
-                // ['id' => 'analytics', 'label' => 'Analytics'],
-                // ['id' => 'engagement', 'label' => 'Engagement'],
-                // ['id' => 'plan', 'label' => 'Plan'],
+                ['id' => 'chat', 'label' => 'Chat', 'url' => route('patient.chat')], 
+                ['id' => 'notes', 'label' => 'Notes'],
+                ['id' => 'files', 'label' => 'Files'],
+                ['id' => 'plan', 'label' => 'Plan'],
             ];
+         }else{
+            $menuItems = [
+                ['id' => 'dashboard', 'label' => 'Dashboard', 'url' => route('patient.dashboard')],
+                ['id' => 'doctors', 'label' => 'Doctors', 'url' => route('patient.select-doctor')], 
+            ];
+         }
         @endphp
 
         @foreach ($menuItems as $item)

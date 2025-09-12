@@ -26,10 +26,14 @@
                 <thead>
                     <tr>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Patient Name</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Chief Complaint</th>
+                        
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Duration</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Clinic</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Notes</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -37,7 +41,9 @@
                     @forelse ($appointments as $appointment)
                         <tr class="hover:bg-gray-100">
                             <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->patient->first_name }} {{ $appointment->patient->last_name }}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->chief_complaint }}</td>
                             <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->appointment_datetime->format('M d, Y h:i A') }}</td>
+                            <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->duration_minutes }} minutes</td>
                             <td class="py-3 px-4 border-b border-gray-200">{{ ucfirst(str_replace('_', ' ', $appointment->type)) }}</td>
                             <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->clinic->name ?? 'N/A' }}</td>
                             <td class="py-3 px-4 border-b border-gray-200">
@@ -49,8 +55,14 @@
                                     {{ ucfirst($appointment->status) }}
                                 </span>
                             </td>
+
+                            <td class="py-3 px-4 border-b border-gray-200">{{ $appointment->notes }}</td>
                             <td class="py-3 px-4 border-b border-gray-200 text-sm">
                                 <a href="{{ route('doctor.appointments.view', $appointment->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">View</a>
+                                @if($appointment->type == 'online' && $appointment->meet_link)
+                                    <a href="{{ $appointment->meet_link }}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">Join Meeting</a>
+                                @endif
+
                                 @if($appointment->status == 'scheduled')
                                     <button type="button" onclick="openCancelModal('{{ $appointment->id }}')" class="text-red-600 hover:text-red-900">Cancel</button>
                                 @endif
