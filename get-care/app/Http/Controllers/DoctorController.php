@@ -482,6 +482,65 @@ public function storeAppointment(Request $request)
     return redirect()->back()->with('success', 'Appointment booked successfully!');
 }
 
+/**
+ * Store a new SOAP note for a patient
+ *
+ * @param Request $request
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function storeSoapNote(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'patient_id' => 'required|uuid|exists:patients,id',
+        'subjective' => 'nullable|string',
+        'objective' => 'nullable|string',
+        'assessment' => 'nullable|string',
+        'plan' => 'nullable|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
+    }
+
+    $doctor = Auth::user()->doctor;
+    $patientId = $request->input('patient_id');
+
+    // Verify that the doctor has permission to add SOAP notes for this patient
+    $patient = Patient::findOrFail($patientId);
+    
+    // Check if doctor is the attending physician
+    $isAttendingPhysician = $patient->attendingPhysician && $patient->attendingPhysician->doctor_id === $doctor->id;
+    
+    // Check if doctor is a receiving doctor for an accepted shared case
+    $isReceivingDoctor = $patient->sharedCases()
+        ->where('receiving_doctor_id', $doctor->id)
+        ->where('status', 'ACCEPTED')
+        ->exists();
+    
+    if (!$isAttendingPhysician && !$isReceivingDoctor) {
+        return response()->json(['success' => false, 'message' => 'Unauthorized to add SOAP notes for this patient.'], 403);
+    }
+
+    // Create the SOAP note
+    $soapNote = \App\Consultation::create([
+        'patient_id' => $patientId,
+        'doctor_id' => $doctor->id,
+        'date' => now(),
+        'subjective' => $request->input('subjective'),
+        'objective' => $request->input('objective'),
+        'assessment' => $request->input('assessment'),
+        'plan' => $request->input('plan'),
+    ]);
+
+    event(new AuditableEvent(auth()->id(), 'soap_note_created', [
+        'soap_note_id' => $soapNote->id,
+        'patient_id' => $patientId,
+        'doctor_id' => $doctor->id,
+    ]));
+
+    return response()->json(['success' => true, 'message' => 'SOAP note added successfully.', 'soap_note' => $soapNote]);
+}
+
 public function viewPatients(Request $request, $patient_id = null)
 {
     $doctor = Auth::user()->doctor;

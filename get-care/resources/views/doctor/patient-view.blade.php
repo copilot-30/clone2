@@ -125,8 +125,30 @@
 
                 <!-- SOAP Notes Tab Content -->
                 <div id="soap-notes-tab" class="tab-pane hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">SOAP Notes</h3>
+                        <!-- Add SOAP Note button - visible only to authorized doctors -->
+                        @php
+                            $canAddSoapNotes = false;
+                            // Check if current doctor is the attending physician
+                            if (isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id) {
+                                $canAddSoapNotes = true;
+                            }
+                            // Check if current doctor is a receiving doctor with permission
+                            elseif (isset($doctor)) {
+                                $sharedCase = $selectedPatient->sharedCases->where('status', 'ACCEPTED')->where('receiving_doctor_id', $doctor->id)->first();
+                                if ($sharedCase) {
+                                    // For now, we'll allow all receiving doctors to add SOAP notes
+                                    // In a more advanced implementation, we could check specific permissions
+                                    $canAddSoapNotes = true;
+                                }
+                            }
+                        @endphp
+                        @if($canAddSoapNotes)
+                            <button id="openSoapNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</button>
+                        @endif
+                    </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">SOAP Notes</h3>
                         <div class="space-y-4">
                             @foreach($selectedPatient->soapNotes as $soapNote)
                                 <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
@@ -581,6 +603,71 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
     });
 });
 
+// SOAP Note Modal functionality
+const openSoapNoteModalBtn = document.getElementById('openSoapNoteModal');
+const closeSoapNoteModalBtn = document.getElementById('closeSoapNoteModal');
+const cancelSoapNoteBtn = document.getElementById('cancelSoapNoteBtn');
+const soapNoteModal = document.getElementById('soapNoteModal');
+const soapNoteForm = document.getElementById('soapNoteForm');
+
+if (openSoapNoteModalBtn) {
+    openSoapNoteModalBtn.addEventListener('click', function() {
+        soapNoteModal.classList.remove('hidden');
+    });
+}
+
+if (closeSoapNoteModalBtn) {
+    closeSoapNoteModalBtn.addEventListener('click', function() {
+        soapNoteModal.classList.add('hidden');
+    });
+}
+
+if (cancelSoapNoteBtn) {
+    cancelSoapNoteBtn.addEventListener('click', function() {
+        soapNoteModal.classList.add('hidden');
+    });
+}
+
+// Close SOAP note modal when clicking outside
+if (soapNoteModal) {
+    soapNoteModal.addEventListener('click', function(event) {
+        if (event.target === soapNoteModal) {
+            soapNoteModal.classList.add('hidden');
+        }
+    });
+}
+
+// Handle SOAP note form submission
+if (soapNoteForm) {
+    soapNoteForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        fetch('/doctor/soap-notes/store', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('SOAP note added successfully!');
+                soapNoteModal.classList.add('hidden');
+                window.location.reload(); // Reload the page to reflect changes
+            } else {
+                alert('Error: ' + (data.message || 'Could not add SOAP note.'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while adding the SOAP note.');
+        });
+    });
+}
+
 });
 </script>
 @endpush
@@ -604,6 +691,56 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
 </div>
 @if(isset($selectedPatient))
     @include('doctor.components.add-doctor-form', ['selectedPatient' => $selectedPatient])
+@endif
+</div>
+</div>
+
+<!-- SOAP Note Modal -->
+<div id="soapNoteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+<div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-bold text-gray-900">Add SOAP Note</h3>
+    <button id="closeSoapNoteModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+</div>
+@if(isset($selectedPatient) && isset($doctor))
+<form id="soapNoteForm">
+    @csrf
+    <input type="hidden" name="patient_id" value="{{ $selectedPatient->id }}">
+    <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
+    
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="subjective">
+            Subjective
+        </label>
+        <textarea name="subjective" id="subjective" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+    </div>
+    
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="objective">
+            Objective
+        </label>
+        <textarea name="objective" id="objective" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+    </div>
+    
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="assessment">
+            Assessment
+        </label>
+        <textarea name="assessment" id="assessment" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+    </div>
+    
+    <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="plan">
+            Plan
+        </label>
+        <textarea name="plan" id="plan" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+    </div>
+    
+    <div class="flex items-center justify-between">
+        <button type="button" id="cancelSoapNoteBtn" class="px-4 py-2 text-gray-700 font-semibold rounded-md hover:bg-gray-100">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Save SOAP Note</button>
+    </div>
+</form>
 @endif
 </div>
 </div>

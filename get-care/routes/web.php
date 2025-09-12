@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+ 
+
+Route::post('/ask-ai', 'GPTController@getMedicalSuggestion')->name('ask-ai');
 
 Route::get('/', 'PublicController@landingPage')->name('landing');
 
@@ -122,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
             Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');
+            Route::post('/soap-notes/store', 'DoctorController@storeSoapNote')->name('doctor.soap-notes.store');
             Route::post('/shared-cases/store', 'DoctorController@storeSharedCase')->name('doctor.shared-cases.store');
             Route::get('/shared-cases/invitations', 'DoctorController@listSharedCaseInvitations')->name('doctor.shared-cases.invitations');
             Route::post('/shared-cases/{sharedCase}/accept', 'DoctorController@acceptSharedCaseInvitation')->name('doctor.shared-cases.accept');
