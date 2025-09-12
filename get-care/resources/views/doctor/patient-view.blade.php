@@ -5,7 +5,7 @@
     <div class="flex bg-gray-100 rounded-lg shadow-xl min-h-[80vh]">
         <!-- Left Patient List Panel -->
         <div class="w-1/5 bg-white border-r border-gray-200 p-4">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">Patients</h2>
+            <h2 class="text-2xl font-bold text-emerald-600 border-emerald-600 mb-4">Patients</h2>
             <div class="mb-4">
                 <div class="relative">
                     <input type="text" placeholder="Search patients..." class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500">
@@ -19,8 +19,7 @@
                 <button id="my-patients-btn" class="px-4 py-2 {{ isset($filter) && $filter === 'my-patients' ? 'text-emerald-600 border-b-2 border-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600' }}">My Patients</button>
                 <button id="shared-cases-btn" class="px-4 py-2 {{ isset($filter) && $filter === 'shared-cases' ? 'text-emerald-600 border-b-2 border-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600' }}">Shared Cases</button>
             </div>
-
-            <!-- Patient List Items (Example) -->
+ 
             <!-- Patient List Items -->
             <div class="space-y-3">
                 @forelse($patients as $patient)
@@ -293,7 +292,7 @@
         </div>
 <!-- Right Sidebar Panel for Appointments -->
 <div class="w-1/4 p-4 bg-white">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">Appointments</h2>
+    <h2 class="text-2xl font-bold text-emerald-600 border-emerald-600 mb-4">Appointments</h2>
     <div class="space-y-4">
         @if(isset($selectedPatient))
             <button id="openAppointmentModal" class="w-full bg-emerald-600 text-white p-2 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 mb-4">Book New Appointment</button>
