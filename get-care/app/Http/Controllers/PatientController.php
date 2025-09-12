@@ -106,6 +106,7 @@ class PatientController extends Controller
 
         // Fetch recent notes for the authenticated patient
         $recentNotes = PatientNote::where('patient_id', $patient->id)
+                                -> where('visibility', 'shared')
                                   ->orderBy('created_at', 'desc')
                                   ->take(5) // Get latest 5 notes
                                   ->get();

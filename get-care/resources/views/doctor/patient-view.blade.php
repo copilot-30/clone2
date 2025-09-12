@@ -16,8 +16,8 @@
             </div>
 
             <div class="flex border-b border-gray-200 mb-4">
-                <button class="px-4 py-2 text-emerald-600 border-b-2 border-emerald-600 font-semibold">My Patients</button>
-                <button class="px-4 py-2 text-gray-600 hover:text-emerald-600">Shared Cases</button>
+                <button id="my-patients-btn" class="px-4 py-2 {{ isset($filter) && $filter === 'my-patients' ? 'text-emerald-600 border-b-2 border-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600' }}">My Patients</button>
+                <button id="shared-cases-btn" class="px-4 py-2 {{ isset($filter) && $filter === 'shared-cases' ? 'text-emerald-600 border-b-2 border-emerald-600 font-semibold' : 'text-gray-600 hover:text-emerald-600' }}">Shared Cases</button>
             </div>
 
             <!-- Patient List Items (Example) -->
@@ -175,13 +175,13 @@
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Doctors</h3>
                         <div class="space-y-4">
                             <!-- Primary Doctor -->
-                            @if($selectedPatient->attendingPhysician)
+                            @if(isset($selectedPatient->attendingPhysician))
                                 <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                                     <div class="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center text-yellow-700 font-bold mr-3">
                                         {{ strtoupper(substr($selectedPatient->attendingPhysician->doctor->first_name, 0, 1) . substr($selectedPatient->attendingPhysician->doctor->last_name, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-800">You (Dr. {{ $selectedPatient->attendingPhysician->doctor->last_name }})</p>
+                                        <p class="font-semibold text-gray-800">Dr. {{ $selectedPatient->attendingPhysician->doctor->first_name }} {{ $selectedPatient->attendingPhysician->doctor->last_name }}</p>
                                         <p class="text-sm text-gray-600">Primary Doctor</p>
                                     </div>
                                 </div>
@@ -191,7 +191,7 @@
 
                             <!-- Referring Doctors -->
                             @forelse($selectedPatient->sharedCases->where('status', 'ACCEPTED') as $sharedCase)
-                                <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between">
+                                <!-- <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between">
                                     <div class="flex items-center">
                                         <div class="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center text-purple-700 font-bold mr-3">
                                             {{ strtoupper(substr($sharedCase->sharingDoctor->first_name, 0, 1) . substr($sharedCase->sharingDoctor->last_name, 0, 1)) }}
@@ -203,20 +203,29 @@
                                             <p class="text-sm text-gray-500">{{ $sharedCase->sharingDoctor->email }}</p>
                                         </div>
                                     </div>
-                                    <button class="text-red-600 hover:text-red-800 text-sm">Remove</button>
-                                </div>
-                                @if($sharedCase->receivingDoctor)
+                               
+                                </div> -->
+                                @if(isset($sharedCase->receivingDoctor))
                                     <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200 justify-between mt-2">
                                         <div class="flex items-center">
                                             <div class="w-10 h-10 bg-blue-200 rounded-full flex items-center justify-center text-blue-700 font-bold mr-3">
                                                 {{ strtoupper(substr($sharedCase->receivingDoctor->first_name, 0, 1) . substr($sharedCase->receivingDoctor->last_name, 0, 1)) }}
+                                            
+                                                    
                                             </div>
                                             <div>
                                                 <p class="font-semibold text-gray-800">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }}</p>
-                                                <p class="text-sm text-gray-600">Receiving Doctor</p>
+                                                <p class="text-sm text-gray-600">
+                                                    Collaborating Doctor
+                                                     <!-- Show remove button only for primary doctors -->
+                                                    @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
+                                                    <button class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                                                    @endif
+                                                </p>
                                                 <p class="text-sm text-emerald-600">{{ $sharedCase->receivingDoctor->specialization ?? 'N/A' }}</p>
                                                 <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->email }}</p>
                                             </div>
+                                            
                                         </div>
                                     </div>
                                 @endif
@@ -225,6 +234,8 @@
                             @endforelse
                         </div>
 
+                        <!-- Show invitations only for primary doctors -->
+                        @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
                         <h4 class="text-lg font-semibold text-gray-700 mt-6 mb-3">Pending Invitations</h4>
                         <div class="space-y-4">
                             @forelse($selectedPatient->sharedCases->where('status', 'PENDING') as $sharedCase)
@@ -262,14 +273,20 @@
                                             <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->email }}</p>
                                         </div>
                                     </div>
+                                    <!-- Show remove button only for primary doctors -->
+                                    @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
                                     <button class="text-gray-600 hover:text-gray-800 text-sm">Remove from List</button>
+                                    @endif
                                 </div>
                             @empty
                                 <p class="text-gray-500">No rejected invitations.</p>
                             @endforelse
                         </div>
+                        @endif
+                        <!-- Show Add Doctor button only for primary doctors -->
+                        @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
                         <button id="openAddDoctorModalBtn" class="mt-6 px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow hover:bg-gray-700">Add Doctor</button>
-                    
+                        @endif
                 </div>
             </div>
             @endif
@@ -301,10 +318,15 @@
 </div>
 </div>
 
-
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-const selectedPatientData = @json($selectedPatient ?? null);
+// Ensure selectedPatientData is always defined
+let selectedPatientData = @json($selectedPatient ?? new stdClass());
+// Fallback in case the PHP expression doesn't produce a valid JavaScript object
+if (typeof selectedPatientData !== 'object' || selectedPatientData === null) {
+    selectedPatientData = {};
+}
 const tabs = document.querySelectorAll('nav button');
 const tabContent = document.getElementById('tab-content');
 
@@ -333,16 +355,36 @@ tabs.forEach(tab => {
         }
     });
 });
-
 // Event listener for patient list item clicks
 document.querySelectorAll('.flex.items-center.p-3.rounded-lg.shadow-sm.cursor-pointer').forEach(item => {
     item.addEventListener('click', function() {
         const patientId = this.dataset.patientId;
+        // Use a default filter value when selectedPatientData is empty or doesn't have filter property
+        const currentFilter = (selectedPatientData && selectedPatientData.filter) ? selectedPatientData.filter : 'my-patients';
+        console.log(`Patient list item clicked: patientId=${patientId}, currentFilter=${currentFilter}`);
         if (patientId) {
-            window.location.href = `{{ route('doctor.patients.view') }}/${patientId}`;
+            window.location.href = `{{ route('doctor.patients.view') }}/${patientId}?filter=${currentFilter}`;
         }
     });
 });
+
+// Event listeners for My Patients and Shared Cases buttons
+const myPatientsBtn = document.getElementById('my-patients-btn');
+const sharedCasesBtn = document.getElementById('shared-cases-btn');
+
+if (myPatientsBtn) {
+    myPatientsBtn.addEventListener('click', function() {
+        console.log("My Patients button clicked.");
+        window.location.href = `{{ route('doctor.patients.view') }}?filter=my-patients`;
+    });
+}
+
+if (sharedCasesBtn) {
+    sharedCasesBtn.addEventListener('click', function() {
+        console.log("Shared Cases button clicked.");
+        window.location.href = `{{ route('doctor.patients.view') }}?filter=shared-cases`;
+    });
+}
 
 // Set initial active tab (Basic Information tab) only if a patient is selected
 const initialActiveTab = document.querySelector('button[data-tab="basic-information"]');
@@ -428,7 +470,6 @@ if (addDoctorModal) {
         }
     });
 }
-});
 
 // Handle Cancel Invite button clicks
 document.querySelectorAll('.cancel-invite-btn').forEach(button => {
@@ -466,7 +507,10 @@ document.querySelectorAll('.cancel-invite-btn').forEach(button => {
         }
     });
 });
+
+});
 </script>
+@endpush
 <!-- Patient Note Modal -->
 <div id="patientNoteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
 <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">

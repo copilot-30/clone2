@@ -485,32 +485,51 @@ public function storeAppointment(Request $request)
 public function viewPatients(Request $request, $patient_id = null)
 {
     $doctor = Auth::user()->doctor;
-    
-    $patients = Patient::where(function ($query) use ($doctor) {
-        $query->whereHas('appointments', function ($query) use ($doctor) {
-            $query->where('doctor_id', $doctor->id);
-        })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
-            $query->where('doctor_id', $doctor->id);
-        });
-    })
-    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
-    ->get();
+    $filter = $request->query('filter', 'my-patients'); // Default to 'my-patients'
+
+    $patients = collect(); // Initialize an empty collection
+
+    if ($filter === 'my-patients' or $filter === '') {
+        $patients = Patient::where(function ($query) use ($doctor) {
+            $query->whereHas('appointments', function ($query) use ($doctor) {
+                $query->where('doctor_id', $doctor->id);
+            })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
+                $query->where('doctor_id', $doctor->id);
+            });
+        })
+        ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+        ->get();
+    } elseif ($filter === 'shared-cases') {
+        $patients = Patient::whereHas('sharedCases', function ($query) use ($doctor) {
+            $query->where('receiving_doctor_id', $doctor->id)
+                  ->where('status', 'ACCEPTED');
+        })
+        ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+        ->get();
+    }
 
     $selectedPatient = null;
 
     if ($patient_id) {
-        $selectedPatient = Patient::where('id', $patient_id)
-            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
-            ->first();
+        // Find the patient in the filtered list
+        $selectedPatient = $patients->firstWhere('id', $patient_id);
+
+        // If not found in filtered list, try to find it directly (e.g., if link was directly clicked for a patient not in the current filter)
+        if (!$selectedPatient) {
+            $selectedPatient = Patient::where('id', $patient_id)
+                ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+                ->first();
+        }
 
         if (!$selectedPatient) {
-            return redirect()->route('doctor.patients.view')->with('error', 'Patient not found.');
+            return redirect()->route('doctor.patients.view', ['filter' => $filter])->with('error', 'Patient not found or not part of the selected filter.');
         }
     } elseif ($patients->isNotEmpty()) {
         $selectedPatient = $patients->first(); // Select the first patient by default if no patient_id is provided
     }
+ 
 
-    return view('doctor.patient-view', compact('patients', 'selectedPatient'));
+    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor'));
 }
 
 public function storeSharedCase(Request $request)
