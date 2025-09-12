@@ -121,7 +121,7 @@ Route::middleware('auth:sanctum')->group(function () {
             // Route::get('/patients', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
-            Route::post('/patient-notes', 'PatientNoteController@store');
+            Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');
         });
     });
 

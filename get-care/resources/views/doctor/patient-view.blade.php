@@ -145,22 +145,30 @@
                 </div>
 
                 <!-- Notes Tab Content -->
+                <!-- Notes Tab Content -->
                 <div id="notes-tab" class="tab-pane hidden">
-                    @if(isset($selectedPatient) && $selectedPatient->patientNotes->isNotEmpty())
-                        <h3 class="text-xl font-bold text-gray-800 mb-4">Patient Notes</h3>
-                        <div class="space-y-4">
-                            @foreach($selectedPatient->patientNotes as $note)
-                                <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-2"><strong>Date:</strong> {{ $note->created_at->format('M d, Y H:i') }}</p>
-                                    <p>{{ $note->notes }}</p>
-                                </div>
-                            @endforeach
+                    @if(isset($selectedPatient))
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold text-gray-800">Patient Notes</h3>
+                            <button id="openPatientNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add New Note</button>
                         </div>
-                    @else
-                        <p class="text-gray-500">No patient notes available for this patient.</p>
+                        @if($selectedPatient->patientNotes->isNotEmpty())
+                            <div class="space-y-4">
+                                @foreach($selectedPatient->patientNotes as $note)
+                                    <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                        <p class="text-sm text-gray-600 mb-2"><strong>Date:</strong> {{ $note->created_at->format('M d, Y H:i') }}</p>
+                                        <p><span class="font-semibold">Subject:</span> {{ $note->subject ?? 'N/A' }}</p>
+                                        <p><span class="font-semibold">Content:</span> {{ $note->content }}</p>
+                                        <p class="text-sm text-gray-600">Type: {{ ucfirst($note->note_type ?? 'N/A') }}</p>
+                                        <p class="text-sm text-gray-600">Visibility: {{ ucfirst($note->visibility ?? 'N/A') }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <p class="text-gray-500">No patient notes available for this patient.</p>
+                        @endif
                     @endif
                 </div>
-
                 <!-- Doctors Tab Content -->
                 <div id="doctors-tab" class="tab-pane hidden">
                     @if(isset($selectedPatient))
@@ -307,6 +315,44 @@ if (appointmentModal) {
         }
     });
 }
+
+// Patient Note Modal functionality
+const openPatientNoteModalBtn = document.getElementById('openPatientNoteModal');
+const closePatientNoteModalBtn = document.getElementById('closePatientNoteModal');
+const patientNoteModal = document.getElementById('patientNoteModal');
+
+if (openPatientNoteModalBtn) {
+    openPatientNoteModalBtn.addEventListener('click', function() {
+        patientNoteModal.classList.remove('hidden');
+    });
+}
+
+if (closePatientNoteModalBtn) {
+    closePatientNoteModalBtn.addEventListener('click', function() {
+        patientNoteModal.classList.add('hidden');
+    });
+}
+
+// Close patient note modal when clicking outside
+if (patientNoteModal) {
+    patientNoteModal.addEventListener('click', function(event) {
+        if (event.target === patientNoteModal) {
+            patientNoteModal.classList.add('hidden');
+        }
+    });
+}
 });
 </script>
+
+<!-- Patient Note Modal -->
+<div id="patientNoteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+<div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+<div class="flex justify-end">
+    <button id="closePatientNoteModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+</div>
+@if(isset($selectedPatient))
+    @include('doctor.components.patient-note-form', ['selectedPatient' => $selectedPatient])
+@endif
+</div>
+</div>
 @endsection

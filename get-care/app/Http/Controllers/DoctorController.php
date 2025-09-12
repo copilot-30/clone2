@@ -492,14 +492,14 @@ public function viewPatients(Request $request, $patient_id = null)
             $query->where('doctor_id', $doctor->id);
         });
     })
-    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments']) // Added 'appointments'
+    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments'])
     ->get();
 
     $selectedPatient = null;
 
     if ($patient_id) {
         $selectedPatient = Patient::where('id', $patient_id)
-            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments']) // Added 'appointments'
+            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes', 'appointments'])
             ->first();
 
         if (!$selectedPatient) {
