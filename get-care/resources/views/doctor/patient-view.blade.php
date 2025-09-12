@@ -59,6 +59,7 @@
             </div>
             @endif
             <!-- Tabs for Patient Information -->
+            @if(isset($selectedPatient))
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-emerald-600 border-emerald-600" data-tab="basic-information">Basic Information</button>
@@ -74,7 +75,7 @@
             <div id="tab-content">
                 <!-- Basic Information Tab Content -->
                 <div id="basic-information-tab" class="tab-pane">
-                    @if(isset($selectedPatient))
+                    
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Basic Information</h3>
                         <div class="space-y-2 text-gray-700">
                             <p><span class="font-semibold">Full Name:</span> {{ $selectedPatient->first_name }} {{ $selectedPatient->middle_name }} {{ $selectedPatient->last_name }} {{ $selectedPatient->suffix }}</p>
@@ -88,12 +89,12 @@
                             <p><span class="font-semibold">PhilHealth No:</span> {{ $selectedPatient->philhealth_no ?? 'N/A' }}</p>
                             <p><span class="font-semibold">Tag:</span> {{ $selectedPatient->tag ?? 'N/A' }}</p>
                         </div>
-                    @endif
+                    
                 </div>
 
                 <!-- Medical Background Tab Content -->
                 <div id="medical-background-tab" class="tab-pane hidden">
-                    @if(isset($selectedPatient))
+                    
                     <h3 class="text-xl font-bold text-gray-800 mb-4">Known Medical Background</h3>
                         <div class="space-y-2 text-gray-700">
                             <p><span class="font-semibold">Medical Conditions:</span> {{ $selectedPatient->medical_conditions ?? 'N/A' }}</p>
@@ -106,10 +107,9 @@
 
 
 
-                    @endif
                     
                     
-                    @if(isset($selectedPatient) && $selectedPatient->medicalBackground)
+                    @if($selectedPatient->medicalBackground)
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Medical Background</h3>
                         <div class="space-y-2 text-gray-700">
                             <p><span class="font-semibold">Medical Conditions:</span> {{ $selectedPatient->medicalBackground->medical_conditions ?? 'N/A' }}</p>
@@ -126,7 +126,7 @@
 
                 <!-- SOAP Notes Tab Content -->
                 <div id="soap-notes-tab" class="tab-pane hidden">
-                    @if(isset($selectedPatient) && $selectedPatient->soapNotes->isNotEmpty())
+                    @if($selectedPatient->soapNotes->isNotEmpty())
                         <h3 class="text-xl font-bold text-gray-800 mb-4">SOAP Notes</h3>
                         <div class="space-y-4">
                             @foreach($selectedPatient->soapNotes as $soapNote)
@@ -147,7 +147,7 @@
                 <!-- Notes Tab Content -->
                 <!-- Notes Tab Content -->
                 <div id="notes-tab" class="tab-pane hidden">
-                    @if(isset($selectedPatient))
+                    
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-xl font-bold text-gray-800">Patient Notes</h3>
                             <button id="openPatientNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add New Note</button>
@@ -167,11 +167,11 @@
                         @else
                             <p class="text-gray-500">No patient notes available for this patient.</p>
                         @endif
-                    @endif
+                    
                 </div>
                 <!-- Doctors Tab Content -->
                 <div id="doctors-tab" class="tab-pane hidden">
-                    @if(isset($selectedPatient))
+                    
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Doctors</h3>
                         <div class="space-y-4">
                             <!-- Primary Doctor -->
@@ -269,9 +269,10 @@
                             @endforelse
                         </div>
                         <button id="openAddDoctorModalBtn" class="mt-6 px-6 py-3 bg-gray-800 text-white font-semibold rounded-lg shadow hover:bg-gray-700">Add Doctor</button>
-                    @endif
+                    
                 </div>
             </div>
+            @endif
         </div>
 <!-- Right Sidebar Panel for Appointments -->
 <div class="w-1/4 p-4 bg-white">
@@ -303,6 +304,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+const selectedPatientData = @json($selectedPatient ?? null);
 const tabs = document.querySelectorAll('nav button');
 const tabContent = document.getElementById('tab-content');
 
@@ -342,10 +344,10 @@ document.querySelectorAll('.flex.items-center.p-3.rounded-lg.shadow-sm.cursor-po
     });
 });
 
-// Set initial active tab (Basic Information tab)
+// Set initial active tab (Basic Information tab) only if a patient is selected
 const initialActiveTab = document.querySelector('button[data-tab="basic-information"]');
 const initialActivePane = document.getElementById('basic-information-tab');
-if (initialActiveTab && initialActivePane) {
+if (initialActiveTab && initialActivePane && selectedPatientData) {
     initialActiveTab.click(); // This will handle setting the active class and displaying the pane
 }
 
