@@ -647,4 +647,55 @@ public function searchDoctors(Request $request)
     return response()->json($eligibleDoctors);
 }
 
+/**
+ * Remove a doctor from an accepted shared case (inactivate the shared case)
+ *
+ * @param SharedCase $sharedCase
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function removeSharedCase(SharedCase $sharedCase)
+{
+    // Ensure the shared case is accepted and the authenticated doctor is the sharing doctor (primary doctor)
+    if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'ACCEPTED') {
+        return response()->json(['success' => false, 'message' => 'Unauthorized action or invalid shared case status.'], 403);
+    }
+
+    // Inactivate the shared case by setting status to 'INACTIVE'
+    $sharedCase->status = 'INACTIVE';
+    $sharedCase->save();
+
+    event(new AuditableEvent(auth()->id(), 'shared_case_removed', [
+        'shared_case_id' => $sharedCase->id,
+        'patient_id' => $sharedCase->patient_id,
+        'receiving_doctor_id' => $sharedCase->receiving_doctor_id,
+    ]));
+
+    return response()->json(['success' => true, 'message' => 'Doctor removed from shared case successfully.']);
+}
+
+/**
+ * Remove a rejected shared case from the list
+ *
+ * @param SharedCase $sharedCase
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function removeRejectedSharedCase(SharedCase $sharedCase)
+{
+    // Ensure the shared case is rejected and the authenticated doctor is the sharing doctor (primary doctor)
+    if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'REJECTED') {
+        return response()->json(['success' => false, 'message' => 'Unauthorized action or invalid shared case status.'], 403);
+    }
+
+    // Delete the rejected shared case
+    $sharedCase->delete();
+
+    event(new AuditableEvent(auth()->id(), 'rejected_shared_case_removed', [
+        'shared_case_id' => $sharedCase->id,
+        'patient_id' => $sharedCase->patient_id,
+        'receiving_doctor_id' => $sharedCase->receiving_doctor_id,
+    ]));
+
+    return response()->json(['success' => true, 'message' => 'Rejected invitation removed successfully.']);
+}
+
 }

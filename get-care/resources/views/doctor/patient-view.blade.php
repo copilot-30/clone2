@@ -218,7 +218,7 @@
                                                     Collaborating Doctor
                                                      <!-- Show remove button only for primary doctors -->
                                                     @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
-                                                    <button class="text-red-600 hover:text-red-800 text-sm">Remove</button>
+                                                    <button class="text-red-600 hover:text-red-800 text-sm remove-doctor-btn" data-shared-case-id="{{ $sharedCase->id }}">Remove</button>
                                                     @endif
                                                 </p>
                                                 <p class="text-sm text-emerald-600">{{ $sharedCase->receivingDoctor->specialization ?? 'N/A' }}</p>
@@ -274,7 +274,7 @@
                                     </div>
                                     <!-- Show remove button only for primary doctors -->
                                     @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
-                                    <button class="text-gray-600 hover:text-gray-800 text-sm">Remove from List</button>
+                                    <button class="text-gray-600 hover:text-gray-800 text-sm remove-rejected-btn" data-shared-case-id="{{ $sharedCase->id }}">Remove from List</button>
                                     @endif
                                 </div>
                             @empty
@@ -502,6 +502,80 @@ document.querySelectorAll('.cancel-invite-btn').forEach(button => {
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while cancelling the invitation.');
+            });
+        }
+    });
+});
+
+// Handle Remove Doctor button clicks for accepted shared cases
+document.querySelectorAll('.remove-doctor-btn').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default button action
+        const sharedCaseId = this.dataset.sharedCaseId;
+
+        if (confirm('Are you sure you want to remove this doctor from the shared case?')) {
+            fetch(`/doctor/shared-cases/${sharedCaseId}/remove`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Doctor removed successfully!');
+                    window.location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + (data.message || 'Could not remove doctor.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while removing the doctor.');
+            });
+        }
+    });
+});
+
+// Handle Remove from List button clicks for rejected invitations
+document.querySelectorAll('.remove-rejected-btn').forEach(button => {
+    button.addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent default button action
+        const sharedCaseId = this.dataset.sharedCaseId;
+
+        if (confirm('Are you sure you want to remove this rejected invitation from the list?')) {
+            fetch(`/doctor/shared-cases/${sharedCaseId}/remove-rejected`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert(data.message || 'Rejected invitation removed successfully!');
+                    window.location.reload(); // Reload the page to reflect changes
+                } else {
+                    alert('Error: ' + (data.message || 'Could not remove rejected invitation.'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while removing the rejected invitation.');
             });
         }
     });

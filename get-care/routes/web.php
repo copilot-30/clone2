@@ -126,6 +126,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/shared-cases/invitations', 'DoctorController@listSharedCaseInvitations')->name('doctor.shared-cases.invitations');
             Route::post('/shared-cases/{sharedCase}/accept', 'DoctorController@acceptSharedCaseInvitation')->name('doctor.shared-cases.accept');
             Route::post('/shared-cases/{sharedCase}/cancel', 'DoctorController@cancelSharedCaseInvitation')->name('doctor.shared-cases.cancel');
+            Route::post('/shared-cases/{sharedCase}/remove', 'DoctorController@removeSharedCase')->name('doctor.shared-cases.remove');
+            Route::post('/shared-cases/{sharedCase}/remove-rejected', 'DoctorController@removeRejectedSharedCase')->name('doctor.shared-cases.remove-rejected');
             Route::get('/search-doctors', 'DoctorController@searchDoctors')->name('doctor.search-doctors');
         });
     });
