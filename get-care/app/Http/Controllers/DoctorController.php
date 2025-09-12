@@ -450,30 +450,34 @@ class DoctorController extends Controller
 
         return redirect()->route('doctor.appointments.list')->with('success', 'Appointment cancelled successfully.');
     }
+public function viewPatients(Request $request, $patient_id = null)
+{
+    $doctor = Auth::user()->doctor;
+    
+    $patients = Patient::where(function ($query) use ($doctor) {
+        $query->whereHas('appointments', function ($query) use ($doctor) {
+            $query->where('doctor_id', $doctor->id);
+        })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
+            $query->where('doctor_id', $doctor->id);
+        });
+    })
+    ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes'])
+    ->get();
 
-    public function viewPatients(Request $request, $patient_id = null)
-    {
-        $doctor = Auth::user()->doctor;
-        
-        $patients = Patient::where(function ($query) use ($doctor) {
-            $query->whereHas('appointments', function ($query) use ($doctor) {
-                $query->where('doctor_id', $doctor->id);
-            })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
-                $query->where('doctor_id', $doctor->id);
-            });
-        })->get();
+    $selectedPatient = null;
 
-        $selectedPatient = null;
+    if ($patient_id) {
+        $selectedPatient = Patient::where('id', $patient_id)
+            ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.doctor', 'soapNotes', 'patientNotes'])
+            ->first();
 
-        if ($patient_id) { 
-
-            $selectedPatient =  Patient::where('id', $patient_id)->first();
-
-            if (!$selectedPatient) {
-                return redirect()->route('doctor.patients.list')->with('error', 'Patient not found.');
-            }
+        if (!$selectedPatient) {
+            return redirect()->route('doctor.patients.view')->with('error', 'Patient not found.');
         }
-
-        return view('doctor.patient-view', compact('patients', 'selectedPatient'));
+    } elseif ($patients->isNotEmpty()) {
+        $selectedPatient = $patients->first(); // Select the first patient by default if no patient_id is provided
     }
+
+    return view('doctor.patient-view', compact('patients', 'selectedPatient'));
+}
 }

@@ -61,32 +61,123 @@
             <!-- Tabs for Patient Information -->
             <div class="border-b border-gray-200 mb-6">
                 <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="basic-information">Basic Information</button>
+                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-emerald-600 border-emerald-600" data-tab="basic-information">Basic Information</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="medical-background">Medical Background</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="soap-notes">SOAP Notes</button>
                     <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="notes">Notes</button>
-                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-emerald-600 border-emerald-600" data-tab="doctors">Doctors</button>
+                    <button class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-600 hover:text-gray-900 border-transparent" data-tab="doctors">Doctors</button>
                 </nav>
             </div>
 
             <!-- Tab Content -->
+            <!-- Tab Content -->
             <div id="tab-content">
+                <!-- Basic Information Tab Content -->
+                <div id="basic-information-tab" class="tab-pane">
+                    @if(isset($selectedPatient))
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Basic Information</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <p><span class="font-semibold">Full Name:</span> {{ $selectedPatient->first_name }} {{ $selectedPatient->middle_name }} {{ $selectedPatient->last_name }} {{ $selectedPatient->suffix }}</p>
+                            <p><span class="font-semibold">Date of Birth:</span> {{ $selectedPatient->date_of_birth ? $selectedPatient->date_of_birth->format('M d, Y') : 'N/A' }}</p>
+                            <p><span class="font-semibold">Age:</span> {{ $selectedPatient->age ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Sex:</span> {{ $selectedPatient->sex ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Blood Type:</span> {{ $selectedPatient->blood_type ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Civil Status:</span> {{ $selectedPatient->civil_status ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Phone Number:</span> {{ $selectedPatient->primary_mobile ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Address:</span> {{ $selectedPatient->address ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">PhilHealth No:</span> {{ $selectedPatient->philhealth_no ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Tag:</span> {{ $selectedPatient->tag ?? 'N/A' }}</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Medical Background Tab Content -->
+                <div id="medical-background-tab" class="tab-pane hidden">
+                    @if(isset($selectedPatient))
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Known Medical Background</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <p><span class="font-semibold">Medical Conditions:</span> {{ $selectedPatient->medical_conditions ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Allergies:</span> {{ $selectedPatient->allergies ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Surgeries:</span> {{ $selectedPatient->surgeries ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Family History:</span> {{ $selectedPatient->family_history ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Medications:</span> {{ $selectedPatient->medications ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Supplements:</span> {{ $selectedPatient->supplements ?? 'N/A' }}</p>
+                        </div>
+
+                    @endif
+                    
+
+
+                    @if(isset($selectedPatient) && $selectedPatient->medicalBackground)
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Medical Background</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <p><span class="font-semibold">Medical Conditions:</span> {{ $selectedPatient->medicalBackground->medical_conditions ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Allergies:</span> {{ $selectedPatient->medicalBackground->allergies ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Surgeries:</span> {{ $selectedPatient->medicalBackground->surgeries ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Family History:</span> {{ $selectedPatient->medicalBackground->family_history ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Medications:</span> {{ $selectedPatient->medicalBackground->medications ?? 'N/A' }}</p>
+                            <p><span class="font-semibold">Supplements:</span> {{ $selectedPatient->medicalBackground->supplements ?? 'N/A' }}</p>
+                        </div>
+                    @else
+                        <!-- <p class="text-gray-500">No medical background information available for this patient.</p> -->
+                    @endif
+                </div>
+
+                <!-- SOAP Notes Tab Content -->
+                <div id="soap-notes-tab" class="tab-pane hidden">
+                    @if(isset($selectedPatient) && $selectedPatient->soapNotes->isNotEmpty())
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">SOAP Notes</h3>
+                        <div class="space-y-4">
+                            @foreach($selectedPatient->soapNotes as $soapNote)
+                                <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                    <p class="text-sm text-gray-600 mb-2"><strong>Date:</strong> {{ $soapNote->created_at->format('M d, Y H:i') }}</p>
+                                    <p><span class="font-semibold">Subjective:</span> {{ $soapNote->subjective }}</p>
+                                    <p><span class="font-semibold">Objective:</span> {{ $soapNote->objective }}</p>
+                                    <p><span class="font-semibold">Assessment:</span> {{ $soapNote->assessment }}</p>
+                                    <p><span class="font-semibold">Plan:</span> {{ $soapNote->plan }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-gray-500">No SOAP notes available for this patient.</p>
+                    @endif
+                </div>
+
+                <!-- Notes Tab Content -->
+                <div id="notes-tab" class="tab-pane hidden">
+                    @if(isset($selectedPatient) && $selectedPatient->patientNotes->isNotEmpty())
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">Patient Notes</h3>
+                        <div class="space-y-4">
+                            @foreach($selectedPatient->patientNotes as $note)
+                                <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                                    <p class="text-sm text-gray-600 mb-2"><strong>Date:</strong> {{ $note->created_at->format('M d, Y H:i') }}</p>
+                                    <p>{{ $note->notes }}</p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <p class="text-gray-500">No patient notes available for this patient.</p>
+                    @endif
+                </div>
+
                 <!-- Doctors Tab Content -->
-                <div id="doctors-tab" class="tab-pane">
+                <div id="doctors-tab" class="tab-pane hidden">
                     @if(isset($selectedPatient))
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Doctors</h3>
                         <div class="space-y-4">
                             <!-- Primary Doctor -->
-                            @if($selectedPatient->primaryAttendingPhysician)
+                            @if($selectedPatient->attendingPhysician)
                                 <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border border-gray-200">
                                     <div class="w-10 h-10 bg-yellow-200 rounded-full flex items-center justify-center text-yellow-700 font-bold mr-3">
-                                        {{ strtoupper(substr($selectedPatient->primaryAttendingPhysician->doctor->first_name, 0, 1) . substr($selectedPatient->primaryAttendingPhysician->doctor->last_name, 0, 1)) }}
+                                        {{ strtoupper(substr($selectedPatient->attendingPhysician->doctor->first_name, 0, 1) . substr($selectedPatient->attendingPhysician->doctor->last_name, 0, 1)) }}
                                     </div>
                                     <div>
-                                        <p class="font-semibold text-gray-800">You (Dr. {{ $selectedPatient->primaryAttendingPhysician->doctor->last_name }})</p>
+                                        <p class="font-semibold text-gray-800">You (Dr. {{ $selectedPatient->attendingPhysician->doctor->last_name }})</p>
                                         <p class="text-sm text-gray-600">Primary Doctor</p>
                                     </div>
                                 </div>
+                            @else
+                                <p class="text-gray-500">No primary doctor assigned.</p>
                             @endif
 
                             <!-- Referring Doctors -->
@@ -121,7 +212,6 @@
     document.addEventListener('DOMContentLoaded', function() {
         const tabs = document.querySelectorAll('nav button');
         const tabContent = document.getElementById('tab-content');
-        const patientListItems = document.querySelectorAll('.patient-list-item'); // Assuming a class for patient list items
 
         tabs.forEach(tab => {
             tab.addEventListener('click', function() {
@@ -159,10 +249,11 @@
             });
         });
 
-        // Set initial active tab (Doctors tab in this case, based on the image)
-        const initialActiveTab = document.querySelector('button[data-tab="doctors"]');
-        if (initialActiveTab) {
-            initialActiveTab.click();
+        // Set initial active tab (Basic Information tab)
+        const initialActiveTab = document.querySelector('button[data-tab="basic-information"]');
+        const initialActivePane = document.getElementById('basic-information-tab');
+        if (initialActiveTab && initialActivePane) {
+            initialActiveTab.click(); // This will handle setting the active class and displaying the pane
         }
     });
 </script>
