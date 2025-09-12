@@ -28,7 +28,7 @@
           <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
         </button>
         {{-- Dropdown content for notifications --}}
-        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg py-1 z-20 overflow-hidden">
+        <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-72 bg-white rounded-md shadow-lg py-1 z-20 overflow-hidden">
             <div class="px-4 py-2 text-xs text-gray-500 border-b border-gray-100">Notifications</div>
             <a href="#" class="flex items-start px-4 py-3 hover:bg-gray-50">
                 <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-semibold">APPT</div>
@@ -60,9 +60,16 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
         </button>
         {{-- Dropdown content --}}
-        <div x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
+        <div x-cloak x-show="open" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20">
             @auth
-                <div class="block px-4 py-2 text-sm text-gray-700">{{ Auth::user()->email }}</div>
+              @if(Auth::user()->doctor)
+                <div class="block px-4 py-2 text-sm text-gray-700"> 
+                  Dr. {{ Auth::user()->doctor->first_name }} {{ Auth::user()->doctor->last_name }} 
+                </div>
+              @endif
+              <div class="block px-4 py-2 text-sm text-gray-700">
+                  {{ Auth::user()->email }}
+                </div>
                 @if(Auth::user()->role === 'PATIENT')
                     <a href="{{ route('patient-details') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Patient Details</a>
                 @elseif(Auth::user()->role === 'DOCTOR')

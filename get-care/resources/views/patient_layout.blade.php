@@ -6,20 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GetCare - Patient Dashboard</title>
     <link rel="stylesheet" href="{{ mix('css/app.css') }}">
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-        <script src="//unpkg.com/alpinejs" defer></script>
-        <script src="{{ mix('js/app.js') }}" defer></script>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="//unpkg.com/alpinejs" defer></script>
+    <script src="{{ mix('js/app.js') }}" defer></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 
-<style>
-    body {
-        font-family:  'Roboto', sans-serif !important;
-    }
-
-</style>
-  
+    <style>
+    body {font-family:  'Roboto', sans-serif !important;}
+       [x-cloak] { display: none !important; }
+    </style>
+      
     @yield('styles')
   </head>
   <body class="bg-gray-100">
