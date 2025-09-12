@@ -29,20 +29,22 @@
   </nav>
 
   {{-- Hero Section --}}
-  <section class="relative overflow-hidden">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20">
+  <section class="relative overflow-hidden min-h-screen flex items-center justify-center">
+    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/5206923/pexels-photo-5206923.jpeg?auto=compress&cs=tinysrgb&w=1000'); transform: scaleX(-1);"></div> {{-- Flipped background image --}}
+    <div class="absolute inset-0 bg-black opacity-50"></div> {{-- Overlay for readability --}}
+    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 text-white">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        {{-- Left Content --}}
+        {{-- Left Content (not flipped) --}}
         <div class="space-y-8">
           <div class="space-y-4">
             <h1 class="text-4xl lg:text-6xl font-bold leading-tight">
-              <span class="text-slate-800">YOUR </span>
-              <span class="text-emerald-600">ONLINE</span>
+              <span class="text-white">YOUR </span>
+              <span class="text-emerald-300">ONLINE</span>
               <br />
-              <span class="text-blue-600">HEALTH TEAM</span>
+              <span class="text-blue-300">HEALTH TEAM</span>
             </h1>
 
-            <p class="text-lg lg:text-xl text-slate-600 leading-relaxed max-w-lg">
+            <p class="text-lg lg:text-xl text-gray-200 leading-relaxed max-w-lg">
               We aim to be the leading provider of proactive,
               convenient, and comprehensive specialist healthcare
               for young adults in the Philippines, empowering them
@@ -57,37 +59,16 @@
               {{-- ArrowRight Icon --}}
               <svg class="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
             </button>
-            <button class="border-2 border-gray-400 text-gray-700 px-8 py-4 rounded-full font-semibold text-lg hover:border-emerald-600 hover:text-emerald-600 transition-all duration-300">
+            <button class="border-2 border-gray-200 text-gray-200 px-8 py-4 rounded-full font-semibold text-lg hover:border-emerald-300 hover:text-emerald-300 transition-all duration-300">
               LEARN MORE
             </button>
           </div>
         </div>
-
-        {{-- Right Image --}}
-        <div class="relative">
-          <div class="relative rounded-2xl overflow-hidden shadow-2xl">
-            <img
-              src="https://images.pexels.com/photos/5206923/pexels-photo-5206923.jpeg?auto=compress&cs=tinysrgb&w=1000"
-              alt="Healthcare professionals working together"
-              class="w-full h-[500px] object-cover"
-            />
-            <div class="absolute inset-0 bg-gradient-to-t from-emerald-600/20 to-transparent"></div>
-          </div>
-
-          {{-- Floating Elements --}}
-          <div class="absolute -top-4 -right-4 bg-white rounded-full p-4 shadow-lg">
-            {{-- Heart Icon --}}
-            <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 22l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-          </div>
-          <div class="absolute -bottom-4 -left-4 bg-white rounded-full p-4 shadow-lg">
-            {{-- Shield Icon --}}
-            <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.001 12.001 0 002 12c0 2.227.53 4.378 1.45 6.273L12 22l8.55-3.727A12.001 12.001 0 0022 12c0-2.363-.667-4.573-1.882-6.476z"></path></svg>
-          </div>
-        </div>
+        {{-- Right Placeholder (now empty) --}}
+        <div></div>
       </div>
     </div>
   </section>
-
   {{-- Features Section --}}
   <section class="py-20 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
