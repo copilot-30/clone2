@@ -117,9 +117,9 @@ Route::middleware('auth:sanctum')->group(function () {
             // Route::put('/appointments/{id}', 'DoctorAppointmentController@update'); // Keep existing if needed
             // Route::delete('/appointments/{id}', 'DoctorAppointmentController@destroy'); // Keep existing if needed
         
-            Route::get('/patients', 'DoctorController@listAssignedPatients');
+            // Route::get('/patients', 'DoctorController@viewPatients')->name('doctor.patients.view');
+            Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
-            Route::get('/patients/view', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::post('/patient-notes', 'PatientNoteController@store');
         });
     });

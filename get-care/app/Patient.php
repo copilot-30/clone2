@@ -48,6 +48,12 @@ class Patient extends Model
         static::creating(function ($model) {
             $model->{$model->getKeyName()} = (string) \Illuminate\Support\Str::uuid();
         });
+
+        static::saving(function ($model) {
+            if ($model->date_of_birth) {
+                $model->age = $model->date_of_birth->diffInYears(\Carbon\Carbon::now());
+            }
+        });
     }
 
     public function user()
@@ -113,5 +119,14 @@ class Patient extends Model
     public function attendingPhysician()
     {
         return $this->hasOne(AttendingPhysician::class, 'patient_id');
+    }
+
+    // Accessor to calculate age based on date_of_birth
+    public function getAgeAttribute()
+    {
+        if ($this->date_of_birth) {
+            return $this->date_of_birth->diffInYears(\Carbon\Carbon::now());
+        }
+        return null;
     }
 }
