@@ -28,7 +28,7 @@
                     ['id' => 'availability', 'label' => 'Availability', 'icon' => 'Calendar', 'url' => route('doctor.availability.edit')],
                     ['id' => 'clinics', 'label' => 'Clinics', 'icon' => 'BuildingHospital', 'url' => route('doctor.clinics.list')],
                     ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('doctor.appointments.list')],
-                    ['id' => 'patients', 'label' => 'My Patients', 'icon' => 'Users'],
+                    ['id' => 'patients', 'label' => 'My Patients', 'icon' => 'Users', 'url' => route('doctor.patients.view')],
                     // Add other doctor-specific menu items as needed
                 ];
             @endphp

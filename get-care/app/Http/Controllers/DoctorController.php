@@ -450,4 +450,16 @@ class DoctorController extends Controller
 
         return redirect()->route('doctor.appointments.list')->with('success', 'Appointment cancelled successfully.');
     }
+
+    public function viewPatients()
+    {
+        $doctor = Auth::user()->doctor;
+        $patients = Patient::whereHas('appointments', function ($query) use ($doctor) {
+            $query->where('doctor_id', $doctor->id);
+        })->get();
+
+        // You might want to pass a selected patient if navigating from a list
+        // For now, let's just pass the list of patients
+        return view('doctor.patient-view', compact('patients'));
+    }
 }
