@@ -119,6 +119,11 @@ class PatientController extends Controller
         return view('patient.chat-interface');
     }
 
+    public function aiConsult()
+    {
+        return view('patient.ai-consult-chat');
+    }
+
     public function showDoctorSelectionForm()
     {
         $user = Auth::user();
@@ -566,5 +571,26 @@ class PatientController extends Controller
             \Log::error('Google OAuth failed: ' . $e->getMessage());
             return redirect()->route('patient.dashboard')->with('error', 'Failed to link Google account. Please try again.');
         }
+    }
+    public function getPatientDetailsForApi()
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return response()->json(['error' => 'Patient profile not found.'], 404);
+        }
+
+        // Return a subset of patient data that is safe to expose to the AI
+        return response()->json([
+            'first_name' => $patient->first_name,
+            'last_name' => $patient->last_name,
+            'date_of_birth' => $patient->date_of_birth,
+            'sex' => $patient->sex,
+            'blood_type' => $patient->blood_type,
+            'medical_conditions' => $patient->medical_conditions,
+            'allergies' => $patient->allergies,
+            // Add other non-sensitive fields as needed
+        ]);
     }
 }

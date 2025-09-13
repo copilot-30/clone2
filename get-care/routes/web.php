@@ -152,6 +152,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/profile', 'PatientProfileController@show');
             Route::put('/profile', 'PatientProfileController@update');
             Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+            Route::get('/ai-consult', 'PatientController@aiConsult')->name('patient.ai-consult');
+            Route::post('/ai-consult', 'OpenLLMController@getMedicalSuggestion');
             Route::get('/select-doctor', 'PatientController@showDoctorSelectionForm')->name('patient.select-doctor');
             Route::post('/attending-physician', 'PatientController@storeAttendingPhysician')->name('patient.storeAttendingPhysician');
             Route::get('/appointments/select-type/{doctor_id}', 'PatientController@showAppointmentTypeForm')->name('patient.select-appointment-type');
