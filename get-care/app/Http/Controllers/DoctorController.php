@@ -220,7 +220,7 @@ class DoctorController extends Controller
             'availability.*.clinic_id' => 'nullable|uuid',
             'availability.*.is_active' => 'nullable|boolean', // Add validation for is_active
             'availability.*.availability_type' => 'nullable|array', // New: Add validation for availability_type
-            'availability.*.availability_type.*' => 'string|in:appointment,follow-up', // Validate array elements
+            'availability.*.availability_type.*' => 'string|in:consultation,follow-up', // Validate array elements
         ]);
         // Custom rule to validate day_of_week values
         $validator->sometimes('availability.*.day_of_week', ['in:' . implode(',', array_keys(self::$dayMapping))], function ($input) {

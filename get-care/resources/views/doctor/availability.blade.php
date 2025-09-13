@@ -142,8 +142,8 @@
                        <label class="block text-gray-700 text-xs font-bold mb-1">Availability Type</label>
                        <div class="flex flex-col">
                            <label class="inline-flex items-center">
-                               <input type="checkbox" name="availability[${currentUniqueIndex}][availability_type][]" value="appointment" class="form-checkbox h-4 w-4 text-emerald-600" ${slot.availability_type && slot.availability_type.includes('appointment') ? 'checked' : ''}>
-                               <span class="ml-2 text-gray-700 text-sm">Appointment</span>
+                               <input type="checkbox" name="availability[${currentUniqueIndex}][availability_type][]" value="consultation" class="form-checkbox h-4 w-4 text-emerald-600" ${slot.availability_type && slot.availability_type.includes('consultation') ? 'checked' : ''}>
+                               <span class="ml-2 text-gray-700 text-sm">Consultation</span>
                            </label>
                            <label class="inline-flex items-center">
                                <input type="checkbox" name="availability[${currentUniqueIndex}][availability_type][]" value="follow-up" class="form-checkbox h-4 w-4 text-emerald-600" ${slot.availability_type && slot.availability_type.includes('follow-up') ? 'checked' : ''}>

@@ -220,7 +220,7 @@ class PatientController extends Controller
         $validatedData = $request->validate([
             'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
             'appointment_type' => 'required|string|in:online,clinic',
-            'appointment_subtype' => 'required|string|in:consultation,follow-up', // New: Add validation for subtype
+            'appointment_subtype' => 'required|string|in:consultation,follow-up', // Updated: Changed 'appointment' to 'consultation'
             'clinic_id' => 'nullable|uuid|exists:clinics,id', // Required if type is 'clinic'
         ]);
 
@@ -235,14 +235,14 @@ class PatientController extends Controller
             }
             $clinic = Clinic::findOrFail($validatedData['clinic_id']);
         }
-
-        // Fetch doctor's availability for the next few weeks
-        $availabilities = DoctorAvailability::where('doctor_id', $doctor->id)
-                                            ->where('is_active', true)
-                                            ->when($clinic, function ($query, $clinic) {
-                                                return $query->where('clinic_id', $clinic->id);
-                                            })
-                                            ->get();
+// Fetch doctor's availability for the next few weeks
+$availabilities = DoctorAvailability::where('doctor_id', $doctor->id)
+                                    ->where('is_active', true)
+                                    ->when($clinic, function ($query, $clinic) {
+                                        return $query->where('clinic_id', $clinic->id);
+                                    })
+                                    ->whereJsonContains('availability_type', $appointmentSubtype) // Filter by subtype
+                                    ->get();
 
         // Group availabilities by day of week
         $groupedAvailabilities = $availabilities->groupBy('day_of_week');
@@ -292,7 +292,7 @@ class PatientController extends Controller
 $validatedData = $request->validate([
     'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
     'appointment_type' => 'required|string|in:online,clinic',
-    'appointment_subtype' => 'required|string|in:consultation,follow-up', // Add this line
+    'appointment_subtype' => 'required|string|in:consultation,follow-up', // Updated: Changed 'appointment' to 'consultation'
     'clinic_id' => 'required_if:appointment_type,clinic|nullable|uuid|exists:clinics,id',
     'appointment_datetime' => 'required|date_format:Y-m-d H:i',
     'chief_complaint' => 'nullable|string|max:1000',
@@ -325,7 +325,8 @@ $validatedData = $request->validate([
       
                                         
                                         
-        $availableSlot = $q ->first();
+        $q->whereJsonContains('availability_type', $validatedData['appointment_subtype']);
+        $availableSlot = $q->first();
 
         if (!$availableSlot) {
             return back()->withErrors(['appointment_datetime' => 'Selected time slot is not available. Please choose another one.']);

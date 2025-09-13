@@ -28,8 +28,8 @@
     <label class="block text-gray-700 text-xs font-bold mb-1">Availability Type</label>
     <div class="flex flex-col">
         <label class="inline-flex items-center">
-            <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][availability_type][]" value="appointment" class="form-checkbox h-4 w-4 text-emerald-600" {{ ($slot['availability_type'] ?? false) && in_array('appointment', $slot['availability_type']) ? 'checked' : '' }}>
-            <span class="ml-2 text-gray-700 text-sm">Appointment</span>
+            <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][availability_type][]" value="consultation" class="form-checkbox h-4 w-4 text-emerald-600" {{ ($slot['availability_type'] ?? false) && in_array('consultation', $slot['availability_type']) ? 'checked' : '' }}>
+            <span class="ml-2 text-gray-700 text-sm">Consultation</span>
         </label>
         <label class="inline-flex items-center">
             <input type="checkbox" name="availability[{{ $uniqueSlotIndex }}][availability_type][]" value="follow-up" class="form-checkbox h-4 w-4 text-emerald-600" {{ ($slot['availability_type'] ?? false) && in_array('follow-up', $slot['availability_type']) ? 'checked' : '' }}>
