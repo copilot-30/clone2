@@ -220,11 +220,13 @@ class PatientController extends Controller
         $validatedData = $request->validate([
             'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
             'appointment_type' => 'required|string|in:online,clinic',
+            'appointment_subtype' => 'required|string|in:consultation,follow-up', // New: Add validation for subtype
             'clinic_id' => 'nullable|uuid|exists:clinics,id', // Required if type is 'clinic'
         ]);
 
         $doctor = Doctor::findOrFail($validatedData['doctor_id']);
         $appointmentType = $validatedData['appointment_type'];
+        $appointmentSubtype = $validatedData['appointment_subtype']; // New: Get subtype
         $clinic = null;
 
         if ($appointmentType === 'clinic') {
@@ -277,7 +279,7 @@ class PatientController extends Controller
                 }
             }
         }
-        return view('patient.select-date-time', compact('doctor', 'appointmentType', 'clinic', 'slots'));
+        return view('patient.select-date-time', compact('doctor', 'appointmentType', 'appointmentSubtype', 'clinic', 'slots'));
     }
 
     public function storeAppointment(Request $request)
@@ -287,14 +289,14 @@ class PatientController extends Controller
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
         }
-
-        $validatedData = $request->validate([
-            'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
-            'appointment_type' => 'required|string|in:online,clinic',
-            'clinic_id' => 'required_if:appointment_type,clinic|nullable|uuid|exists:clinics,id',
-            'appointment_datetime' => 'required|date_format:Y-m-d H:i',
-            'chief_complaint' => 'nullable|string|max:1000',
-        ]);
+$validatedData = $request->validate([
+    'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
+    'appointment_type' => 'required|string|in:online,clinic',
+    'appointment_subtype' => 'required|string|in:consultation,follow-up', // Add this line
+    'clinic_id' => 'required_if:appointment_type,clinic|nullable|uuid|exists:clinics,id',
+    'appointment_datetime' => 'required|date_format:Y-m-d H:i',
+    'chief_complaint' => 'nullable|string|max:1000',
+]);
 
         $doctor = Doctor::findOrFail($validatedData['doctor_id']);
 
@@ -466,6 +468,7 @@ class PatientController extends Controller
             'clinic_id' => isset($validatedData['clinic_id']) ? $validatedData['clinic_id'] : null,
             'appointment_datetime' => $validatedData['appointment_datetime'],
             'type' => $validatedData['appointment_type'], // 'online' or 'clinic'
+            'subtype' => $validatedData['appointment_subtype'], // Add this line
             'status' => 'pending', // or 'scheduled'
             'is_online' => ($validatedData['appointment_type'] === 'online'),
             'meet_link' => $meetLink, // Use the generated link

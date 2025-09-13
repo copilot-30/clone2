@@ -26,6 +26,7 @@
         <form action="{{ route('patient.show-date-time-selection') }}" method="GET">
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
 
+            <h4 class="text-md font-semibold text-gray-700 mb-3">1. Select Appointment Type:</h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <!-- Online Consultation Card -->
                 <div class="appointment-type-card bg-white border border-gray-200 rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200" data-type="online">
@@ -54,6 +55,36 @@
                     </div>
                 </div>
             </div>
+
+            <h4 class="text-md font-semibold text-gray-700 mb-3">2. Select Reason for Appointment:</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Consultation Type Card -->
+                <div class="appointment-subtype-card bg-white border border-gray-200 rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200" data-subtype="consultation">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center bg-blue-500 text-white rounded-full text-lg font-bold mr-4">
+                            <i class="fas fa-comments"></i> {{-- Placeholder icon for consultation --}}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">New Consultation</h3>
+                            <p class="text-gray-500 text-sm">For new health concerns or initial assessments</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Follow-up Type Card -->
+                <div class="appointment-subtype-card bg-white border border-gray-200 rounded-lg shadow-sm p-6 cursor-pointer hover:shadow-md transition-shadow duration-200" data-subtype="follow-up">
+                    <div class="flex items-center mb-4">
+                        <div class="w-12 h-12 flex items-center justify-center bg-orange-500 text-white rounded-full text-lg font-bold mr-4">
+                            <i class="fas fa-sync-alt"></i> {{-- Placeholder icon for follow-up --}}
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Follow-up</h3>
+                            <p class="text-gray-500 text-sm">For existing conditions or post-treatment reviews</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" name="appointment_subtype" id="appointmentSubtypeInput">
 
         <!-- Google OAuth Login Section (Initially hidden) -->
 
@@ -178,6 +209,7 @@
 
 <input type="hidden" name="appointment_type" id="appointmentTypeInput">
 
+
 <div class="flex justify-center mt-8">
     <!-- <button type="button" onclick="window.history.back()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
         Back
@@ -196,7 +228,9 @@
 <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', function() {
         const typeCards = document.querySelectorAll('.appointment-type-card');
+        const subtypeCards = document.querySelectorAll('.appointment-subtype-card');
         const appointmentTypeInput = document.getElementById('appointmentTypeInput');
+        const appointmentSubtypeInput = document.getElementById('appointmentSubtypeInput');
         const googleAuthSection = document.getElementById('googleAuthSection');
         const clinicSelectionDiv = document.getElementById('clinicSelection');
         const clinicCards = document.querySelectorAll('.clinic-card');
@@ -209,36 +243,39 @@
         const selectedClinicAddress = document.getElementById('selectedClinicAddress');
 
         let selectedType = null;
+        let selectedSubtype = null;
         let selectedClinicId = null;
 
         function updateSelectedChoiceDisplay() {
-            console.log(selectedType);
             if (selectedChoiceDisplay && selectedAppointmentTypeText && selectedClinicDetails && selectedClinicName && selectedClinicAddress) {
-                if (selectedType) { // Always update the text content if a type is selected
-                    let appointmentTypeText = '';
-                    let clinicNameText = '';
-                    let clinicAddressText = '';
+                let appointmentTypeText = '';
+                let clinicNameText = '';
+                let clinicAddressText = '';
+                let subtypeText = selectedSubtype === 'consultation' ? 'New Consultation' : (selectedSubtype === 'follow-up' ? 'Follow-up' : '');
 
-                    if (selectedType === 'online') {
-                        appointmentTypeText = 'Online Consultation';
-                        selectedClinicDetails.classList.add('hidden');
-                    } else if (selectedType === 'clinic') {
-                        appointmentTypeText = 'In-Clinic Consultation';
-                        if (selectedClinicId) {
-                            const clinicCard = document.querySelector(`.clinic-card[data-clinic-id="${selectedClinicId}"]`);
-                            if (clinicCard) {
-                                clinicNameText = clinicCard.dataset.clinicName;
-                                clinicAddressText = clinicCard.dataset.clinicAddress;
-                                selectedClinicDetails.classList.remove('hidden');
-                            }
-                        } else {
-                            selectedClinicDetails.classList.add('hidden');
+                if (selectedType === 'online') {
+                    appointmentTypeText = 'Online Consultation';
+                    selectedClinicDetails.classList.add('hidden');
+                } else if (selectedType === 'clinic') {
+                    appointmentTypeText = 'In-Clinic Consultation';
+                    if (selectedClinicId) {
+                        const clinicCard = document.querySelector(`.clinic-card[data-clinic-id="${selectedClinicId}"]`);
+                        if (clinicCard) {
+                            clinicNameText = clinicCard.dataset.clinicName;
+                            clinicAddressText = clinicCard.dataset.clinicAddress;
+                            selectedClinicDetails.classList.remove('hidden');
                         }
+                    } else {
+                        selectedClinicDetails.classList.add('hidden');
                     }
-                    selectedAppointmentTypeText.textContent = appointmentTypeText;
+                }
+                
+                if (selectedType || selectedSubtype) {
+                    selectedAppointmentTypeText.textContent = appointmentTypeText + (subtypeText ? ' - ' + subtypeText : '');
                     selectedClinicName.textContent = clinicNameText;
                     selectedClinicAddress.textContent = clinicAddressText;
-                } else { // If nothing selected, hide the display
+                    selectedChoiceDisplay.classList.remove('hidden');
+                } else {
                     selectedChoiceDisplay.classList.add('hidden');
                 }
             }
@@ -253,28 +290,23 @@
                 appointmentTypeInput.value = selectedType;
 
                 const moveHereDiv = document.getElementById('move-here');
-                if (!moveHereDiv) return; // Defensive check
+                if (!moveHereDiv) return;
     
-                // Clear previous content in move-here div except for selectedChoiceDisplay
                 Array.from(moveHereDiv.children).forEach(child => {
                     if (child !== selectedChoiceDisplay) {
                         child.remove();
                     }
                 });
 
-                // Show selected choice display
                 selectedChoiceDisplay.classList.remove('hidden');
 
                 if (selectedType === 'clinic') {
-                    // Show clinic selection
                     if (clinicSelectionDiv) {
                         clinicSelectionDiv.classList.remove('hidden');
                     }
-                    // Hide Google Auth section
                     if (googleAuthSection) {
                         googleAuthSection.classList.add('hidden');
                     }
-                    // Retain selected clinic if previously selected for clinic type
                     if (selectedClinicId) {
                         const previouslySelectedClinicCard = document.querySelector(`.clinic-card[data-clinic-id="${selectedClinicId}"]`);
                         if (previouslySelectedClinicCard) {
@@ -282,16 +314,13 @@
                         }
                     }
                 } else if (selectedType === 'online') {
-                    // Hide clinic selection
                     if (clinicSelectionDiv) {
                         clinicSelectionDiv.classList.add('hidden');
                     }
-                    // Reset clinic selection
                     selectedClinicId = null;
                     clinicIdInput.value = '';
                     clinicCards.forEach(cc => cc.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500'));
          
-                    // Show Google Auth section if user doesn't have token
                     if (googleAuthSection ) {
                         console.log("showing google auth section");
                         googleAuthSection.classList.remove('hidden');
@@ -312,21 +341,34 @@
                 updateNextButtonState();
             });
         });
+        subtypeCards.forEach(card => {
+            card.addEventListener('click', function() {
+                subtypeCards.forEach(tc => tc.classList.remove('border-blue-500', 'ring-2', 'ring-blue-500'));
+                this.classList.add('border-blue-500', 'ring-2', 'ring-blue-500');
+
+                selectedSubtype = this.dataset.subtype;
+                appointmentSubtypeInput.value = selectedSubtype;
+
+                updateSelectedChoiceDisplay();
+                updateNextButtonState();
+            });
+        });
+
         function updateNextButtonState() {
-            if (selectedType === 'clinic') {
-                nextButton.disabled = !selectedClinicId;
-            } else if (selectedType === 'online') {
-                nextButton.disabled = false;
+            if (selectedType && selectedSubtype) {
+                if (selectedType === 'clinic') {
+                    nextButton.disabled = !selectedClinicId;
+                } else {
+                    nextButton.disabled = false;
+                }
             } else {
                 nextButton.disabled = true;
             }
         }
 
-        // Initial state update
         updateNextButtonState();
         updateSelectedChoiceDisplay();
 
-        // Add event listeners for copy buttons
         document.addEventListener('click', function(e) {
             if (e.target.closest('.copy-phone-btn')) {
                 const button = e.target.closest('.copy-phone-btn');
@@ -343,11 +385,9 @@
 
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(function() {
-                // Show visual feedback
                 const originalContent = button.innerHTML;
                 button.innerHTML = '<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
                 
-                // Reset button after 2 seconds
                 setTimeout(function() {
                     button.innerHTML = originalContent;
                 }, 2000);

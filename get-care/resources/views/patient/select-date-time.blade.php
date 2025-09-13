@@ -12,6 +12,7 @@
             @csrf
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
             <input type="hidden" name="appointment_type" value="{{ $appointmentType }}">
+            <input type="hidden" name="appointment_subtype" value="{{ $appointmentSubtype }}"> {{-- New: Add this line --}}
             @if($clinic)
                 <input type="hidden" name="clinic_id" value="{{ $clinic->id }}">
             @endif

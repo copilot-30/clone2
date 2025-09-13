@@ -13,6 +13,7 @@ class Appointment extends Model
         'appointment_datetime',
         'duration_minutes',
         'type',
+        'subtype', // Add this line
         'status',
         'is_online',
         'meet_link',
