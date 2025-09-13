@@ -38,13 +38,14 @@
 
             <div class="mb-6">
                 <label class="block text-gray-700 text-sm font-bold mb-2">Days Available:</label>
-                <div class="grid grid-cols-7 gap-4 text-center">
+                <div class="grid grid-cols-7 gap-4   inline-flex items-center">
                     @php
                         $daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
                         $shortDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
                     @endphp
+                    
                     @foreach ($daysOfWeek as $index => $day)
-                        <div class="flex flex-col items-center">
+                        <div class="flex flex-col items-center max-w-xs">
                             <span class="text-sm font-medium text-gray-700">{{ $shortDays[$index] }}</span>
                             <input type="checkbox" name="days_enabled[]" value="{{ $day }}" class="form-checkbox h-5 w-5 text-emerald-600 mt-2"
                                 {{ count($organizedAvailability[$day]) > 0 || old('days_enabled.' . $day) ? 'checked' : '' }}>
@@ -56,8 +57,8 @@
             <div id="availability-slots-container">
                 @php $uniqueSlotIndex = 0; @endphp
                 @foreach ($daysOfWeek as $day)
-                    <div class="mb-6 p-4 border rounded-lg bg-gray-50 day-slot-group" data-day="{{ $day }}">
-                        <h4 class="text-lg font-semibold text-gray-800 mb-3">{{ $day }}</h4>
+                    <div class="mb-6 p-4 border  bg-gray-20 day-slot-group" data-day="{{ $day }}">
+                        <h4 class="text-md font-semibold text-gray-800 mb-3">{{ $day }}</h4>
                         @php
                             $hasSlotsForDay = false;
                         @endphp
@@ -65,10 +66,8 @@
                             @include('components.availability-slot', ['day' => $day, 'uniqueSlotIndex' => $uniqueSlotIndex++, 'slot' => $slot])
                             @php $hasSlotsForDay = true; @endphp
                         @endforeach
-            
-
                         <button type="button" class="add-new-slot-btn mt-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded">
-                            Add New
+                            <i class="fa fa-plus"></i> Add New
                         </button>
                     </div>
                 @endforeach
@@ -76,7 +75,7 @@
 
             <div class="flex justify-end mt-6">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Save Availability
+                    <i class="fa fa-save"></i> Save Availability
                 </button>
             </div>
         </form>
@@ -169,7 +168,7 @@
                     </div>
                     <div class="w-1/5 flex justify-end items-end">
                         <button type="button" class="remove-slot-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">
-                            Remove
+                            <i class="fa fa-times"></i> Remove
                         </button>
                     </div>
                 </div>

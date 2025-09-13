@@ -21,7 +21,35 @@ class DoctorController extends Controller
 {
     public function dashboard()
     {
-        return view('doctor.dashboard'); // Assuming you'll create this view
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return redirect()->route('doctor.create')->withErrors('Please complete your doctor profile.');
+        }
+
+        // Fetch upcoming appointments for the authenticated doctor
+        $upcomingAppointments = Appointment::where('doctor_id', $doctor->id)
+            ->where('appointment_datetime', '>=', now())
+            ->orderBy('appointment_datetime')
+            ->limit(5) // Limit to 5 upcoming appointments for the dashboard
+            ->with(['patient', 'clinic'])
+            ->get();
+
+        // Count total unique patients for this doctor
+        $totalPatients = Patient::where(function ($query) use ($doctor) {
+            $query->whereHas('appointments', function ($query) use ($doctor) {
+                $query->where('doctor_id', $doctor->id);
+            })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
+                $query->where('doctor_id', $doctor->id);
+            });
+        })->distinct('id')->count();
+
+        // Count pending shared cases for this doctor as a receiver
+        $pendingSharedCases = SharedCase::where('receiving_doctor_id', $doctor->id)
+            ->where('status', 'PENDING')
+            ->count();
+
+        return view('doctor.dashboard', compact('upcomingAppointments', 'totalPatients', 'pendingSharedCases'));
     }
 
     public function createDoctor(Request $request)

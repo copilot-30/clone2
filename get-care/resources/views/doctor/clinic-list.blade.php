@@ -3,7 +3,7 @@
 @section('content')
 <div class="p-4">
     <div class="bg-white p-6 rounded-lg shadow-xl">
-        <h2 class="text-2xl font-bold text-emerald-600 mb-6">Clinic List</h2>
+        <h2 class="text-2xl font-bold text-emerald-600 mb-6">My Clinics</h2>
 
         @if (session('success'))
             <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -23,7 +23,7 @@
 
         <div class="flex justify-end mb-4">
             <a href="{{ route('doctor.clinics.create') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded">
-                Add New Clinic
+                <i class="fa fa-plus"></i> Add New Clinic
             </a>
         </div>
 
@@ -37,6 +37,7 @@
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Phone</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Active</th>
+                        <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Facilities</th>
                         <th class="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
@@ -55,12 +56,19 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">No</span>
                                 @endif
                             </td>
+                            <td class="py-3 px-4 border-b border-gray-200">
+                                @foreach ($clinic->facilities as $facility)
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">{{ ucwords(str_replace('-', ' ', strtolower($facility))) }}</span>
+                                @endforeach
+                            </td>
+
+
                             <td class="py-3 px-4 border-b border-gray-200 text-sm">
-                                <a href="{{ route('doctor.clinics.edit', $clinic->id) }}" class="text-blue-600 hover:text-blue-900 mr-3">Edit</a>
+                                <a href="{{ route('doctor.clinics.edit', $clinic->id) }}" class=" text-blue-600 hover:text-blue-900 mr-3"><i class="fa fa-edit"></i> Edit</a>
                                 <form action="{{ route('doctor.clinics.delete', $clinic->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this clinic?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">Delete</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-900"><i class="fa fa-trash"></i> Delete</button>
                                 </form>
                             </td>
                         </tr>

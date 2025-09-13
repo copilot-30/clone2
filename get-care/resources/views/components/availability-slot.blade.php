@@ -57,7 +57,7 @@
 </div>
 <div class="w-1/5 flex justify-end items-end">
     <button type="button" class="remove-slot-btn bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm">
-        Remove
+        <i class="fa fa-times"></i> Remove
     </button>
 </div>
 </div>
