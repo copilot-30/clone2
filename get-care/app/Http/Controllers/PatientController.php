@@ -593,4 +593,22 @@ class PatientController extends Controller
             // Add other non-sensitive fields as needed
         ]);
     }
+
+    public function getDoctorsForApi()
+    {
+        // Fetch all doctors that are marked as active (if such a flag exists)
+        // For simplicity, let's assume all doctors in the Doctor model are visible for recommendations.
+        $doctors = Doctor::all()->map(function($doctor) {
+            return [
+                'id' => $doctor->id,
+                'first_name' => $doctor->first_name,
+                'last_name' => $doctor->last_name,
+                'specialization' => $doctor->specialization,
+                'years_of_experience' => $doctor->years_of_experience,
+                // Add other relevant non-sensitive doctor details
+            ];
+        });
+
+        return response()->json($doctors);
+    }
 }

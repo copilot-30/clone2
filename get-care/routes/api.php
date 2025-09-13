@@ -16,4 +16,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/patient/details', 'PatientController@getPatientDetailsForApi')->name('api.patient.details');
+    Route::get('/doctors', 'PatientController@getDoctorsForApi')->name('api.doctors');
 });
