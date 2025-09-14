@@ -670,7 +670,7 @@ public function listSharedCases(Request $request, $filter = null)
     })
         ->select('*', DB::raw($urgencyCaseStatement)) // Select all columns and the urgency_order
         ->with(['patient' => function ($query) {
-            $query->select('id', 'first_name', 'last_name', 'date_of_birth', 'sex');
+            $query->select('*');
         }, 'sharingDoctor', 'receivingDoctor']);
 
  
@@ -875,10 +875,10 @@ public function removeSharedCase(SharedCase $sharedCase)
  * @param SharedCase $sharedCase
  * @return \Illuminate\Http\JsonResponse
  */
-public function removeRejectedSharedCase(SharedCase $sharedCase)
+public function removeDeclinedSharedCase(SharedCase $sharedCase)
 {
     // Ensure the shared case is rejected and the authenticated doctor is the sharing doctor (primary doctor)
-    if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'REJECTED') {
+    if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id && ($sharedCase->status !== 'DECLINED' || $sharedCase->status !== 'CANCELLED')) {
         return response()->json(['success' => false, 'message' => 'Unauthorized action or invalid shared case status.'], 403);
     }
 

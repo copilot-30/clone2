@@ -16,24 +16,22 @@
 
     <div class="border-b border-gray-200 mb-6">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'ALL']) }}" class="{{ $filter === 'ALL' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'ALL']) }}" class="{{ $filter === 'ALL' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 All Requests ({{ $totalSharedCases }})
             </a>
-            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'PENDING']) }}" class="{{ $filter === 'PENDING' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'PENDING']) }}" class="{{ $filter === 'PENDING' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Pending ({{ $pendingSharedCasesCount }})
             </a>
-            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'ACCEPTED']) }}" class="{{ $filter === 'ACCEPTED' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'ACCEPTED']) }}" class="{{ $filter === 'ACCEPTED' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Accepted ({{ $acceptedSharedCasesCount }})
             </a>
-            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'DECLINED']) }}" class="{{ $filter === 'DECLINED' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+            <a href="{{ route('doctor.shared-cases.list', ['filter' => 'DECLINED']) }}" class="{{ $filter === 'DECLINED' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Declined ({{ $declinedSharedCasesCount }})
             </a>
-
-             <a href="{{ route('doctor.shared-cases.list', ['filter' => 'CANCELLED']) }}" class="{{ $filter === 'CANCELLED' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+             <a href="{{ route('doctor.shared-cases.list', ['filter' => 'CANCELLED']) }}" class="{{ $filter === 'CANCELLED' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Cancelled ({{ $cancelledSharedCasesCount }})
             </a>
-
-             <a href="{{ route('doctor.shared-cases.list', ['filter' => 'REVOKED']) }}" class="{{ $filter === 'REVOKED' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+             <a href="{{ route('doctor.shared-cases.list', ['filter' => 'REVOKED']) }}" class="{{ $filter === 'REVOKED' ? 'border-green-500 text-green-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
                 Revoked ({{ $revokedSharedCasesCount }})
             </a>
              
@@ -92,7 +90,7 @@
                             {{ substr($sharedCase->sharingDoctor->first_name, 0, 1) }}{{ substr($sharedCase->sharingDoctor->last_name, 0, 1) }}
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-white-900">Dr. {{ $sharedCase->sharingDoctor->first_name }} {{ $sharedCase->sharingDoctor->last_name }} has invited you to collaborate</p> 
+                            <p class="text-sm font-medium text-white-900">Dr. {{ $sharedCase->sharingDoctor->first_name }} {{ $sharedCase->sharingDoctor->last_name }} <span class="text-gray-500">has invited you to collaborate</span></p> 
                             <p class="text-sm text-gray-500">{{ $sharedCase->sharingDoctor->specialization }} • {{ $sharedCase->sharingDoctor->affiliated_hospital ?? 'N/A' }}</p>
                         </div>
                     @else
@@ -100,14 +98,14 @@
                             {{ substr($sharedCase->receivingDoctor->first_name, 0, 1) }}{{ substr($sharedCase->receivingDoctor->last_name, 0, 1) }}
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }}</p> has been invited to collaborate with you
-                            <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->specialization }} • {{ $sharedCase->receivingDoctor->affiliated_hospital ?? 'N/A' }}</p>
+                            <p class="text-sm font-medium text-gray-900">Dr. {{ $sharedCase->receivingDoctor->first_name }} {{ $sharedCase->receivingDoctor->last_name }} <span class="text-gray-500">has been invited to collaborate with you</span></p> 
+                            <p class="text-sm text-gray-500">{{ $sharedCase->receivingDoctor->specialization }} • <i class="fas fa-hospital"></i> {{ $sharedCase->receivingDoctor->affiliated_hospital ?? 'N/A' }}</p>
                         </div>
                     @endif
                 </div>
 
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">
-                    Patient: {{ $sharedCase->patient->first_name }} {{ $sharedCase->patient->last_name }} ({{ substr($sharedCase->patient->sex, 0, 1) }}, {{ $sharedCase->patient_age }})
+                    Patient: {{  ucwords($sharedCase->patient->first_name) }} {{  substr(ucwords($sharedCase->patient->middle_name), 0, 1) }}. {{ ucwords($sharedCase->patient->last_name) }} ({{  $sharedCase->patient->sex }}, {{ $sharedCase->patient_age }}) years old
                 </h3>
 
                 <p class="text-gray-700 mb-4">
@@ -135,6 +133,16 @@
                     @endif
                 </div>
 
+
+                <div class="flex flex-wrap ">
+                    <p class="text-lg font-medium text-gray-600 mr-2">Permissions:</p>
+                    @foreach ($sharedCase->permissions as $permission)
+                        <span class="inline-flex items-center px-2 py-1 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            {{ str_replace('_', ' ', ucwords(str_replace(' ', '_', $permission))) }}
+                        </span>
+                    @endforeach
+                </div>
+
                 <div class="flex space-x-2 mb-4">
                     {{-- Assuming shared_data can contain file attachments --}}
                     @if (isset($sharedCase->shared_data['file_attachments']) && is_array($sharedCase->shared_data['file_attachments']))
@@ -150,30 +158,30 @@
                 </div>
 
                 <div class="flex justify-end space-x-3 mt-4">
-                    <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        View Details
-                    </a>
+                    <!-- <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fa fa-eye"></i> View Details
+                    </a> -->
                     @if ($sharedCase->sharing_doctor_id === Auth::user()->doctor->id)
                         {{-- Actions for shared by me cases --}}
                         @if ($sharedCase->status === 'PENDING')
                             <form action="{{ route('doctor.shared-cases.cancel', $sharedCase->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    Cancel Request
+                                    <i class="fa fa-times"></i> Cancel Request
                                 </button>
                             </form>
                         @elseif ($sharedCase->status === 'ACCEPTED')
-                            <form action="{{ route('doctor.shared-cases.remove', $sharedCase->id) }}" method="POST">
+                            <form action="{{ route('doctor.shared-cases.remove', $sharedCase->id) }}" method="POST" class="revoke-form">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    Revoke Shared Case
+                                    <i class="fa fa-ban"></i> Revoke Shared Case
                                 </button>
                             </form>
-                        @elseif ($sharedCase->status === 'DECLINED')
+                        @elseif ($sharedCase->status === 'DECLINED' || $sharedCase->status === 'CANCELLED')
                             <form action="{{ route('doctor.shared-cases.remove-rejected', $sharedCase->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                                    Remove From List
+                                    <i class="fa fa-trash"></i> Remove From List
                                 </button>
                             </form>
                         @endif
@@ -183,18 +191,19 @@
                             <form action="{{ route('doctor.shared-cases.decline', $sharedCase->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
-                                    Decline
+                                    <i class="fa fa-times"></i> Decline
                                 </button>
                             </form>
                             <form action="{{ route('doctor.shared-cases.accept', $sharedCase->id) }}" method="POST">
                                 @csrf
                                 <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500">
-                                    Accept Collaboration
+                                    <i class="fa fa-check"></i> Accept Collaboration
                                 </button>
                             </form>
                         @endif
                     @endif
                 </div>
+                <br/>
                      <div class="text-gray-100 absolute left-4 bottom-4  px-3 py-1 rounded-full text-xs font-semibold bg-gray-800"> {{$sharedCase->id}}</div>
             </div>
         @empty
@@ -203,3 +212,44 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log("revoke form");
+        document.querySelectorAll('.revoke-form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (confirm('Are you sure you want to revoke this shared case? This action cannot be undone.')) {
+                    const form = this;
+                    const formData = new FormData(form);
+                    const actionUrl = form.getAttribute('action');
+
+                    fetch(actionUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                            window.location.reload();
+                        } else {
+                            alert('Error: ' + (data.message || 'Something went wrong.'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while revoking the shared case.');
+                    });
+                }
+            });
+        });
+    });
+</script>
+@endpush
