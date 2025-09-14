@@ -13,7 +13,8 @@ services:
     depends_on:
       db:
         condition: service_started
-    command: sh -c "groupadd -g 1001 getcare && usermod -a -G getcare www-data || true && chown -R www-data:www-data storage bootstrap && chmod -R 775 storage bootstrap && php-fpm"
+    # Removed command override to let Dockerfile's CMD handle php-fpm
+    # Permissions are now handled in Dockerfile build step
   nginx:
     image: nginx:alpine
     container_name: getcare_nginx

@@ -14,6 +14,9 @@ RUN docker-php-ext-install \
     pcntl \
     bcmath
 
+# Enable pdo_pgsql explicitly
+COPY docker-php-ext-pdo_pgsql.ini /usr/local/etc/php/conf.d/docker-php-ext-pdo_pgsql.ini
+
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -39,8 +42,8 @@ EXPOSE 9000
 # Install shadow package for user/group management
 RUN apk add --no-cache shadow
 
-# Create group for shared access with host
-RUN groupadd -g 1001 getcare && usermod -a -G getcare www-data
+# Create group for shared access with host (moved from docker-compose.yml)
+RUN groupadd -g 1001 getcare && usermod -a -G getcare www-data || true
 
 # Set ownership and permissions for shared directories
 RUN chown -R www-data:getcare /var/www/html/database/migrations
