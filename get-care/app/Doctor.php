@@ -111,4 +111,10 @@ class Doctor extends Model
     {
         return $this->hasMany(AttendingPhysician::class, 'doctor_id');
     }
+
+    //doctor has availability relationship, and availability has clinic relationship
+    public function clinics()
+    {
+        return $this->hasManyThrough(Clinic::class, DoctorAvailability::class, 'doctor_id', 'id', 'id', 'clinic_id');
+    }
 }

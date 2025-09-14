@@ -22,22 +22,23 @@ class OpenLLMController extends Controller
         $this -> doctors = Doctor::all();
     }
 
-    public function getMedicalSuggestion(Request $request)
+    //1. ai must give information about the user's concern 
+    //2. Able to suggest doctor base ai's explanation of user's concern
+     public function getMedicalSuggestion(Request $request)
     {
         if (empty($this->hf_api_token)) {
             return response()->json(['error' => 'HF_API_TOKEN not set in environment.'], 500);
         }
 
         $userInput = $request->input('query');
-
         // The provided curl command uses a "prompt" field.
         // We'll concatenate system and user instructions into a single prompt string.
         $systemInstructions = 'You are a helpful and knowledgeable medical assistant for doctors. Provide medical suggestions based on the user\'s query. ' .
                               'If asked to diagnose a condition, provide a list of possible diagnoses and their associated symptoms, along with a disclaimer. ' .
                               'You cannot provide definitive medical advice or replace a professional medical diagnosis. ' .
-                              '**IMPORTANT**: If the user asks anything about setting an appointment, finding a doctor, or booking a consultation, you MUST use the `create_link` tool. Respond with a JSON object like this: `{"tool_call": "create_link", "url": "patient.select-doctor", "text": "Click here to Book an Appointment"}`. ' .
-                              '**IMPORTANT**: If you need to retrieve patient details, generate a JSON object in your response like this: `{"tool_call": "get_patient_details"}`. ' .
-                              '**IMPORTANT**: If the user asks for doctor recommendations or a list of doctors, you should use the `get_doctors` tool by generating a JSON object like this: `{"tool_call": "get_doctors"}`. ' .
+                            //   '**IMPORTANT**: If the user asks anything about setting an appointment, finding a doctor, or booking a consultation, you MUST use the `create_link` tool. Respond with a JSON object like this: `{"tool_call": "create_link", "url": "patient.select-doctor", "text": "Click here to Book an Appointment"}`. ' .
+                            //   '**IMPORTANT**: If you need to retrieve patient details, generate a JSON object in your response like this: `{"tool_call": "get_patient_details"}`. ' .
+                            //   '**IMPORTANT**: If the user asks for doctor recommendations or a list of doctors, you should use the `get_doctors` tool by generating a JSON object like this: `{"tool_call": "get_doctors"}`. ' .
                               'Always ensure your JSON output is valid and surrounded by triple backticks (```json ... ```).';
 
         // Llama 3 models typically respond well to a structured prompt for chat.

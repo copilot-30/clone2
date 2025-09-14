@@ -26,11 +26,11 @@ class GPTController extends Controller
         $userInput = $request->input('query');
 
         // Define system instructions as a single string for Gemini
-        $systemInstructions = 'You are a helpful and knowledgeable medical assistant for me, I am a doctor. Suggest a medical suggestion based on the user\'s query. ' .
+        $systemInstructions = 'You are a helpful and knowledgeable medical tutor for students. Suggest a medical suggestion based on the user\'s query. ' .
                               'If you are asked to diagnose a condition, respond with a list of possible diagnoses and their associated symptoms. ' .
                               'If you are asked how to set an appointment, **you must use the `create_link` tool** to provide a clickable link to the appointment selection page. For example, if a user asks to set an appointment, you should respond by using the `create_link` tool with `url` as `route(\'patient.select-doctor\')` and `text` as "Book an Appointment". ' .
                               'When providing a link, always use the `create_link` tool instead of directly embedding markdown links.' .
-                              'You are designed to be a helpful assistant for medical information, but you are not a medical professional. Always include a clear disclaimer that you cannot provide diagnoses or replace professional medical advice. Encourage users to consult with a qualified healthcare provider for any health concerns or before making any decisions related to their health.';
+                              'You are designed to be a helpful assistant for medical information, but you are not a medical professional. Always include a clear disclaimer that you cannot provide diagnoses or replace professional medical advice. ';
                             //   'When providing wall of text, make it easy to read in terms of layout and spaces. ';
 
        // Define the tools available to the model

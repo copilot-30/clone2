@@ -6,24 +6,36 @@
         <h2 class="text-2xl font-bold mb-6 text-center">Select Your Doctor</h2>
         <p class="text-center text-gray-600 mb-8">Choose from your assigned doctors or search for a specialist</p>
 
-        <!-- Search Bar -->
+ 
+                <!-- Search Bar -->
+                 <form action="{{ route('patient.select-doctor') }}" method="GET">
         <div class="mb-6 flex items-center border border-gray-300 rounded-lg shadow-sm overflow-hidden">
-            <input type="text" placeholder="Search doctors by name or specialty..." class="w-full px-4 py-2 text-gray-700 focus:outline-none" id="doctorSearch">
-            <div class="p-2">
-                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-            </div>
+            
+                <input type="text" placeholder="Search doctors by name or specialty..." class="w-full px-4 py-2 text-gray-700 focus:outline-none" id="doctorSearch" name="search">
+                <div class="p-2">
+                     
+                        <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                 
+                </div>
         </div>
+
+            </form>
 
         <!-- Filter Buttons -->
         <div class="flex flex-wrap justify-center gap-2 mb-8">
-            <button class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 focus:outline-none">All Doctors</button>
+            <a href="{{ route('patient.select-doctor') }}" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-700 focus:outline-none">All Doctors</a>
             <!-- Example filter buttons - dynamically generate from specialties later -->
-            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Cardiology</button>
+            <!-- <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Cardiology</button>
             <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Neurology</button>
             <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Orthopedics</button>
             <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Pediatrics</button>
             <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Dermatology</button>
-            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Psychiatry</button>
+            <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">Psychiatry</button> -->
+            @foreach($specs as $spec)
+                <a href="{{ route('patient.select-doctor', ['specialization' => $spec->specialization]) }}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 focus:outline-none">{{ $spec->specialization }}</a>
+            @endforeach
+
+
         </div>
 
          <div class="flex items-center justify-center">
@@ -55,7 +67,7 @@
                         </p>
                         <p class="flex items-center">
                             <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            {{ $doctor->doctorClinics->count() }} clinics available
+                            {{ $doctor->clinics->count() }} clinics available
                         </p>
                     </div>
                     {{-- Reviews - Placeholder for now --}}

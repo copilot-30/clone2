@@ -124,7 +124,7 @@ class PatientController extends Controller
         return view('patient.ai-consult-chat');
     }
 
-    public function showDoctorSelectionForm()
+    public function showDoctorSelectionForm(Request $request)
     {
         $user = Auth::user();
         $patient = $user->patient; // Patient will be lazily loaded here
@@ -133,6 +133,8 @@ class PatientController extends Controller
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile before booking an appointment.');
         }
 
+        $specs=  Doctor::select('specialization')->groupBy('specialization')->get();
+    
         // Fetch the patient's current attending physician, if any
         $attendingPhysician = $patient->attendingPhysician;
 
@@ -142,8 +144,23 @@ class PatientController extends Controller
         }
 
         // Otherwise, show the doctor selection form for active doctors
-        $doctors = Doctor::all(); // Filter active doctors
-        return view('patient.select-doctor', compact('doctors'));
+        
+
+        $q = Doctor::whereNotNull('id');
+        
+
+        if ($request -> has('specialization')) {
+            $q =  $q->where('specialization', $request->specialization);
+        }
+
+        if ($request->has('search')) {
+            $q = $q -> where('first_name', 'ILIKE', $request->search . '%')->orWhere('last_name', 'ILIKE',  $request->search . '%')
+            ->orWhere('specialization', 'ILIKE', $request->search . '%');
+        }
+
+        $doctors = $q->get();
+ 
+        return view('patient.select-doctor', compact('doctors', 'specs'));
     }
 
     public function storeAttendingPhysician(Request $request)
