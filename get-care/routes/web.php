@@ -127,8 +127,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');
             Route::post('/soap-notes/store', 'DoctorController@storeSoapNote')->name('doctor.soap-notes.store');
             Route::post('/shared-cases/store', 'DoctorController@storeSharedCase')->name('doctor.shared-cases.store');
-            Route::get('/shared-cases/invitations', 'DoctorController@listSharedCaseInvitations')->name('doctor.shared-cases.invitations');
+            Route::get('/shared-cases/{filter?}', 'DoctorController@listSharedCases')->name('doctor.shared-cases.list');
             Route::post('/shared-cases/{sharedCase}/accept', 'DoctorController@acceptSharedCaseInvitation')->name('doctor.shared-cases.accept');
+            Route::post('/shared-cases/{sharedCase}/decline', 'DoctorController@declineSharedCaseInvitation')->name('doctor.shared-cases.decline');
             Route::post('/shared-cases/{sharedCase}/cancel', 'DoctorController@cancelSharedCaseInvitation')->name('doctor.shared-cases.cancel');
             Route::post('/shared-cases/{sharedCase}/remove', 'DoctorController@removeSharedCase')->name('doctor.shared-cases.remove');
             Route::post('/shared-cases/{sharedCase}/remove-rejected', 'DoctorController@removeRejectedSharedCase')->name('doctor.shared-cases.remove-rejected');

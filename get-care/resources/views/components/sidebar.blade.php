@@ -29,7 +29,7 @@
                     ['id' => 'clinics', 'label' => 'Clinics', 'icon' => 'BuildingHospital', 'url' => route('doctor.clinics.list')],
                     ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('doctor.appointments.list')],
                     ['id' => 'patients', 'label' => 'My Patients', 'icon' => 'Users', 'url' => route('doctor.patients.view')],
-                    ['id' => 'invitations', 'label' => 'Invitations', 'icon' => 'MessageCircle', 'url' => route('doctor.shared-cases.invitations')],
+                    ['id' => 'shared-cases', 'label' => 'Shared Cases', 'icon' => 'Files', 'url' => route('doctor.shared-cases.list', ['filter' => 'ALL'])],
                     // Add other doctor-specific menu items as needed
                 ];
             @endphp

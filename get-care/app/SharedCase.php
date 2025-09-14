@@ -18,6 +18,7 @@ class SharedCase extends Model
         'permissions',
         'status',
         'expires_at',
+        'urgency',
     ];
 
     protected $casts = [

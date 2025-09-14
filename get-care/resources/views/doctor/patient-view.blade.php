@@ -343,7 +343,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
 // Ensure selectedPatientData is always defined
-let selectedPatientData = @json($selectedPatient ?? new stdClass());
+let selectedPatientData = JSON.parse('{!! addslashes(json_encode($selectedPatient ?? new stdClass())) !!}');
 // Fallback in case the PHP expression doesn't produce a valid JavaScript object
 if (typeof selectedPatientData !== 'object' || selectedPatientData === null) {
     selectedPatientData = {};

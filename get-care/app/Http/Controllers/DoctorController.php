@@ -17,6 +17,7 @@ use App\Events\AuditableEvent;
 use Auth;
 use Illuminate\Support\Str;
 use App\SharedCase; // Add this line
+
 class DoctorController extends Controller
 {
     public function dashboard()
@@ -63,7 +64,6 @@ class DoctorController extends Controller
         }
     }
 
-
     public function editDoctor(Request $request)
     {
         $doctor = Auth::user()->doctor;
@@ -73,7 +73,6 @@ class DoctorController extends Controller
             return view('doctor.edit-doctor', compact('doctor'));
         }
     }
-
 
     public function storeDoctorDetails(Request $request)
     {
@@ -169,8 +168,6 @@ class DoctorController extends Controller
 
         return redirect()->back()->with('success', 'Doctor details updated successfully.');
     }
- 
-
 
     private static $dayMapping = [
         'Monday' => 1,
@@ -280,7 +277,7 @@ class DoctorController extends Controller
             $doctor = Auth::user()->doctor;
             $doctor->online_availability_enabled = $request->input('status');
             $doctor->save();
-
+ 
             // First, delete existing availability for the doctor to handle removals
             DoctorAvailability::where('doctor_id', $doctor_id)->delete();
 
@@ -615,7 +612,6 @@ public function viewPatients(Request $request, $patient_id = null)
         $selectedPatient = $patients->first(); // Select the first patient by default if no patient_id is provided
     }
  
-
     return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor'));
 }
 
@@ -625,6 +621,7 @@ public function storeSharedCase(Request $request)
         'patient_id' => 'required|uuid|exists:patients,id',
         'receiving_doctor_id' => 'required|uuid|exists:doctor_profiles,id',
         'case_description' => 'required|string',
+        'urgency' => 'required|string|in:high,medium,low', // Add validation for urgency
         'permissions' => 'nullable|array',
         'expires_at' => 'nullable|date',
     ]);
@@ -640,7 +637,6 @@ public function storeSharedCase(Request $request)
         return redirect()->back()->with('error', 'You cannot share a case with yourself.')->withInput();
     }
  
-
     SharedCase::create([
         'patient_id' => $request->input('patient_id'),
         'sharing_doctor_id' => $sharingDoctor->id,
@@ -650,6 +646,7 @@ public function storeSharedCase(Request $request)
         'permissions' => $request->input('permissions'), // Keeping for compatibility, ideally combine with shared_data
         'status' => 'PENDING',
         'expires_at' => $request->input('expires_at'),
+        'urgency' => $request->input('urgency'), // Save urgency
     ]);
 
     event(new AuditableEvent(auth()->id(), 'shared_case_created', [
@@ -661,16 +658,109 @@ public function storeSharedCase(Request $request)
     return redirect()->back()->with('success', 'Case shared successfully and is pending acceptance.');
 }
 
-public function listSharedCaseInvitations()
+public function listSharedCases(Request $request, $filter = null)
 {
     $doctor = Auth::user()->doctor;
-    $invitations = SharedCase::where('receiving_doctor_id', $doctor->id)
-                             ->where('status', 'PENDING')
-                             ->with('patient', 'sharingDoctor')
-                             ->get();
-    return view('doctor.shared-cases.invitations', compact('invitations'));
-}
 
+    $urgencyCaseStatement = "CASE WHEN urgency = 'High' THEN 0 WHEN urgency = 'Medium' THEN 1 WHEN urgency = 'Low' THEN 2 ELSE 3 END as urgency_order";
+
+    $baseQueryReceived = SharedCase::where(function($query) use ($doctor) {
+        $query->where('receiving_doctor_id', $doctor->id)
+        ->orWhere('sharing_doctor_id', $doctor->id);
+    })
+        ->select('*', DB::raw($urgencyCaseStatement)) // Select all columns and the urgency_order
+        ->with(['patient' => function ($query) {
+            $query->select('id', 'first_name', 'last_name', 'date_of_birth', 'sex');
+        }, 'sharingDoctor', 'receivingDoctor']);
+
+ 
+
+    // Calculate counts for the header
+    $pendingSharedCasesCount = (clone $baseQueryReceived)->where('status', 'PENDING')->count();
+    $acceptedSharedCasesCount = (clone $baseQueryReceived)->where('status', 'ACCEPTED')->count();
+    $declinedSharedCasesCount = (clone $baseQueryReceived)->where('status', 'DECLINED')->count();
+    $revokedSharedCasesCount = (clone $baseQueryReceived)->where('status', 'REVOKED')->count();
+    $cancelledSharedCasesCount = (clone $baseQueryReceived)->where('status', 'CANCELLED')->count();
+    $totalSharedCases = (clone $baseQueryReceived)->count();
+
+    // Apply filter
+    $sharedCases = collect();
+    
+    if ($filter === 'PENDING') {
+        $sharedCases = (clone $baseQueryReceived)
+            ->where('status', 'PENDING')
+            ->orderBy('urgency_order') // Now order by the derived column
+            ->orderBy('created_at', 'desc')
+            ->get();
+    } elseif ($filter === 'ACCEPTED') {
+        $sharedCases = (clone $baseQueryReceived)->where('status', 'ACCEPTED')->orderBy('created_at', 'desc')->get();
+    } elseif ($filter === 'DECLINED') {
+        $sharedCases = (clone $baseQueryReceived)->where('status', 'DECLINED')->orderBy('created_at', 'desc')->get();
+    } elseif ($filter === 'REVOKED') {
+        $sharedCases = (clone $baseQueryReceived)->where('status', 'REVOKED')->orderBy('created_at', 'desc')->get();
+    }
+    elseif ($filter === 'CANCELLED') {
+        $sharedCases = (clone $baseQueryReceived)->where('status', 'CANCELLED')->orderBy('created_at', 'desc')->get();
+    }
+    
+    elseif ($filter === 'ALL' || is_null($filter)) {
+        // For 'ALL' cases, combine and then sort by urgency_order
+        $sharedCases = $baseQueryReceived
+            ->orderBy('urgency_order') // Order by the derived column after union
+            ->orderBy('created_at', 'desc')
+            ->get();
+    } else {
+        // Default to showing all cases if an invalid filter is provided
+        $sharedCases = (clone $baseQueryReceived) 
+            ->orderBy('urgency_order') // Order by the derived column after union
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    foreach ($sharedCases as $sharedCase) {
+        // Ensure patient->date_of_birth is used for age calculation
+        $sharedCase->patient_age = $this->getPatientAge($sharedCase->patient->date_of_birth);
+
+        $symptoms = null;
+        $duration = null;
+        $testsDone = null;
+
+        // Use the urgency field directly if available, otherwise default to 'Normal'
+        $urgency = $sharedCase->urgency ?? 'Normal';
+
+        // Parse symptoms, duration, and tests done from case_description for backward compatibility if needed,
+        // or ensure these are stored in structured fields directly.
+        // For now, assuming case_description might still contain this info for older entries.
+        if (preg_match('/Symptoms:\s*(.*?)(?:Duration:|$)/i', $sharedCase->case_description, $matches)) {
+            $symptoms = trim($matches[1]);
+        }
+        if (preg_match('/Duration:\s*(.*?)(?:Tests Done:|$)/i', $sharedCase->case_description, $matches)) {
+            $duration = trim($matches[1]);
+        }
+        if (preg_match('/Tests Done:\s*(.*)/i', $sharedCase->case_description, $matches)) {
+            $testsDone = trim($matches[1]);
+        }
+
+        $sharedCase->parsed_description = [
+            'symptoms' => $symptoms,
+            'duration' => $duration,
+            'tests_done' => $testsDone,
+            'urgency' => $urgency, // Assign urgency to parsed_description
+        ];
+    }
+    
+    return view('doctor.shared-cases.shared-cases', compact( 
+        'doctor', 
+        'sharedCases', 
+        'pendingSharedCasesCount', 
+        'acceptedSharedCasesCount', 
+        'declinedSharedCasesCount',  
+        'totalSharedCases', 
+        'cancelledSharedCasesCount',
+        'revokedSharedCasesCount',
+        'filter'
+    ));
+}
 public function acceptSharedCaseInvitation(SharedCase $sharedCase)
 {
     // Ensure the shared case is pending and for the authenticated doctor
@@ -688,6 +778,25 @@ public function acceptSharedCaseInvitation(SharedCase $sharedCase)
     ]));
 
     return redirect()->back()->with('success', 'Shared case accepted successfully.');
+}
+
+public function declineSharedCaseInvitation(SharedCase $sharedCase)
+{
+    // Ensure the shared case is pending and for the authenticated doctor
+    if ($sharedCase->receiving_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'PENDING') {
+        abort(403, 'Unauthorized action or invalid shared case status.');
+    }
+
+    $sharedCase->status = 'DECLINED';
+    $sharedCase->save();
+
+    event(new AuditableEvent(auth()->id(), 'shared_case_declined', [
+        'shared_case_id' => $sharedCase->id,
+        'patient_id' => $sharedCase->patient_id,
+        'receiving_doctor_id' => Auth::user()->doctor->id,
+    ]));
+
+    return redirect()->back()->with('success', 'Shared case invitation declined.');
 }
 
 public function cancelSharedCaseInvitation(SharedCase $sharedCase)
@@ -716,9 +825,9 @@ public function searchDoctors(Request $request)
     $currentDoctorId = Auth::user()->doctor->id;
 
     $eligibleDoctors = Doctor::where(function($q) use ($query) {
-        $q->where('first_name', 'like', '%' . $query . '%')
-          ->orWhere('last_name', 'like', '%' . $query . '%')
-          ->orWhere('email', 'like', '%' . $query . '%');
+        $q->where('first_name', 'ILIKE',  $query . '%')
+          ->orWhere('last_name', 'ILIKE',  $query . '%')
+          ->orWhere('email', 'ILIKE',  $query . '%');
     })
     ->where('id', '!=', $currentDoctorId) // Exclude current doctor
     ->whereDoesntHave('attendingPhysicians', function($q) use ($patientId) {
@@ -748,7 +857,7 @@ public function removeSharedCase(SharedCase $sharedCase)
     }
 
     // Inactivate the shared case by setting status to 'INACTIVE'
-    $sharedCase->status = 'INACTIVE';
+    $sharedCase->status = 'REVOKED';
     $sharedCase->save();
 
     event(new AuditableEvent(auth()->id(), 'shared_case_removed', [
@@ -783,6 +892,20 @@ public function removeRejectedSharedCase(SharedCase $sharedCase)
     ]));
 
     return response()->json(['success' => true, 'message' => 'Rejected invitation removed successfully.']);
+}
+
+/**
+ * Helper function to calculate patient's age based on birthdate.
+ *
+ * @param string $birthdate
+ * @return int|null
+ */
+private function getPatientAge($birthdate)
+{
+    if (empty($birthdate)) {
+        return null;
+    }
+    return \Carbon\Carbon::parse($birthdate)->age;
 }
 
 }
