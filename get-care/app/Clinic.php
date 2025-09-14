@@ -20,6 +20,7 @@ class Clinic extends Model
         'operating_hours',
         'facilities',
         'is_active',
+        'is_hospital',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class Clinic extends Model
         'operating_hours' => 'array', // Cast jsonb to array
         'facilities' => 'array', // Cast ARRAY to array
         'is_active' => 'boolean',
+        'is_hospital' => 'boolean',
     ];
 
     public $incrementing = false; // Disable auto-incrementing for UUID

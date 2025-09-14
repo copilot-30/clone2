@@ -135,6 +135,17 @@
                         <button type="button" id="add_facility_btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm mt-2">Add Facility</button>
                     </div>
                 </div>
+                <div class="flex items-center mb-4">
+                    <input
+                        type="checkbox"
+                        id="is_hospital"
+                        name="is_hospital"
+                        value="1"
+                        class="form-checkbox h-5 w-5 text-emerald-600"
+                        {{ old('is_hospital') ? 'checked' : '' }}
+                    />
+                    <label for="is_hospital" class="ml-2 block text-gray-700 text-sm font-bold">Is Hospital</label>
+                </div>
                 <div class="flex items-center">
                     <input
                         type="checkbox"

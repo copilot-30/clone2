@@ -325,6 +325,7 @@ class DoctorController extends Controller
             'facilities' => 'nullable|array',
             'facilities.*' => 'nullable|string|max:255',
             'is_active' => 'boolean',
+            'is_hospital' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -381,6 +382,7 @@ class DoctorController extends Controller
             'facilities' => 'nullable|array',
             'facilities.*' => 'nullable|string|max:255',
             'is_active' => 'boolean',
+            'is_hospital' => 'boolean',
         ]);
 
         if ($validator->fails()) {
