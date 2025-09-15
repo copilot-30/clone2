@@ -637,38 +637,4 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
 
 
 @endsection
-
-@push('scripts')
-<!-- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching logic for soap notes
-    const tabButtons = document.querySelectorAll('#soapNoteForm .tab-button');
-    const tabContents = document.querySelectorAll('#soapNoteForm .tab-pane');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // Deactivate all buttons and hide all content
-            tabButtons.forEach(btn => {
-                btn.classList.remove('border-emerald-600', 'text-emerald-600');
-                btn.classList.add('border-transparent', 'text-gray-600', 'hover:text-gray-900');
-            });
-            tabContents.forEach(content => content.classList.add('hidden'));
-
-            // Activate clicked button
-            button.classList.add('border-emerald-600', 'text-emerald-600');
-            button.classList.remove('border-transparent', 'text-gray-600', 'hover:text-gray-900');
-
-            // Show target content
-            const targetId = button.dataset.tabTarget;
-            document.getElementById(targetId).classList.remove('hidden');
-        });
-    });
-
-    // Automatically click the first tab button on load
-    if (tabButtons.length > 0) {
-        tabButtons[0].click();
-    }
-    });
-</script> -->
-
-@endpush
+ 
