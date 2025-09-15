@@ -11,7 +11,6 @@
          if(Auth::user()->patient && Auth::user()->patient->attendingPhysician){
             $menuItems = [
                 ['id' => 'dashboard', 'label' => 'Dashboard', 'url' => route('patient.dashboard')],
-                ['id' => 'doctors', 'label' => 'Doctors', 'url' => route('patient.select-doctor')],
                 ['id' => 'attending-physician', 'label' => 'My Doctor', 'url' => route('patient.attending-physician-details')],
                 ['id' => 'chat', 'label' => 'Chat', 'url' => route('patient.chat')],
                 ['id' => 'ai-consult', 'label' => 'AI Consult', 'url' => route('patient.ai-consult')],

@@ -1,0 +1,1 @@
+@include('patient.recent-notes')

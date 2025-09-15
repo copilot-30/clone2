@@ -1,5 +1,5 @@
 <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-    <div class="bg-emerald-600 text-white px-6 py-3 rounded-t-lg flex justify-between items-center">
+    <div class="bg-emerald-600 text-white px-6 py-3   flex justify-between items-center">
         <h2 class="text-lg font-semibold">PROFILE</h2>
         <a href="{{ route('patient-details') }}" class="text-white hover:text-emerald-100 transition-colors text-sm font-medium">EDIT</a>
     </div>
