@@ -30,8 +30,8 @@ class CreateSoapNotesTable extends Migration
             $table->text('prescription')->nullable();
             $table->text('test_request')->nullable();
             $table->text('remarks')->nullable();
-            $table->text('remarks_note')->nullable();
-            $table->text('remarks_template')->nullable(); 
+            $table->text('vital_remarks')->nullable();
+            $table->text('file_remarks')->nullable(); 
             $table->timestamps(); // created_at, updated_at
         });
     }

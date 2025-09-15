@@ -418,6 +418,15 @@ if (initialActiveTab && initialActivePane && selectedPatientData) {
     initialActiveTab.click(); // This will handle setting the active class and displaying the pane
 }
 
+// Handle URL hash for tab selection
+const hash = window.location.hash.substring(1); // Remove the '#'
+if (hash) {
+    const tabButton = document.querySelector(`button[data-tab="${hash}"]`);
+    if (tabButton) {
+        tabButton.click();
+    }
+}
+
 // Modal functionality
 const openModalBtn = document.getElementById('openAppointmentModal');
 const closeModalBtn = document.getElementById('closeAppointmentModal');

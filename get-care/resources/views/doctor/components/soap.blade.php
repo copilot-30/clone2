@@ -259,11 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 // Handle success response
-                console.log(data);
+                // console.log(data);
+                if (data.success) {
+                    alert(data.message || 'SOAP Note added successfully!');
+                    window.location = "/doctor/patients/"+data.soap_note.patient_id + "#soap-notes";
+                } else {
+                    alert('Error: ' + (data.message || 'Could not add SOAP Note.'));
+                }
             })
             .catch(error => {
                 // Handle error response
-                console.error(error);
+                // console.error(error);
+                alert('Error: ' + error);
             });
 
             // Clear all fields after submission
