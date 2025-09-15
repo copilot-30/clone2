@@ -149,12 +149,11 @@
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
-                        <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-6">
+                        <div class="grid grid-cols-1 gap-2 mb-4 md:grid-cols-6 sticky top-0 bg-white z-10 p-2 border-b border-gray-200" id="soap-notes-menu">
                             @foreach($selectedPatient->soapNotes()->orderBy('date', 'desc')->get() as $soapNote)
-                                <a href="#soap-note-{{ $soapNote->id }}" class="bg-white rounded-lg shadow-md p-3 text-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                    <p class="text-sm font-semibold text-gray-700">CC: {{$soapNote->chief_complaint or ''}}</p>
-                                    <p class="text-xs text-gray-500">{{ $soapNote->created_at->format('M d, Y') }}</p>
-                                    <p class="text-xs text-gray-500">#{{ substr($soapNote->id, 0, 8) }}...</p>
+                                <a href="#soap-note-{{ $soapNote->id }}" class="soap-note-card  inline-block bg-white rounded-lg shadow-md p-3 mx-2  hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500" data-soap-note-id="{{ $soapNote->id }}">
+                                    <p class="text-sm font-semibold text-gray-700">{{ $soapNote->date->format('M d, Y') }}</p>
+                                    <p class="text-xs text-gray-500">CC: {{$soapNote->chief_complaint  }}</p> 
                                 </a>
                             @endforeach
                         </div>

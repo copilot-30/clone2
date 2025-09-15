@@ -18,6 +18,7 @@
                 <div>
                     <label class="block text-emerald-700 text-sm font-bold mb-2">Subjective</label>
                     <textarea name="subjective" id="subjective-{{ $soapNote->id }}" placeholder="Subjective" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->subjective}}</textarea>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Chief Complaint</label>
                     <textarea name="chief_complaint" id="chief_complaint-{{ $soapNote->id }}" placeholder="Chief complaint (CC)" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows=2>{{$soapNote->chief_complaint}}</textarea>
                     <textarea name="history_of_illness" id="history_of_illness-{{ $soapNote->id }}" placeholder="History of present illness (HPI)" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->history_of_illness}}</textarea>
  
