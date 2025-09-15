@@ -137,7 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('/soap-notes/create/{patient_id?}', 'DoctorController@createSoapNote')->name('doctor.soap-notes.create');
             Route::post('/soap-notes/store', 'DoctorController@storeSoapNote')->name('doctor.soap-notes.store');
-            Route::post('/soap-notes/{soap_note_id}/update', 'DoctorController@updateSoapNote')->name('doctor.soap-notes.update');
+            Route::put('/soap-notes/{soap_note_id}/update', 'DoctorController@updateSoapNote')->name('doctor.soap-notes.update');
         });
     });
 

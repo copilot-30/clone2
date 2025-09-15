@@ -21,6 +21,7 @@ use App\SharedCase; // Add this line
 use App\FileAttachment; // Import FileAttachment model
 use App\LabRequest; // Import LabRequest model
 use App\LabResult; // Import LabResult model
+use App\Consultation;   // Import Consultation model
 
 class DoctorController extends Controller
 {
@@ -652,16 +653,26 @@ if ($request->hasFile('lab_files')) {
 return response()->json(['success' => true, 'message' => 'SOAP note added successfully.', 'soap_note' => $soapNote]);
 } // Closes the storeSoapNote method
 
-    /**
-     * Update an existing SOAP note for a patient
-     *
-     * @param Request $request
-     * @param \App\Consultation $soapNote
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function updateSoapNote(Request $request, \App\Consultation $soapNote)
+    public function updateSoapNote(Request $request, $soapNote_id)
     {
-        $validator = Validator::make($request->all(), [
+        try{
+            $soapNote = Consultation::findOrFail($soapNote_id);
+
+        if (!$soapNote) {
+            return response()->json(['success' => false, 'message' => 'SOAP note not found.'], 404);
+        }
+
+        $doctor = Auth::user()->doctor;
+
+        if (!$doctor) {
+            return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
+        }
+
+        if ($soapNote->doctor_id !== $doctor->id) {
+            return response()->json(['success' => false, 'message' => 'You are not authorized to update this SOAP note.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [ 
             'patient_id' => 'required|uuid|exists:patients,id',
             'subjective' => 'nullable|string',
             'chief_complaint' => 'nullable|string', // New
@@ -697,12 +708,13 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
             return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
         }
 
-        $doctor = Auth::user()->doctor;
+      
         $patientId = $request->input('patient_id');
 
+    
         // Verify that the doctor has permission to edit this SOAP note
         if ($soapNote->doctor_id !== $doctor->id) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized to edit this SOAP note.'], 403);
+            return response()->json(['success' => false, 'message' => 'Unauthorized to edit this SOAP note.', 'soap_note' => $soapNote, 'doctor'=>$doctor], 403);
         }
 
         // Prepare vital signs data
@@ -794,6 +806,9 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
         }
 
         return response()->json(['success' => true, 'message' => 'SOAP note updated successfully.', 'soap_note' => $soapNote]);
+        }catch(Exception $e){
+            return response()->json(['success' => false, 'message' => 'Error updating SOAP note: ' . $e->getMessage()]);
+        }
     }
 
 public function viewPatients(Request $request, $patient_id = null)

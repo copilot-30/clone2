@@ -151,7 +151,7 @@
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
                         <div class="space-y-4">
-                            @foreach($selectedPatient->soapNotes as $soapNote)
+                            @foreach($selectedPatient->soapNotes()->orderBy('date', 'desc')->orderBy('updated_at', 'desc')->get() as $soapNote)
                                 @include('doctor.components.soap-note-display', ['soapNote' => $soapNote, 'doctor' => $doctor])
                             @endforeach
                         </div>
