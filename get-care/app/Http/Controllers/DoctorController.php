@@ -546,11 +546,10 @@ public function storeSoapNote(Request $request)
         'prescription' => 'nullable|string', // New
         'test_request' => 'nullable|string', // New
         'remarks' => 'nullable|string', // New
-        'remarks_note' => 'nullable|string', // New
-        'remarks_template' => 'nullable|string', // New
+        'file_remarks' => 'nullable|string', // New 
         'follow_up_date' => 'nullable|date', // New
         'lab_files' => 'nullable|array', // Allow multiple lab files
-        'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:2048', // Validate each file
+        'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:256000', // Validate each file, max 256MB
     ]);
 
     if ($validator->fails()) {

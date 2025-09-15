@@ -9,8 +9,7 @@ class LabResult extends Model
 {
     protected $table = 'lab_results';
 
-    protected $fillable = [
-        'test_request_id',
+    protected $fillable = [ 
         'patient_id',
         'result_data',
         'result_file_url',

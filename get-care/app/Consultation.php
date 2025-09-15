@@ -9,7 +9,7 @@ class Consultation extends Model
     protected $table = 'soap_notes';
 
     protected $fillable = [
-        'visit_id',
+        'appointment_id',
         'patient_id',
         'doctor_id',
         'date',
@@ -24,9 +24,8 @@ class Consultation extends Model
         'prescription',
         'test_request',
         'remarks',
-        'remarks_note',
-        'remarks_template',
-        'follow_up_date',
+        'vital_remarks',
+        'file_remarks', 
     ];
 
     protected $casts = [

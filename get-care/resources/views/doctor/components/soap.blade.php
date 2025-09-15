@@ -106,7 +106,7 @@
                                 </div>
                                 <div id="file-list" class="mt-2"></div>
                             </div>
-                             <textarea name="laboratory_results" id="laboratory_results" placeholder="Laboratory results" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7"></textarea>
+                             <textarea name="file_remarks" id="file_remarks" placeholder="File description" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7"></textarea>
                             
                         </div>
                         <div id="remarks-tab-content" class="tab-pane hidden space-y-2">
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const bodyTemperature = document.getElementById('body_temperature').value;
             const capillaryBloodGlucose = document.getElementById('capillary_blood_glucose').value;
             const vitalsRemark = document.querySelector('textarea[name="vitals_remark"]').value; 
-            const laboratoryResults = document.getElementById('laboratory_results').value; 
+            const file_remarks = document.getElementById('file_remarks').value; 
 
             const assessment = document.getElementById('assessment').value;
             const diagnosis = document.getElementById('diagnosis').value;
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('body_temperature', bodyTemperature);
             formData.append('capillary_blood_glucose', capillaryBloodGlucose);
             formData.append('vitals_remark', vitalsRemark); 
-            formData.append('laboratory_results', laboratoryResults);  
+            formData.append('file_remarks', file_remarks);  
             formData.append('assessment', assessment);
             formData.append('diagnosis', diagnosis);
  
@@ -244,13 +244,9 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('test_request', testRequest);
             formData.append('remarks', remarks);
             
-        
-
             uploadedFiles.forEach(file => {
                 formData.append('lab_files[]', file);
             });
-
-  
 
             //submit the form with the formData 
             fetch("{{ route('doctor.soap-notes.store') }}", {

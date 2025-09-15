@@ -49,6 +49,10 @@ RUN groupadd -g 1001 getcare && usermod -a -G getcare www-data || true
 # Set ownership and permissions for shared directories
 RUN chown -R www-data:getcare /var/www/html/database/migrations
 RUN chmod -R 775 /var/www/html/database/migrations
+RUN chown -R www-data:getcare /var/www/html/storage
+RUN chmod -R 775 /var/www/html/storage
+RUN chown -R www-data:getcare /var/www/html/storage/logs
+RUN chmod -R 775 /var/www/html/storage/logs
 
 # Start PHP-FPM
 CMD ["php-fpm"]

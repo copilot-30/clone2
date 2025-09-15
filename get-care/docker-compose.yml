@@ -40,7 +40,7 @@ services:
       POSTGRES_USER: getcare_user
       POSTGRES_PASSWORD: getcare_password
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./db_data:/var/lib/postgresql/data
     networks:
       - getcare_network
 

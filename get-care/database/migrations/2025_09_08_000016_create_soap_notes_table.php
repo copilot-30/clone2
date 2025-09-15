@@ -15,9 +15,9 @@ class CreateSoapNotesTable extends Migration
     {
         Schema::create('soap_notes', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('visit_id')->nullable();
-            $table->uuid('patient_id')->nullable();
-            $table->uuid('doctor_id')->nullable();
+            $table->uuid('appointment_id')->nullable();
+            $table->uuid('patient_id')->nullable(false);
+            $table->uuid('doctor_id')->nullable(false);
             $table->date('date');
             $table->text('subjective')->nullable();
             $table->text('chief_complaint')->nullable();
@@ -31,8 +31,7 @@ class CreateSoapNotesTable extends Migration
             $table->text('test_request')->nullable();
             $table->text('remarks')->nullable();
             $table->text('remarks_note')->nullable();
-            $table->text('remarks_template')->nullable();
-            $table->date('follow_up_date')->nullable();
+            $table->text('remarks_template')->nullable(); 
             $table->timestamps(); // created_at, updated_at
         });
     }

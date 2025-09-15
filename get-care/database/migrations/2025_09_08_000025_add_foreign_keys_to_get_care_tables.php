@@ -46,16 +46,8 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->foreign('uploaded_by_id')->references('id')->on('users')->onDelete('set null');
         });
 
-        Schema::table('lab_results', function (Blueprint $table) {
-            $table->foreign('test_request_id')->references('id')->on('lab_test_requests')->onDelete('cascade');
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
-        });
+      
 
-        Schema::table('lab_test_requests', function (Blueprint $table) {
-            $table->foreign('soap_note_id')->references('id')->on('soap_notes')->onDelete('cascade');
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
-            $table->foreign('doctor_id')->references('id')->on('doctor_profiles')->onDelete('cascade');
-        });
 
         Schema::table('medical_backgrounds', function (Blueprint $table) {
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
@@ -79,11 +71,11 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
 
-        Schema::table('patient_visits', function (Blueprint $table) {
+        Schema::table('lab_results', function (Blueprint $table) { 
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
-            $table->foreign('doctor_id')->references('id')->on('doctor_profiles')->onDelete('cascade');
-            $table->foreign('appointment_id')->references('id')->on('appointments')->onDelete('cascade');
         });
+
+ 
 
         Schema::table('prescriptions', function (Blueprint $table) {
             $table->foreign('soap_note_id')->references('id')->on('soap_notes')->onDelete('cascade');
@@ -97,8 +89,7 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->foreign('receiving_doctor_id')->references('id')->on('doctor_profiles')->onDelete('cascade');
         });
 
-        Schema::table('soap_notes', function (Blueprint $table) {
-            $table->foreign('visit_id')->references('id')->on('patient_visits')->onDelete('cascade');
+        Schema::table('soap_notes', function (Blueprint $table) { 
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
             $table->foreign('doctor_id')->references('id')->on('doctor_profiles')->onDelete('cascade');
         });
@@ -153,16 +144,9 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->dropForeign(['uploaded_by_id']);
         });
 
-        Schema::table('lab_results', function (Blueprint $table) {
-            $table->dropForeign(['test_request_id']);
-            $table->dropForeign(['patient_id']);
-        });
+   
 
-        Schema::table('lab_test_requests', function (Blueprint $table) {
-            $table->dropForeign(['soap_note_id']);
-            $table->dropForeign(['patient_id']);
-            $table->dropForeign(['doctor_id']);
-        });
+ 
 
         Schema::table('medical_backgrounds', function (Blueprint $table) {
             $table->dropForeign(['patient_id']);
@@ -186,11 +170,11 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->dropForeign(['user_id']);
         });
 
-        Schema::table('patient_visits', function (Blueprint $table) {
+
+        Schema::table('lab_results', function (Blueprint $table) { 
             $table->dropForeign(['patient_id']);
-            $table->dropForeign(['doctor_id']);
-            $table->dropForeign(['appointment_id']);
         });
+ 
 
         Schema::table('prescriptions', function (Blueprint $table) {
             $table->dropForeign(['soap_note_id']);
@@ -205,7 +189,6 @@ class AddForeignKeysToGetCareTables extends Migration
         });
 
         Schema::table('soap_notes', function (Blueprint $table) {
-            $table->dropForeign(['visit_id']);
             $table->dropForeign(['patient_id']);
             $table->dropForeign(['doctor_id']);
         });
