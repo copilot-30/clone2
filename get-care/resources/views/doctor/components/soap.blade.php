@@ -104,7 +104,7 @@
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Upload Files</label>
                                 <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-gray-400">
                                     <p class="text-gray-500">Drag & drop files here, or click to select</p>
-                                    <input type="file" id="file-upload" name="lab_files[]" multiple class="hidden">
+                                    <input type="file" id="file-upload" name="lab_files[]" multiple class="">
                                 </div>
                                 <div id="file-list" class="mt-2"></div>
                             </div>
@@ -163,12 +163,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (closeSoapNoteModalBtn) {
         closeSoapNoteModalBtn.addEventListener('click', function() {
             soapNoteModal.classList.add('hidden');
+            uploadedFiles = []; // Clear the array
+            fileListContainer.innerHTML = ''; // Clear the display
         });
     }
 
     if (cancelSoapNoteBtn) {
         cancelSoapNoteBtn.addEventListener('click', function() {
             soapNoteModal.classList.add('hidden');
+            uploadedFiles = []; // Clear the array
+            fileListContainer.innerHTML = ''; // Clear the display
         });
     }
 
@@ -176,154 +180,127 @@ document.addEventListener('DOMContentLoaded', function() {
         soapNoteModal.addEventListener('click', function(event) {
             if (event.target === soapNoteModal) {
                 soapNoteModal.classList.add('hidden');
+                uploadedFiles = []; // Clear the array
+                fileListContainer.innerHTML = ''; // Clear the display
             }
         });
     }
 
-    // if (soapNoteForm) {
-    //     soapNoteForm.addEventListener('submit', function(event) {
-    //         event.preventDefault();
 
-    //         const subjective = document.getElementById('subjective').value;
-    //         const chiefComplaint = document.getElementById('chief_complaint').value;
-    //         const historyOfIllness = document.getElementById('history_of_illness').value;
-    //         const reviewOfSystems = document.getElementById('review_of_systems').value;
-    //         const pastMedicalHistory = document.getElementById('past_medical_history').value;
-    //         const socialHistory = document.getElementById('social_history').value;
-    //         const familyHistory = document.getElementById('family_history').value;
+    if (soapNoteForm) { 
+        soapNoteForm.addEventListener('submit', function(event) {
+            event.preventDefault();
 
-    //         const weight = document.getElementById('weight').value;
-    //         const height = document.getElementById('height').value;
-    //         const bmi = document.getElementById('bmi').value;
-    //         const bloodPressure = document.getElementById('blood_pressure').value;
-    //         const oxygenSaturation = document.getElementById('oxygen_saturation').value;
-    //         const respiratoryRate = document.getElementById('respiratory_rate').value;
-    //         const heartRate = document.getElementById('heart_rate').value;
-    //         const bodyTemperature = document.getElementById('body_temperature').value;
-    //         const capillaryBloodGlucose = document.getElementById('capillary_blood_glucose').value;
-    //         const vitalsRemark = document.querySelector('textarea[name="vitals_remark"]').value;
-    //         const physicalExamFindings = document.getElementById('physical_exam_findings').value;
-    //         const laboratoryResults = document.getElementById('laboratory_results').value;
-    //         const imagingResults = document.getElementById('imaging_results').value;
-    //         const otherDiagnosticData = document.getElementById('other_diagnostic_data').value;
+            const subjective = document.getElementById('subjective').value;
+            const chiefComplaint = document.getElementById('chief_complaint').value;
+            const historyOfIllness = document.getElementById('history_of_illness').value;
+           
 
-    //         const assessment = document.getElementById('assessment').value;
-    //         const diagnosis = document.getElementById('diagnosis').value;
-    //         const problemList = document.getElementById('problem_list').value;
-    //         const differentialDiagnoses = document.getElementById('differential_diagnoses').value;
-    //         const patientProgress = document.getElementById('patient_progress').value;
-    //         const overallStatus = document.getElementById('overall_status').value;
+            const objective = document.getElementById('objective').value;
+            const weight = document.getElementById('weight').value;
+            const height = document.getElementById('height').value;
+            const bmi = document.getElementById('bmi').value;
+            const bloodPressure = document.getElementById('blood_pressure').value;
+            const oxygenSaturation = document.getElementById('oxygen_saturation').value;
+            const respiratoryRate = document.getElementById('respiratory_rate').value;
+            const heartRate = document.getElementById('heart_rate').value;
+            const bodyTemperature = document.getElementById('body_temperature').value;
+            const capillaryBloodGlucose = document.getElementById('capillary_blood_glucose').value;
+            const vitalsRemark = document.querySelector('textarea[name="vitals_remark"]').value; 
+            const laboratoryResults = document.getElementById('laboratory_results').value; 
 
-    //         const plan = document.getElementById('plan').value;
-    //         const prescription = document.getElementById('prescription').value;
-    //         const testRequest = document.getElementById('test_request').value;
-    //         const remarks = document.getElementById('remarks').value;
-    //         const remarksNote = document.getElementById('remarks_note').value;
-    //         const remarksTemplate = document.getElementById('remarks_template').value;
-    //         const followUpDate = document.getElementById('follow_up_date').value;
+            const assessment = document.getElementById('assessment').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+ 
+
+            const plan = document.getElementById('plan').value;
+            const prescription = document.getElementById('prescription').value;
+            const testRequest = document.getElementById('test_request').value;
+            const remarks = document.getElementById('remarks').value;
+          
+            const followUpDate = document.getElementById('follow_up_date').value;
             
-    //         const formData = new FormData();
-    //         formData.append('patient_id', this.querySelector('input[name="patient_id"]').value);
-    //         formData.append('doctor_id', this.querySelector('input[name="doctor_id"]').value);
-    //         formData.append('subjective', subjective);
-    //         formData.append('chief_complaint', chiefComplaint);
-    //         formData.append('history_of_illness', historyOfIllness);
-    //         formData.append('objective', objective);
-    //         formData.append('weight', weight);
-    //         formData.append('height', height);
-    //         formData.append('bmi', bmi);
-    //         formData.append('blood_pressure', bloodPressure);
-    //         formData.append('oxygen_saturation', oxygenSaturation);
-    //         formData.append('respiratory_rate', respiratoryRate);
-    //         formData.append('heart_rate', heartRate);
-    //         formData.append('body_temperature', bodyTemperature);
-    //         formData.append('capillary_blood_glucose', capillaryBloodGlucose);
-    //         formData.append('vitals_remark', vitalsRemark);
-    //         formData.append('physical_exam_findings', physicalExamFindings);
-    //         formData.append('laboratory_results', laboratoryResults);
-    //         formData.append('imaging_results', imagingResults);
-    //         formData.append('other_diagnostic_data', otherDiagnosticData);
-    //         formData.append('assessment', assessment);
-    //         formData.append('diagnosis', diagnosis);
-    //         formData.append('problem_list', problemList);
-    //         formData.append('differential_diagnoses', differentialDiagnoses);
-    //         formData.append('patient_progress', patientProgress);
-    //         formData.append('overall_status', overallStatus);
-    //         formData.append('plan', plan);
-    //         formData.append('prescription', prescription);
-    //         formData.append('test_request', testRequest);
-    //         formData.append('remarks', remarks);
-    //         formData.append('remarks_note', remarksNote);
-    //         formData.append('remarks_template', remarksTemplate);
-    //         formData.append('follow_up_date', followUpDate);
-    //         formData.append('review_of_systems', reviewOfSystems);
-    //         formData.append('past_medical_history', pastMedicalHistory);
-    //         formData.append('social_history', socialHistory);
-    //         formData.append('family_history', familyHistory);
+            const formData = new FormData();
+            formData.append('patient_id', this.querySelector('select[name="patient_id"]').value);
+            formData.append('doctor_id', this.querySelector('input[name="doctor_id"]').value);
+            formData.append('subjective', subjective);
+            formData.append('chief_complaint', chiefComplaint);
+            formData.append('history_of_illness', historyOfIllness);
+            formData.append('objective', objective);
+            formData.append('weight', weight);
+            formData.append('height', height);
+            formData.append('bmi', bmi);
+            formData.append('blood_pressure', bloodPressure);
+            formData.append('oxygen_saturation', oxygenSaturation);
+            formData.append('respiratory_rate', respiratoryRate);
+            formData.append('heart_rate', heartRate);
+            formData.append('body_temperature', bodyTemperature);
+            formData.append('capillary_blood_glucose', capillaryBloodGlucose);
+            formData.append('vitals_remark', vitalsRemark); 
+            formData.append('laboratory_results', laboratoryResults);  
+            formData.append('assessment', assessment);
+            formData.append('diagnosis', diagnosis);
+ 
+            formData.append('plan', plan);
+            formData.append('prescription', prescription);
+            formData.append('test_request', testRequest);
+            formData.append('remarks', remarks);
+            
+        
 
+            uploadedFiles.forEach(file => {
+                formData.append('lab_files[]', file);
+            });
 
-    //         fetch('/doctor/soap-notes/store', {
-    //             method: 'POST',
-    //             body: formData,
-    //             headers: {
-    //                 'X-CSRF-TOKEN': "{{ csrf_token() }}"
-    //             }
-    //         })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             if (data.success) {
-    //                 alert('SOAP note added successfully!');
-    //                 soapNoteModal.classList.add('hidden');
-    //                 window.location.reload();
-    //             } else {
-    //                 alert('Error: ' + (data.message || 'Could not add SOAP note.'));
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //             alert('An error occurred while adding the SOAP note.');
-    //         });
+  
 
-    //         document.getElementById('subjective').value = '';
-    //         document.getElementById('chief_complaint').value = '';
-    //         document.getElementById('history_of_illness').value = '';
-    //         document.getElementById('review_of_systems').value = '';
-    //         document.getElementById('past_medical_history').value = '';
-    //         document.getElementById('social_history').value = '';
-    //         document.getElementById('family_history').value = '';
+            //submit the form with the formData 
+            fetch("{{ route('doctor.soap-notes.store') }}", {
+                method: 'POST',
+                body: formData, 
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle success response
+                console.log(data);
+            })
+            .catch(error => {
+                // Handle error response
+                console.error(error);
+            });
 
-    //         document.getElementById('objective').value = '';
-    //         document.getElementById('weight').value = '';
-    //         document.getElementById('height').value = '';
-    //         document.getElementById('bmi').value = '';
-    //         document.getElementById('blood_pressure').value = '';
-    //         document.getElementById('oxygen_saturation').value = '';
-    //         document.getElementById('respiratory_rate').value = '';
-    //         document.getElementById('heart_rate').value = '';
-    //         document.getElementById('body_temperature').value = '';
-    //         document.getElementById('capillary_blood_glucose').value = '';
-    //         document.querySelector('textarea[name="vitals_remark"]').value = '';
-    //         document.getElementById('physical_exam_findings').value = '';
-    //         document.getElementById('laboratory_results').value = '';
-    //         document.getElementById('imaging_results').value = '';
-    //         document.getElementById('other_diagnostic_data').value = '';
-
-    //         document.getElementById('assessment').value = '';
-    //         document.getElementById('diagnosis').value = '';
-    //         document.getElementById('problem_list').value = '';
-    //         document.getElementById('differential_diagnoses').value = '';
-    //         document.getElementById('patient_progress').value = '';
-    //         document.getElementById('overall_status').value = '';
-
-    //         document.getElementById('plan').value = '';
-    //         document.getElementById('prescription').value = '';
-    //         document.getElementById('test_request').value = '';
-    //         document.getElementById('remarks').value = '';
-    //         document.getElementById('remarks_note').value = '';
-    //         document.getElementById('remarks_template').value = '';
-    //         document.getElementById('follow_up_date').value = '';
-    //     });
-    // }
+            // Clear all fields after submission
+            // document.getElementById('subjective').value = '';
+            // document.getElementById('chief_complaint').value = '';
+            // document.getElementById('history_of_illness').value = '';
+            // document.getElementById('objective').value = '';
+            // document.getElementById('weight').value = '';
+            // document.getElementById('height').value = '';
+            // document.getElementById('bmi').value = '';
+            // document.getElementById('blood_pressure').value = '';
+            // document.getElementById('oxygen_saturation').value = '';
+            // document.getElementById('respiratory_rate').value = '';
+            // document.getElementById('heart_rate').value = '';
+            // document.getElementById('body_temperature').value = '';
+            // document.getElementById('capillary_blood_glucose').value = '';
+            // document.querySelector('textarea[name="vitals_remark"]').value = ''; 
+            // document.getElementById('laboratory_results').value = '';
+            // document.getElementById('imaging_results').value = ''; 
+            // document.getElementById('assessment').value = '';
+            // document.getElementById('diagnosis').value = '';
+            // document.getElementById('problem_list').value = '';
+            // document.getElementById('differential_diagnoses').value = '';
+            // document.getElementById('patient_progress').value = '';
+            // document.getElementById('overall_status').value = '';
+            // document.getElementById('plan').value = '';
+            // document.getElementById('prescription').value = '';
+            // document.getElementById('test_request').value = '';
+            // document.getElementById('remarks').value = ''; 
+        });
+    }
 
     // Tab switching logic
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -430,6 +407,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 removeFile(index);
             });
         });
+
+ 
+
     }
 
     function removeFile(index) {
@@ -437,38 +417,6 @@ document.addEventListener('DOMContentLoaded', function() {
         displayFiles(); // Re-render the list
     }
 
-    // Update form submission to include uploaded files
-    soapNoteForm.addEventListener('submit', function(event) {
-        uploadedFiles.forEach(file => {
-            formData.append('lab_files[]', file);
-        });
-        // After successful submission, clear the uploaded files
-        // This part needs to be handled within the fetch .then() block for actual success.
-        // For now, it will be cleared after the form is reset.
-    });
-
-    // Clear uploaded files on form reset or modal close
-    soapNoteModal.addEventListener('click', function(event) {
-        if (event.target === soapNoteModal || event.target === closeSoapNoteModalBtn || event.target === cancelSoapNoteBtn) {
-            uploadedFiles = []; // Clear the array
-            fileListContainer.innerHTML = ''; // Clear the display
-        }
-    });
-
-    // Modified form reset section to clear files
-    const originalFormReset = soapNoteForm.onsubmit; // Store original handler if any
-    soapNoteForm.onsubmit = function(event) {
-        // ... (existing form submission logic) ...
-        if (originalFormReset) {
-            originalFormReset.apply(this, arguments);
-        }
-        // This part is redundant as clearing is handled by modal close/cancel.
-        // If the form truly clears itself without closing the modal, this is where it would go.
-    };
-
-    // Integrate file clearing into the existing success and error handling
-    // Find the fetch block and integrate file clearing there.
-    // This is already handled by the soapNoteModal click listener for closing.
 
 });
 </script>

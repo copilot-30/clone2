@@ -16,6 +16,7 @@ RUN docker-php-ext-install \
 
 # Enable pdo_pgsql explicitly
 COPY docker-php-ext-pdo_pgsql.ini /usr/local/etc/php/conf.d/docker-php-ext-pdo_pgsql.ini
+COPY nginx/php-uploads.ini /usr/local/etc/php/conf.d/php-uploads.ini
 
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
