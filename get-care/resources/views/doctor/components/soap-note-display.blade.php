@@ -1,4 +1,4 @@
-<div class="overflow-y-auto h-full w-full ">
+<div class="overflow-y-auto h-full w-full" id="soap-note-{{ $soapNote->id }}">
     <div class="  mx-auto p-5 border w-full max-w-4xl shadow-lg -md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-emerald-700">Author: Dr. {{ ucwords($soapNote->doctor->first_name .' ' .$soapNote->doctor->last_name)}}</h3>

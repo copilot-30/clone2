@@ -124,7 +124,6 @@
                 </div>
 
                 <!-- SOAP Notes Tab Content -->
-                <!-- SOAP Notes Tab Content -->
                 <div id="soap-notes-tab" class="tab-pane hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">SOAP Notes</h3>
@@ -150,8 +149,17 @@
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
+                        <div class="grid grid-cols-1 gap-4 mb-4 md:grid-cols-6">
+                            @foreach($selectedPatient->soapNotes()->orderBy('date', 'desc')->get() as $soapNote)
+                                <a href="#soap-note-{{ $soapNote->id }}" class="bg-white rounded-lg shadow-md p-3 text-center hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <p class="text-sm font-semibold text-gray-700">CC: {{$soapNote->chief_complaint or ''}}</p>
+                                    <p class="text-xs text-gray-500">{{ $soapNote->created_at->format('M d, Y') }}</p>
+                                    <p class="text-xs text-gray-500">#{{ substr($soapNote->id, 0, 8) }}...</p>
+                                </a>
+                            @endforeach
+                        </div>
                         <div class="space-y-4">
-                            @foreach($selectedPatient->soapNotes()->orderBy('date', 'desc')->orderBy('updated_at', 'desc')->get() as $soapNote)
+                            @foreach($selectedPatient->soapNotes()->orderBy('date', 'desc')->get() as $soapNote)
                                 @include('doctor.components.soap-note-display', ['soapNote' => $soapNote, 'doctor' => $doctor])
                             @endforeach
                         </div>
