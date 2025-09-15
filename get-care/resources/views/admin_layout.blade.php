@@ -78,7 +78,9 @@
             </div>
         </div>
     @endif
+    
 
+    @stack('modals')
 
 
     @stack('scripts')
