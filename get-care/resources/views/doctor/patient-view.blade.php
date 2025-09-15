@@ -124,6 +124,7 @@
                 </div>
 
                 <!-- SOAP Notes Tab Content -->
+                <!-- SOAP Notes Tab Content -->
                 <div id="soap-notes-tab" class="tab-pane hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">SOAP Notes</h3>
@@ -145,27 +146,19 @@
                             }
                         @endphp
                         @if($canAddSoapNotes)
-                            <a href="{{ route('doctor.soap-notes.create', ['patient' => $selectedPatient->id]) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</a>
-                            <!-- <button id="openSoapNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</button> -->
+                            <button id="openSoapNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</button>
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
                         <div class="space-y-4">
                             @foreach($selectedPatient->soapNotes as $soapNote)
-                                <div class="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                                    <p class="text-sm text-gray-600 mb-2"><strong>Date:</strong> {{ $soapNote->created_at->format('M d, Y H:i') }}</p>
-                                    <p><span class="font-semibold">Subjective:</span> {{ $soapNote->subjective }}</p>
-                                    <p><span class="font-semibold">Objective:</span> {{ $soapNote->objective }}</p>
-                                    <p><span class="font-semibold">Assessment:</span> {{ $soapNote->assessment }}</p>
-                                    <p><span class="font-semibold">Plan:</span> {{ $soapNote->plan }}</p>
-                                </div>
+                                @include('doctor.components.soap-note-display', ['soapNote' => $soapNote, 'doctor' => $doctor])
                             @endforeach
                         </div>
                     @else
                         <p class="text-gray-500">No SOAP notes available for this patient.</p>
                     @endif
                 </div>
-
                 <!-- Notes Tab Content -->
                 <!-- Notes Tab Content -->
                 <div id="notes-tab" class="tab-pane hidden">
@@ -195,7 +188,7 @@
                 <div id="doctors-tab" class="tab-pane hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-xl font-bold text-gray-800">Doctors</h3>
-                              <!-- Show Add Doctor button only for primary doctors -->
+                               <!-- Show Add Doctor button only for primary doctors -->
                                 @if(isset($selectedPatient->attendingPhysician) && isset($doctor) && $selectedPatient->attendingPhysician->doctor_id == $doctor->id)
                                 <button id="openAddDoctorModalBtn" class="px-4 py-2 bg-emerald-700 text-white font-semibold rounded-lg shadow hover:bg-gray-700"><i class="fas fa-plus mr-2"></i>Add Doctor</button>
                                 @endif
@@ -615,72 +608,6 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
         }
     });
 });
-
-// SOAP Note Modal functionality
-// const openSoapNoteModalBtn = document.getElementById('openSoapNoteModal');
-// const closeSoapNoteModalBtn = document.getElementById('closeSoapNoteModal');
-// const cancelSoapNoteBtn = document.getElementById('cancelSoapNoteBtn');
-// const soapNoteModal = document.getElementById('soapNoteModal');
-// const soapNoteForm = document.getElementById('soapNoteForm');
-
-// if (openSoapNoteModalBtn) {
-//     openSoapNoteModalBtn.addEventListener('click', function() {
-//         soapNoteModal.classList.remove('hidden');
-//     });
-// }
-
-// if (closeSoapNoteModalBtn) {
-//     closeSoapNoteModalBtn.addEventListener('click', function() {
-//         soapNoteModal.classList.add('hidden');
-//     });
-// }
-
-// if (cancelSoapNoteBtn) {
-//     cancelSoapNoteBtn.addEventListener('click', function() {
-//         soapNoteModal.classList.add('hidden');
-//     });
-// }
-
-// // Close SOAP note modal when clicking outside
-// if (soapNoteModal) {
-//     soapNoteModal.addEventListener('click', function(event) {
-//         if (event.target === soapNoteModal) {
-//             soapNoteModal.classList.add('hidden');
-//         }
-//     });
-// }
-
-// // Handle SOAP note form submission
-// if (soapNoteForm) {
-//     soapNoteForm.addEventListener('submit', function(event) {
-//         event.preventDefault();
-        
-//         const formData = new FormData(this);
-        
-//         fetch('/doctor/soap-notes/store', {
-//             method: 'POST',
-//             body: formData,
-//             headers: {
-//                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-//             }
-//         })
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.success) {
-//                 alert('SOAP note added successfully!');
-//                 soapNoteModal.classList.add('hidden');
-//                 window.location.reload(); // Reload the page to reflect changes
-//             } else {
-//                 alert('Error: ' + (data.message || 'Could not add SOAP note.'));
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Error:', error);
-//             alert('An error occurred while adding the SOAP note.');
-//         });
-//     });
-// }
-
 });
 </script>
 @endpush

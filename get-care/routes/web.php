@@ -125,7 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
             Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');
-            Route::post('/soap-notes/store', 'DoctorController@storeSoapNote')->name('doctor.soap-notes.store');
+            
             Route::post('/shared-cases/store', 'DoctorController@storeSharedCase')->name('doctor.shared-cases.store');
             Route::get('/shared-cases/{filter?}', 'DoctorController@listSharedCases')->name('doctor.shared-cases.list');
             Route::post('/shared-cases/{sharedCase}/accept', 'DoctorController@acceptSharedCaseInvitation')->name('doctor.shared-cases.accept');
@@ -136,6 +136,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/search-doctors', 'DoctorController@searchDoctors')->name('doctor.search-doctors');
 
             Route::get('/soap-notes/create/{patient_id?}', 'DoctorController@createSoapNote')->name('doctor.soap-notes.create');
+            Route::post('/soap-notes/store', 'DoctorController@storeSoapNote')->name('doctor.soap-notes.store');
+            Route::post('/soap-notes/{soap_note_id}/update', 'DoctorController@updateSoapNote')->name('doctor.soap-notes.update');
         });
     });
 
