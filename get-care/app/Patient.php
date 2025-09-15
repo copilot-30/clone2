@@ -129,4 +129,16 @@ class Patient extends Model
         }
         return null;
     }
+
+
+    
+    public function patientPrescriptions()
+    {
+        return $this->hasMany(PatientPrescription::class, 'patient_id');
+    }
+
+    public function patientTestRequests()
+    {
+        return $this->hasMany(PatientTestRequest::class, 'patient_id');
+    }
 }
