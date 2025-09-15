@@ -22,6 +22,8 @@ use App\FileAttachment; // Import FileAttachment model
 use App\LabRequest; // Import LabRequest model
 use App\LabResult; // Import LabResult model
 use App\Consultation;   // Import Consultation model
+use App\PatientPrescription; // Import PatientPrescription model
+use App\PatientTestRequest; // Import PatientTestRequest model
 use Exception;
 
 class DoctorController extends Controller
@@ -1174,4 +1176,51 @@ private function getPatientAge($birthdate)
         return view('doctor.components.soap', compact( 'doctor', 'patients'));
     }
 
+    public function storePatientPrescription(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'patient_id' => 'required|uuid|exists:patients,id',
+            'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
+            'soap_note_id' => 'required|uuid|exists:soap_notes,id',
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
+        }
+
+        PatientPrescription::create($validator->validated());
+
+        event(new AuditableEvent(auth()->id(), 'patient_prescription_created', [
+            'patient_id' => $request->input('patient_id'),
+            'doctor_id' => $request->input('doctor_id'),
+            'soap_note_id' => $request->input('soap_note_id'),
+        ]));
+
+        return response()->json(['success' => true, 'message' => 'Prescription sent successfully.']);
+    }
+
+    public function storePatientTestRequest(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'patient_id' => 'required|uuid|exists:patients,id',
+            'doctor_id' => 'required|uuid|exists:doctor_profiles,id',
+            'soap_note_id' => 'required|uuid|exists:soap_notes,id',
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
+        }
+
+        PatientTestRequest::create($validator->validated());
+
+        event(new AuditableEvent(auth()->id(), 'patient_test_request_created', [
+            'patient_id' => $request->input('patient_id'),
+            'doctor_id' => $request->input('doctor_id'),
+            'soap_note_id' => $request->input('soap_note_id'),
+        ]));
+
+        return response()->json(['success' => true, 'message' => 'Test request sent successfully.']);
+    }
 }

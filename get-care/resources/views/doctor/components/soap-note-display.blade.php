@@ -124,12 +124,12 @@
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="prescription-{{ $soapNote->id }}">Prescription Details</label>
                     <textarea name="prescription" id="prescription-{{ $soapNote->id }}" placeholder="Enter Prescription details" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->prescription}}</textarea>
                     @if(strlen($soapNote->prescription)> 0)
-                        <button class="bg-emerald-700  text-sm p-2 text-white font-semibold -md hover:bg-emerald-800 float-right mx-2 my-2"><i class="fas fa-paper-plane"></i> Send Prescrition to Patient </button>
+                        <button class="send-to-patient-btn bg-emerald-700 text-sm p-2 text-white font-semibold rounded-md hover:bg-emerald-800 float-right mx-2 my-2" data-type="prescription" data-patient-id="{{ $soapNote->patient_id }}" data-doctor-id="{{ $doctor->id }}" data-soap-note-id="{{ $soapNote->id }}" data-content-id="prescription-{{ $soapNote->id }}"><i class="fas fa-paper-plane"></i> Send Prescription to Patient</button>
                     @endif
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="test_request-{{ $soapNote->id }}">Test Request</label>
-                    <textarea name="test_request" id="test_request-{{ $soapNote->id }}" placeholder="Test Request" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->test_request}}</textarea>
+                    <textarea name="test_request" id="test_request-{{ $soapNote->id }}" placeholder="Test Request" class="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->test_request}}</textarea>
                     @if(strlen($soapNote->test_request)> 0)
-                        <button class="bg-emerald-700  text-sm p-2 text-white font-semibold -md hover:bg-emerald-800 float-right mx-2 my-2"><i class="fas fa-paper-plane"></i> Send Test Request to Patient </button>
+                        <button class="send-to-patient-btn bg-emerald-700 text-sm p-2 text-white font-semibold rounded-md hover:bg-emerald-800 float-right mx-2 my-2" data-type="test_request" data-patient-id="{{ $soapNote->patient_id }}" data-doctor-id="{{ $doctor->id }}" data-soap-note-id="{{ $soapNote->id }}" data-content-id="test_request-{{ $soapNote->id }}"><i class="fas fa-paper-plane"></i> Send Test Request to Patient</button>
                     @endif
                 </div>
             </div>
@@ -403,6 +403,55 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error:', error);
                 alert('An error occurred while updating the SOAP note.');
+            });
+        });
+
+        // Handle "Send to Patient" button clicks
+        soapNoteForm.querySelectorAll('.send-to-patient-btn').forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                const type = this.dataset.type; // 'prescription' or 'test_request'
+                const patientId = this.dataset.patientId;
+                const doctorId = this.dataset.doctorId;
+                const soapNoteId = this.dataset.soapNoteId;
+                const contentId = this.dataset.contentId;
+                const content = soapNoteForm.querySelector(`#${contentId}`).value;
+
+                if (!content) {
+                    alert(`Please enter content for the ${type} before sending.`);
+                    return;
+                }
+
+                const url = type === 'prescription' ? "{{ route('doctor.patient-prescriptions.store') }}" : "{{ route('doctor.patient-test-requests.store') }}";
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        patient_id: patientId,
+                        doctor_id: doctorId,
+                        soap_note_id: soapNoteId,
+                        content: content
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert('Error: ' + (data.message || 'Could not send ' + type + '.'));
+                        if (data.errors) {
+                            console.error('Validation Errors:', data.errors);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while sending the ' + type + '.');
+                });
             });
         });
     }
