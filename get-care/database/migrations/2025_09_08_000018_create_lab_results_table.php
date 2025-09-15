@@ -14,8 +14,7 @@ class CreateLabResultsTable extends Migration
     public function up()
     {
         Schema::create('lab_results', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->uuid('test_request_id')->nullable();
+            $table->uuid('id')->primary(); 
             $table->uuid('patient_id')->nullable();
             $table->text('result_data')->nullable();
             $table->text('result_file_url')->nullable();

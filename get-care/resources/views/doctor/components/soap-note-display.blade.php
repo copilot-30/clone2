@@ -11,8 +11,8 @@
             <input type="hidden" name="patient_id" value="{{ $soapNote->patient_id }}">
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="follow_up_date-{{ $soapNote->id }}">Date</label>
-                <input type="date" value="{{ $soapNote->date->format('Y-m-d') ?? date('Y-m-d') }}" name="follow_up_date" id="follow_up_date-{{ $soapNote->id }}" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="date-{{ $soapNote->id }}">Date</label>
+                <input type="date" value="{{ $soapNote->date->format('Y-m-d') ?? date('Y-m-d') }}" name="date" id="date-{{ $soapNote->id }}" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
@@ -92,12 +92,13 @@
                                     <input type="file" id="file-upload-{{ $soapNote->id }}" name="lab_files[]" multiple class="hidden">
                                 </div>
                                 <div id="file-list-{{ $soapNote->id }}" class="mt-2"></div>
+                                
                             </div>
-                             <textarea name="file_remarks" id="file_remarks-{{ $soapNote->id }}" placeholder="File description" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7"></textarea>
+                             <textarea name="file_remarks" id="file_remarks-{{ $soapNote->id }}" placeholder="File description" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7">{{$soapNote->file_remarks}}</textarea>
                             
                         </div>
                         <div id="remarks-tab-content-{{ $soapNote->id }}" class="tab-pane hidden space-y-2">
-                            <textarea name="remarks" id="remarks-{{ $soapNote->id }}" placeholder="Remarks" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
+                            <textarea name="remarks" id="remarks-{{ $soapNote->id }}" placeholder="Remarks" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2">{{$soapNote->remarks}}</textarea>
                         </div>
                     </div>
                 </div>
@@ -147,7 +148,7 @@
         $labFiles[] = [
             'id' => $labResult->id, // Use LabResult ID for deletion
             'file_name' => json_decode($labResult->result_data)->file_name ?? 'Unknown File',
-            'file_url' => $labResult->result_file_url,
+            'result_file_url' => $labResult->result_file_url,
             'is_existing' => true // Mark as existing file
         ];
     }
@@ -273,14 +274,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayFiles(newFiles = [], currentExistingFiles = []) {
         fileListContainer.innerHTML = ''; // Clear previous list
+        fileListContainer.className= 'flex justify-between items-center  p-2 rounded-md mb-1 gap-4';
         
         // Display existing files
         currentExistingFiles.forEach((file, index) => {
+  
             const fileElement = document.createElement('div');
-            fileElement.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-md mb-1';
+            fileElement.className = 'flex justify-between items-center p-2 rounded-md mb-1 border border-blue-500';
             fileElement.innerHTML = `
-                <span>${file.file_name}</span>
-                <button type="button" data-file-id="${file.id}" class="remove-existing-file-button text-red-500 hover:text-red-700">&times;</button>
+                <a href='#' class="view-file-button text-sm text-blue-500 hover:text-blue-700" data-file-url="${file.result_file_url}" data-file-id="${file.id}"><i class="fas fa-file mr-2"></i>  ${file.file_name}</a> 
+                <button type="button" data-file-id="${file.id}" class="remove-existing-file-button text-red-500 hover:text-red-700"> <i class="fa fa-times"></i></button>
             `;
             fileListContainer.appendChild(fileElement);
         });
@@ -290,11 +293,21 @@ document.addEventListener('DOMContentLoaded', function() {
             const fileElement = document.createElement('div');
             fileElement.className = 'flex justify-between items-center bg-gray-100 p-2 rounded-md mb-1';
             fileElement.innerHTML = `
-                <span>${file.name}</span>
-                <button type="button" data-index="${index}" class="remove-new-file-button text-red-500 hover:text-red-700">&times;</button>
+                ${file.name}
+                <button type="button" data-index="${index}" class="remove-new-file-button text-red-500 hover:text-red-700"> <i class="fa fa-times"></i></button>
             `;
             fileListContainer.appendChild(fileElement);
         });
+
+        soapNoteForm.querySelectorAll('.view-file-button').forEach(button => {
+            button.addEventListener('click', function() { 
+                const loc = this.dataset.fileUrl;
+                console.log(loc);
+                window.open(window.location.origin+ loc, '_blank');
+            });
+        })
+ 
+
 
         // Add event listeners for remove buttons
         soapNoteForm.querySelectorAll('.remove-existing-file-button').forEach(button => {
@@ -354,7 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('prescription', soapNoteForm.querySelector('textarea[name="prescription"]').value);
             formData.append('test_request', soapNoteForm.querySelector('textarea[name="test_request"]').value);
             formData.append('remarks', soapNoteForm.querySelector('textarea[name="remarks"]').value);
-            formData.append('follow_up_date', soapNoteForm.querySelector('input[name="follow_up_date"]').value);
+            formData.append('date', soapNoteForm.querySelector('input[name="date"]').value);
 
             console.log('formData', formData);
             

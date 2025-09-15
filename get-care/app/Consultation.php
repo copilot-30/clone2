@@ -45,12 +45,7 @@ class Consultation extends Model
             $model->{$model->getKeyName()} = (string) \Illuminate\Support\Str::uuid();
         });
     }
-
-    public function visit()
-    {
-        return $this->belongsTo(PatientVisit::class, 'visit_id');
-    }
-
+ 
     public function patient()
     {
         return $this->belongsTo(Patient::class, 'patient_id');
@@ -60,14 +55,11 @@ class Consultation extends Model
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');
     }
-
-    public function prescriptions()
+ 
+ 
+    
+    public function labResults()
     {
-        return $this->hasMany(Prescription::class);
-    }
-
-    public function labRequests()
-    {
-        return $this->hasMany(LabRequest::class);
+        return $this->hasMany(LabResult::class, 'soap_note_id');
     }
 }

@@ -22,6 +22,7 @@ use App\FileAttachment; // Import FileAttachment model
 use App\LabRequest; // Import LabRequest model
 use App\LabResult; // Import LabResult model
 use App\Consultation;   // Import Consultation model
+use Exception;
 
 class DoctorController extends Controller
 {
@@ -594,7 +595,7 @@ public function storeSoapNote(Request $request)
     $soapNote = \App\Consultation::create([
         'patient_id' => $patientId,
         'doctor_id' => $doctor->id,
-        'date' => now(),
+        'date' => $request->input('date'),
         'subjective' => $request->input('subjective'),
         'chief_complaint' => $request->input('chief_complaint'),
         'history_of_illness' => $request->input('history_of_illness'),
@@ -606,9 +607,8 @@ public function storeSoapNote(Request $request)
         'prescription' => $request->input('prescription'),
         'test_request' => $request->input('test_request'),
         'remarks' => $request->input('remarks'),
-        'remarks_note' => $request->input('remarks_note'),
-        'remarks_template' => $request->input('remarks_template'),
-        'follow_up_date' => $request->input('follow_up_date'),
+        'file_remarks' => $request->input('file_remarks'),
+        'vital_remarks' => $request->input('vital_remarks'), 
     ]);
 
     event(new AuditableEvent(auth()->id(), 'soap_note_created', [
@@ -658,55 +658,55 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
         try{
             $soapNote = Consultation::findOrFail($soapNote_id);
 
-        if (!$soapNote) {
-            return response()->json(['success' => false, 'message' => 'SOAP note not found.'], 404);
-        }
+            if (!$soapNote) {
+                return response()->json(['success' => false, 'message' => 'SOAP note not found.'], 404);
+            }
 
-        $doctor = Auth::user()->doctor;
+            $doctor = Auth::user()->doctor;
 
-        if (!$doctor) {
-            return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
-        }
+            if (!$doctor) {
+                return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
+            }
 
-        if ($soapNote->doctor_id !== $doctor->id) {
-            return response()->json(['success' => false, 'message' => 'You are not authorized to update this SOAP note.'], 403);
-        }
+            if ($soapNote->doctor_id !== $doctor->id) {
+                return response()->json(['success' => false, 'message' => 'You are not authorized to update this SOAP note.'], 403);
+            }
 
-        $validator = Validator::make($request->all(), [ 
-            'patient_id' => 'required|uuid|exists:patients,id',
-            'subjective' => 'nullable|string',
-            'chief_complaint' => 'nullable|string', // New
-            'history_of_illness' => 'nullable|string', // New
-            'objective' => 'nullable|string',
-            'weight' => 'nullable|numeric', // New - Vital Signs
-            'height' => 'nullable|numeric', // New - Vital Signs
-            'bmi' => 'nullable|numeric', // New - Vital Signs
-            'blood_pressure' => 'nullable|string', // New - Vital Signs
-            'oxygen_saturation' => 'nullable|numeric', // New - Vital Signs
-            'respiratory_rate' => 'nullable|numeric', // New - Vital Signs
-            'heart_rate' => 'nullable|numeric', // New - Vital Signs
-            'body_temperature' => 'nullable|numeric', // New - Vital Signs
-            'capillary_blood_glucose' => 'nullable|numeric', // New - Vital Signs
-            'vitals_remark' => 'nullable|string', // New - Vital Signs additional notes
-            'laboratory_results' => 'nullable|string', // New
-            'imaging_results' => 'nullable|string', // New
-            'assessment' => 'nullable|string',
-            'diagnosis' => 'nullable|string', // New
-            'plan' => 'nullable|string',
-            'prescription' => 'nullable|string', // New
-            'test_request' => 'nullable|string', // New
-            'remarks' => 'nullable|string', // New
-            'file_remarks' => 'nullable|string', // New
-            'follow_up_date' => 'nullable|date', // New
-            'lab_files' => 'nullable|array', // Allow multiple lab files
-            'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:256000', // Validate each file, max 256MB
-            'deleted_file_ids' => 'nullable|array', // Array of file IDs to delete
-            'deleted_file_ids.*' => 'uuid|exists:file_attachments,id',
-        ]);
+            $validator = Validator::make($request->all(), [ 
+                'patient_id' => 'required|uuid|exists:patients,id',
+                'subjective' => 'nullable|string',
+                'chief_complaint' => 'nullable|string', // New
+                'history_of_illness' => 'nullable|string', // New
+                'objective' => 'nullable|string',
+                'weight' => 'nullable|numeric', // New - Vital Signs
+                'height' => 'nullable|numeric', // New - Vital Signs
+                'bmi' => 'nullable|numeric', // New - Vital Signs
+                'blood_pressure' => 'nullable|string', // New - Vital Signs
+                'oxygen_saturation' => 'nullable|numeric', // New - Vital Signs
+                'respiratory_rate' => 'nullable|numeric', // New - Vital Signs
+                'heart_rate' => 'nullable|numeric', // New - Vital Signs
+                'body_temperature' => 'nullable|numeric', // New - Vital Signs
+                'capillary_blood_glucose' => 'nullable|numeric', // New - Vital Signs
+                'vitals_remark' => 'nullable|string', // New - Vital Signs additional notes
+                'laboratory_results' => 'nullable|string', // New
+                'imaging_results' => 'nullable|string', // New
+                'assessment' => 'nullable|string',
+                'diagnosis' => 'nullable|string', // New
+                'plan' => 'nullable|string',
+                'prescription' => 'nullable|string', // New
+                'test_request' => 'nullable|string', // New
+                'remarks' => 'nullable|string', // New
+                'file_remarks' => 'nullable|string', // New
+                'date' => 'nullable|date', // New
+                'lab_files' => 'nullable|array', // Allow multiple lab files
+                'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:256000', // Validate each file, max 256MB
+                'deleted_file_ids' => 'nullable|array', // Array of file IDs to delete
+                'deleted_file_ids.*' => 'uuid|exists:lab_results,id|exists:file_attachments,entity_id',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
-        }
+            if ($validator->fails()) { 
+                throw new Exception('Validation failed: ' . $validator->errors()->first()); 
+            }
 
       
         $patientId = $request->input('patient_id');
@@ -735,7 +735,7 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
         $soapNote->update([
             'patient_id' => $patientId,
             'doctor_id' => $doctor->id,
-            'date' => now(), // Or use request date if provided for editing existing notes
+            'date' => $request->input('date'), // Or use request date if provided for editing existing notes
             'subjective' => $request->input('subjective'),
             'chief_complaint' => $request->input('chief_complaint'),
             'history_of_illness' => $request->input('history_of_illness'),
@@ -747,9 +747,8 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
             'prescription' => $request->input('prescription'),
             'test_request' => $request->input('test_request'),
             'remarks' => $request->input('remarks'),
-            'remarks_note' => $request->input('remarks_note'),
-            'remarks_template' => $request->input('remarks_template'),
-            'follow_up_date' => $request->input('follow_up_date'),
+            'vital_remarks' => $request->input('vital_remarks'),
+            'file_remarks' => $request->input('file_remarks'), 
         ]);
 
         event(new AuditableEvent(auth()->id(), 'soap_note_updated', [
@@ -761,7 +760,7 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
         // Handle deleted lab files
         if ($request->has('deleted_file_ids')) {
             foreach ($request->input('deleted_file_ids') as $fileId) {
-                $fileAttachment = FileAttachment::find($fileId);
+                $fileAttachment = FileAttachment::where('entity_id', $fileId)->first();
                 if ($fileAttachment && $fileAttachment->entity_type === 'App\\LabResult') {
                     // Delete the associated LabResult and the file from storage
                     $labResult = LabResult::find($fileAttachment->entity_id);
@@ -804,9 +803,9 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
                 ]);
             }
         }
-
-        return response()->json(['success' => true, 'message' => 'SOAP note updated successfully.', 'soap_note' => $soapNote]);
-        }catch(Exception $e){
+    
+            return response()->json(['success' => true, 'message' => 'SOAP note updated successfully.', 'soap_note' => $soapNote]);
+        }catch(Exception $e){ 
             return response()->json(['success' => false, 'message' => 'Error updating SOAP note: ' . $e->getMessage()]);
         }
     }
