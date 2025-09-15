@@ -20,7 +20,7 @@ class LabResult extends Model
 
     protected $casts = [
         'id' => 'string',
-        'result_data' => 'array', // Cast jsonb to array
+        'result_data' => 'string', // Cast to string
         'result_date' => 'date',
     ];
 

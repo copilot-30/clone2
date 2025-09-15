@@ -517,6 +517,7 @@ public function storeAppointment(Request $request)
  */
 public function storeSoapNote(Request $request)
 {
+    dd($request->all());
     $validator = Validator::make($request->all(), [
         'patient_id' => 'required|uuid|exists:patients,id',
         'subjective' => 'nullable|string',
@@ -910,13 +911,13 @@ private function getPatientAge($birthdate)
     return \Carbon\Carbon::parse($birthdate)->age;
 }
 
-// createSoapNote
-public function createSoapNote()
-{
-    // $selectedPatient = Patient::find(request('patient_id'));
-    $doctor = Auth::user()->doctor;
-
-    return view('doctor.components.soap', compact( 'doctor'));
-}
+    // createSoapNote
+    public function createSoapNote()
+    {
+        // $selectedPatient = Patient::find(request('patient_id'));
+        $doctor = Auth::user()->doctor;
+        $patients = Auth::user()->doctor->attendingPhysicians;
+        return view('doctor.components.soap', compact( 'doctor', 'patients'));
+    }
 
 }

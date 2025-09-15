@@ -17,7 +17,7 @@ class CreateLabResultsTable extends Migration
             $table->uuid('id')->primary();
             $table->uuid('test_request_id')->nullable();
             $table->uuid('patient_id')->nullable();
-            $table->jsonb('result_data')->nullable();
+            $table->text('result_data')->nullable();
             $table->text('result_file_url')->nullable();
             $table->date('result_date')->nullable();
             $table->text('notes')->nullable();
