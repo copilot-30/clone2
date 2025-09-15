@@ -145,7 +145,8 @@
                             }
                         @endphp
                         @if($canAddSoapNotes)
-                            <button id="openSoapNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</button>
+                            <a href="{{ route('doctor.soap-notes.create', ['patient' => $selectedPatient->id]) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</a>
+                            <!-- <button id="openSoapNoteModal" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700">Add SOAP Note</button> -->
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
@@ -698,8 +699,5 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
 </div>
 </div>
 
-<!-- SOAP Note Modal -->
-@if(isset($selectedPatient) && isset($doctor))
-    @include('doctor.components.soap-note-modal', ['selectedPatient' => $selectedPatient, 'doctor' => $doctor])
-@endif
+
 @endsection

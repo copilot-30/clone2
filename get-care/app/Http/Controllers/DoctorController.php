@@ -13,10 +13,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage; // Add Storage facade
 use App\Events\AuditableEvent;
 use Auth;
 use Illuminate\Support\Str;
 use App\SharedCase; // Add this line
+use App\FileAttachment; // Import FileAttachment model
+use App\LabRequest; // Import LabRequest model
+use App\LabResult; // Import LabResult model
 
 class DoctorController extends Controller
 {
@@ -517,13 +521,15 @@ public function storeAppointment(Request $request)
  */
 public function storeSoapNote(Request $request)
 {
-    dd($request->all());
+ 
     $validator = Validator::make($request->all(), [
         'patient_id' => 'required|uuid|exists:patients,id',
         'subjective' => 'nullable|string',
         'objective' => 'nullable|string',
         'assessment' => 'nullable|string',
         'plan' => 'nullable|string',
+        'lab_files' => 'nullable|array', // Allow multiple lab files
+        'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:2048', // Validate each file
     ]);
 
     if ($validator->fails()) {
@@ -554,10 +560,7 @@ public function storeSoapNote(Request $request)
         'patient_id' => $patientId,
         'doctor_id' => $doctor->id,
         'date' => now(),
-        'subjective' => $request->input('subjective'),
-        'objective' => $request->input('objective'),
-        'assessment' => $request->input('assessment'),
-        'plan' => $request->input('plan'),
+       
     ]);
 
     event(new AuditableEvent(auth()->id(), 'soap_note_created', [
@@ -565,10 +568,37 @@ public function storeSoapNote(Request $request)
         'patient_id' => $patientId,
         'doctor_id' => $doctor->id,
     ]));
+// Handle lab file uploads
+if ($request->hasFile('lab_files')) {
+    foreach ($request->file('lab_files') as $file) {
+        $path = $file->store('lab_results', 'public'); // Store in 'storage/app/public/lab_results'
+        
+        // Create a LabResult entry for each file
+        // Create a LabResult entry for each file
+        $labResult = LabResult::create([
+            'test_request_id' => null, // If there's no explicit LabRequest for this file, leave null
+            'patient_id' => $patientId,
+            'result_data' => json_encode(['file_name' => $file->getClientOriginalName(), 'file_path' => $path]),
+            'result_file_url' => Storage::url($path),
+            'result_date' => now(),
+            'notes' => 'Uploaded with SOAP note (Consultation ID: ' . $soapNote->id . ')',
+        ]);
+        
+        // Create a FileAttachment record for generic tracking, linking to the LabResult
+        FileAttachment::create([
+            'entity_type' => 'App\\LabResult', // Link to LabResult model
+            'entity_id' => $labResult->id, // Link to the newly created LabResult
+            'file_name' => $file->getClientOriginalName(),
+            'file_url' => Storage::url($path),
+            'file_size' => $file->getSize(),
+            'file_type' => $file->getMimeType(),
+            'uploaded_by_id' => Auth::id(),
+        ]);
+    } // Closes the foreach loop
+} // Closes the if ($request->hasFile('lab_files')) block
 
-    return response()->json(['success' => true, 'message' => 'SOAP note added successfully.', 'soap_note' => $soapNote]);
-}
-
+return response()->json(['success' => true, 'message' => 'SOAP note added successfully.', 'soap_note' => $soapNote]);
+} // Closes the storeSoapNote method
 public function viewPatients(Request $request, $patient_id = null)
 {
     $doctor = Auth::user()->doctor;
