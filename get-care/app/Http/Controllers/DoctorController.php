@@ -910,4 +910,13 @@ private function getPatientAge($birthdate)
     return \Carbon\Carbon::parse($birthdate)->age;
 }
 
+// createSoapNote
+public function createSoapNote()
+{
+    // $selectedPatient = Patient::find(request('patient_id'));
+    $doctor = Auth::user()->doctor;
+
+    return view('doctor.components.soap', compact( 'doctor'));
+}
+
 }
