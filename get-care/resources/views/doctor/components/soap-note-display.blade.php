@@ -16,16 +16,17 @@
             </div>
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
-                    <label class="block text-emerald-700 text-sm font-bold mb-2">Subjective</label>
+                    <label class="block text-emerald-700 text-sm font-bold mb-2">Subjective</label> 
                     <textarea name="subjective" id="subjective-{{ $soapNote->id }}" placeholder="Subjective" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->subjective}}</textarea>
-                    <label class="block text-gray-700 text-sm font-bold mb-2">Chief Complaint</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="chief_complaint-{{ $soapNote->id }}">Chief Complaint</label>
                     <textarea name="chief_complaint" id="chief_complaint-{{ $soapNote->id }}" placeholder="Chief complaint (CC)" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows=2>{{$soapNote->chief_complaint}}</textarea>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="history_of_illness-{{ $soapNote->id }}">History of Present Illness (HPI)</label>
                     <textarea name="history_of_illness" id="history_of_illness-{{ $soapNote->id }}" placeholder="History of present illness (HPI)" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->history_of_illness}}</textarea>
  
                 </div>
 
                 <div>
-                    <label class="block text-emerald-700 text-sm font-bold mb-2">Objective</label>
+                    <label class="block text-emerald-700 text-sm font-bold mb-2">Objective</label> 
                     <textarea name="objective" id="objective-{{ $soapNote->id }}" placeholder="Enter objective findings." class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="3">{{$soapNote->objective}}</textarea>
                     <div class="border-b border-gray-200 mb-4">
                         <nav class="-mb-px flex space-x-4" aria-label="Tabs">
@@ -79,7 +80,7 @@
                                 </div>
                             </div>
                             <div class="">
-                                <label class="block text-gray-700 text-sm font-bold mb-2">Addtional notes about vitals.</label>
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="vitals_remark-{{ $soapNote->id }}">Additional Notes about Vitals</label>
                                 <textarea name="vitals_remark" id="vitals_remark-{{ $soapNote->id }}" placeholder="Addtional notes about vitals." class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
                             </div>
                       
@@ -95,10 +96,12 @@
                                 <div id="file-list-{{ $soapNote->id }}" class="mt-2"></div>
                                 
                             </div>
+                             <label class="block text-gray-700 text-sm font-bold mb-2" for="file_remarks-{{ $soapNote->id }}">File Description</label>
                              <textarea name="file_remarks" id="file_remarks-{{ $soapNote->id }}" placeholder="File description" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7">{{$soapNote->file_remarks}}</textarea>
                             
                         </div>
                         <div id="remarks-tab-content-{{ $soapNote->id }}" class="tab-pane hidden space-y-2">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="remarks-{{ $soapNote->id }}">Remarks</label>
                             <textarea name="remarks" id="remarks-{{ $soapNote->id }}" placeholder="Remarks" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2">{{$soapNote->remarks}}</textarea>
                         </div>
                     </div>
@@ -107,19 +110,23 @@
 
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
-                    <label class="block text-emerald-700 text-sm font-bold mb-2">Assessment</label>
+                    <label class="block text-emerald-700 text-sm font-bold mb-2">Assessment</label> 
                     <textarea name="assessment" id="assessment-{{ $soapNote->id }}" placeholder="Enter Assessment" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="3">{{$soapNote->assessment}}</textarea>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="diagnosis-{{ $soapNote->id }}">Diagnosis</label>
                     <textarea name="diagnosis" id="diagnosis-{{ $soapNote->id }}" placeholder="Enter Diagnosis" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->diagnosis}}</textarea>
                 </div>
             </div>
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
                     <label class="block text-emerald-700 text-sm font-bold mb-2">Plan</label>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="plan-{{ $soapNote->id }}">Treatment Plan</label>
                     <textarea name="plan" id="plan-{{ $soapNote->id }}" placeholder="Enter treatment plan" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="3">{{$soapNote->plan}}</textarea>
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="prescription-{{ $soapNote->id }}">Prescription Details</label>
                     <textarea name="prescription" id="prescription-{{ $soapNote->id }}" placeholder="Enter Prescription details" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->prescription}}</textarea>
                     @if(strlen($soapNote->prescription)> 0)
                         <button class="bg-emerald-700  text-sm p-2 text-white font-semibold -md hover:bg-emerald-800 float-right mx-2 my-2"><i class="fas fa-paper-plane"></i> Send Prescrition to Patient </button>
                     @endif
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="test_request-{{ $soapNote->id }}">Test Request</label>
                     <textarea name="test_request" id="test_request-{{ $soapNote->id }}" placeholder="Test Request" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->test_request}}</textarea>
                     @if(strlen($soapNote->test_request)> 0)
                         <button class="bg-emerald-700  text-sm p-2 text-white font-semibold -md hover:bg-emerald-800 float-right mx-2 my-2"><i class="fas fa-paper-plane"></i> Send Test Request to Patient </button>
