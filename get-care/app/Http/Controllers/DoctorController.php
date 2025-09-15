@@ -818,7 +818,7 @@ public function viewPatients(Request $request, $patient_id = null)
     $patients = collect(); // Initialize an empty collection
 
     if ($filter === 'my-patients' or $filter === '') {
-        $patients = Patient::where(function ($query) use ($doctor) {
+        $q = Patient::where(function ($query) use ($doctor) {
             $query->whereHas('appointments', function ($query) use ($doctor) {
                 $query->where('doctor_id', $doctor->id);
             })->orWhereHas('attendingPhysician', function ($query) use ($doctor) {
@@ -826,17 +826,30 @@ public function viewPatients(Request $request, $patient_id = null)
             });
         })
         ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
-        ->get();
+        ;
     } elseif ($filter === 'shared-cases') {
-        $patients = Patient::whereHas('sharedCases', function ($query) use ($doctor) {
+        $q = Patient::whereHas('sharedCases', function ($query) use ($doctor) {
             $query->where('receiving_doctor_id', $doctor->id)
                   ->where('status', 'ACCEPTED');
         })
         ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
-        ->get();
+        ;
     }
 
+    $name ='';
+
+    if($request->has('name')){
+        $name = $request->input('name');
+        $patients = $q->where(function ($query) use ($request) {
+            $query->where('first_name', 'ILIKE', '%' . $request->input('name') . '%')
+                  ->orWhere('last_name', 'ILIKE', '%' . $request->input('name') . '%'); 
+        });
+    }
+
+    $patients = $q -> get();
+
     $selectedPatient = null;
+
 
     if ($patient_id) {
         // Find the patient in the filtered list
@@ -856,7 +869,7 @@ public function viewPatients(Request $request, $patient_id = null)
         $selectedPatient = $patients->first(); // Select the first patient by default if no patient_id is provided
     }
  
-    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor'));
+    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor', 'name'));
 }
 
 public function storeSharedCase(Request $request)
