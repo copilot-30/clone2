@@ -525,9 +525,30 @@ public function storeSoapNote(Request $request)
     $validator = Validator::make($request->all(), [
         'patient_id' => 'required|uuid|exists:patients,id',
         'subjective' => 'nullable|string',
+        'chief_complaint' => 'nullable|string', // New
+        'history_of_illness' => 'nullable|string', // New
         'objective' => 'nullable|string',
+        'weight' => 'nullable|numeric', // New - Vital Signs
+        'height' => 'nullable|numeric', // New - Vital Signs
+        'bmi' => 'nullable|numeric', // New - Vital Signs
+        'blood_pressure' => 'nullable|string', // New - Vital Signs
+        'oxygen_saturation' => 'nullable|numeric', // New - Vital Signs
+        'respiratory_rate' => 'nullable|numeric', // New - Vital Signs
+        'heart_rate' => 'nullable|numeric', // New - Vital Signs
+        'body_temperature' => 'nullable|numeric', // New - Vital Signs
+        'capillary_blood_glucose' => 'nullable|numeric', // New - Vital Signs
+        'vitals_remark' => 'nullable|string', // New - Vital Signs additional notes
+        'laboratory_results' => 'nullable|string', // New
+        'imaging_results' => 'nullable|string', // New
         'assessment' => 'nullable|string',
+        'diagnosis' => 'nullable|string', // New
         'plan' => 'nullable|string',
+        'prescription' => 'nullable|string', // New
+        'test_request' => 'nullable|string', // New
+        'remarks' => 'nullable|string', // New
+        'remarks_note' => 'nullable|string', // New
+        'remarks_template' => 'nullable|string', // New
+        'follow_up_date' => 'nullable|date', // New
         'lab_files' => 'nullable|array', // Allow multiple lab files
         'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:2048', // Validate each file
     ]);
@@ -555,12 +576,39 @@ public function storeSoapNote(Request $request)
         return response()->json(['success' => false, 'message' => 'Unauthorized to add SOAP notes for this patient.'], 403);
     }
 
+    // Prepare vital signs data
+    $vitalSigns = [
+        'weight' => $request->input('weight'),
+        'height' => $request->input('height'),
+        'bmi' => $request->input('bmi'),
+        'blood_pressure' => $request->input('blood_pressure'),
+        'oxygen_saturation' => $request->input('oxygen_saturation'),
+        'respiratory_rate' => $request->input('respiratory_rate'),
+        'heart_rate' => $request->input('heart_rate'),
+        'body_temperature' => $request->input('body_temperature'),
+        'capillary_blood_glucose' => $request->input('capillary_blood_glucose'),
+        'vitals_remark' => $request->input('vitals_remark'),
+    ];
+
     // Create the SOAP note
     $soapNote = \App\Consultation::create([
         'patient_id' => $patientId,
         'doctor_id' => $doctor->id,
         'date' => now(),
-       
+        'subjective' => $request->input('subjective'),
+        'chief_complaint' => $request->input('chief_complaint'),
+        'history_of_illness' => $request->input('history_of_illness'),
+        'objective' => $request->input('objective'),
+        'vital_signs' => empty(array_filter($vitalSigns)) ? null : $vitalSigns, // Store as JSON
+        'assessment' => $request->input('assessment'),
+        'diagnosis' => $request->input('diagnosis'),
+        'plan' => $request->input('plan'),
+        'prescription' => $request->input('prescription'),
+        'test_request' => $request->input('test_request'),
+        'remarks' => $request->input('remarks'),
+        'remarks_note' => $request->input('remarks_note'),
+        'remarks_template' => $request->input('remarks_template'),
+        'follow_up_date' => $request->input('follow_up_date'),
     ]);
 
     event(new AuditableEvent(auth()->id(), 'soap_note_created', [
@@ -578,10 +626,15 @@ if ($request->hasFile('lab_files')) {
         $labResult = LabResult::create([
             'test_request_id' => null, // If there's no explicit LabRequest for this file, leave null
             'patient_id' => $patientId,
-            'result_data' => json_encode(['file_name' => $file->getClientOriginalName(), 'file_path' => $path]),
+            'result_data' => json_encode([
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $path,
+                'laboratory_results_text' => $request->input('laboratory_results'), // Include text results
+                'imaging_results_text' => $request->input('imaging_results'), // Include text results
+            ]),
             'result_file_url' => Storage::url($path),
             'result_date' => now(),
-            'notes' => 'Uploaded with SOAP note (Consultation ID: ' . $soapNote->id . ')',
+            'notes' => $request->input('remarks_note') ?? 'Uploaded with SOAP note (Consultation ID: ' . $soapNote->id . ')',
         ]);
         
         // Create a FileAttachment record for generic tracking, linking to the LabResult

@@ -4,7 +4,7 @@
     <div class="  mx-auto p-5 border w-[90%] max-w-4xl shadow-lg -md bg-white">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-gray-900">Add SOAP Note</h3>
-            <button id="closeSoapNoteModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            
         </div> 
         <form id="soapNoteForm" method="POST" action="{{ route('doctor.soap-notes.store') }}">
             @csrf 
@@ -92,27 +92,25 @@
                             </div>
                             <div class="">
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Addtional notes about vitals.</label>
-                                <textarea name="vitals_remark" placeholder="" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
+                                <textarea name="vitals_remark" placeholder="Addtional notes about vitals." class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
                             </div>
                       
                         </div>
                         <div id="lab-results-tab-content" class="tab-pane hidden space-y-2">
-                            <textarea name="laboratory_results" id="laboratory_results" placeholder="Laboratory results" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
-                            <textarea name="imaging_results" id="imaging_results" placeholder="Imaging results" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
-
+                           
                             <div class="mt-4">
                                 <label class="block text-gray-700 text-sm font-bold mb-2">Upload Files</label>
                                 <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-md p-6 text-center cursor-pointer hover:border-gray-400">
                                     <p class="text-gray-500">Drag & drop files here, or click to select</p>
-                                    <input type="file" id="file-upload" name="lab_files[]" multiple class="">
+                                    <input type="file" id="file-upload" name="lab_files[]" multiple class="hidden">
                                 </div>
                                 <div id="file-list" class="mt-2"></div>
                             </div>
+                             <textarea name="laboratory_results" id="laboratory_results" placeholder="Laboratory results" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="7"></textarea>
+                            
                         </div>
                         <div id="remarks-tab-content" class="tab-pane hidden space-y-2">
                             <textarea name="remarks" id="remarks" placeholder="Remarks" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
-                            <textarea name="remarks_note" id="remarks_note" placeholder="Remarks Note" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
-                            <textarea name="remarks_template" id="remarks_template" placeholder="Remarks Template" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="2"></textarea>
                         </div>
                     </div>
                 </div>
@@ -176,15 +174,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (soapNoteModal) {
-        soapNoteModal.addEventListener('click', function(event) {
-            if (event.target === soapNoteModal) {
-                soapNoteModal.classList.add('hidden');
-                uploadedFiles = []; // Clear the array
-                fileListContainer.innerHTML = ''; // Clear the display
-            }
-        });
-    }
+    // if (soapNoteModal) {
+    //     soapNoteModal.addEventListener('click', function(event) {
+    //         if (event.target === soapNoteModal) {
+    //             soapNoteModal.classList.add('hidden');
+    //             uploadedFiles = []; // Clear the array
+    //             fileListContainer.innerHTML = ''; // Clear the display
+    //         }
+    //     });
+    // }
 
 
     if (soapNoteForm) { 
