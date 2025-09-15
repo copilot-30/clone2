@@ -617,6 +617,8 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
     });
 });
 });
+
+ 
 </script>
 @endpush
 <!-- Patient Note Modal -->
@@ -645,4 +647,5 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
 
 
 @endsection
+
  
