@@ -11,7 +11,10 @@ use App\Doctor; // Import the Doctor model
 use App\AttendingPhysician; // Import the AttendingPhysician model
 use App\DoctorAvailability; // Import the DoctorAvailability model
 use App\Clinic; // Import the Clinic model
+use App\PatientTestRequest; // Import PatientTestRequest
+use App\LabResult; // Import LabResult
 use Carbon\Carbon; // For date/time calculations
+use Illuminate\Support\Facades\Storage; // Import Storage facade
 use Illuminate\Support\Str; // For generating unique IDs
 use PDF; 
 
@@ -682,52 +685,88 @@ $user = Auth::user();
 $patient = $user->patient;
 
 if (!$patient) {
-    return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
-}
+        return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
+    }
+    
+    $type = $request->query('type', 'all-records'); // Default to 'all-records'
+    $data = [];
+    $title = '';
+    $view = '';
+    
+    switch ($type) {
+        case 'all-records':
+            $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
+            $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
+            $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
+            $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
+            $title = 'All Medical Records';
+            $view = 'patient.medical-records.pdf-templates.all-records';
+            break;
+        case 'doctor-notes':
+            $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
+            $title = 'Doctor Notes';
+            $view = 'patient.medical-records.pdf-templates.doctor-notes';
+            break;
+        case 'prescriptions':
+            $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
+            $title = 'Prescriptions';
+            $view = 'patient.medical-records.pdf-templates.prescriptions';
+            break;
+        case 'lab-requests':
+            $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
+            $title = 'Lab Requests';
+            $view = 'patient.medical-records.pdf-templates.lab-requests';
+            break;
+        case 'lab-results':
+            $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
+            $title = 'Lab Results';
+            $view = 'patient.medical-records.pdf-templates.lab-results';
+            break;
+        default:
+            return redirect()->back()->with('error', 'Invalid medical record type for download.');
+    }
+    
+    // Pass patient information to the PDF view
+    $data['patient'] = $patient;
+    
+    $pdf = PDF::loadView($view, $data);
+    return $pdf->download(Str::slug($title . '-' . $patient->full_name) . '.pdf');
+    }
+    
 
-$type = $request->query('type', 'all-records'); // Default to 'all-records'
-$data = [];
-$title = '';
-$view = '';
 
-switch ($type) {
-    case 'all-records':
-        $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
-        $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
-        $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
-        $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
-        $title = 'All Medical Records';
-        $view = 'patient.medical-records.pdf-templates.all-records';
-        break;
-    case 'doctor-notes':
-        $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
-        $title = 'Doctor Notes';
-        $view = 'patient.medical-records.pdf-templates.doctor-notes';
-        break;
-    case 'prescriptions':
-        $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
-        $title = 'Prescriptions';
-        $view = 'patient.medical-records.pdf-templates.prescriptions';
-        break;
-    case 'lab-requests':
-        $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
-        $title = 'Lab Requests';
-        $view = 'patient.medical-records.pdf-templates.lab-requests';
-        break;
-    case 'lab-results':
-        $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
-        $title = 'Lab Results';
-        $view = 'patient.medical-records.pdf-templates.lab-results';
-        break;
-    default:
-        return redirect()->back()->with('error', 'Invalid medical record type for download.');
-}
-
-// Pass patient information to the PDF view
-$data['patient'] = $patient;
-
-$pdf = PDF::loadView($view, $data);
-return $pdf->download(Str::slug($title . '-' . $patient->full_name) . '.pdf');
-}
-
+    public function uploadLabResult(Request $request, PatientTestRequest $patientTestRequest)
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+    
+        if (!$patient || $patientTestRequest->patient_id !== $patient->id) {
+            return redirect()->back()->with('error', 'Unauthorized action.');
+        }
+    
+        $validatedData = $request->validate([
+            'lab_result_file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:2048', // Max 2MB
+            'notes' => 'nullable|string|max:1000',
+        ]);
+    
+        $file = $request->file('lab_result_file');
+        $filePath = $file->store('public/lab_results'); // Store in storage/app/public/lab_results
+    
+        // Create LabResult record
+        LabResult::create([
+            'patient_id' => $patient->id,
+            'test_request_id' => $patientTestRequest->id,
+            'result_file_url' => Storage::url($filePath), // Get public URL
+            'result_date' => now(),
+            'result_data' => json_encode([
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $filePath,
+            ]),
+            'notes' => $validatedData['notes'],
+        ]);
+    
+        return redirect()->back()->with('success', 'Lab result uploaded successfully!');
+    }
+ 
+    
 }

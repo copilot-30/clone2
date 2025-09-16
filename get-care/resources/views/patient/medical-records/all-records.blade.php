@@ -25,12 +25,16 @@
                 <div class="flex justify-between items-start">
                     <div class="flex justify-between items-start w-4/5">
                         <a  href="{{$record -> result_file_url }}"  target="_blank" class="font-medium text-gray-800">
+                            @if ($record->result_data_parsed && isset($record->result_data_parsed['file_name']))
                             <i class="fas fa-file mr-2"></i> {{$record->result_data_parsed['file_name']}}
+                            @endif
                         </a>
                         <div class="flex justify-end">
-                        <a href="{{$record->result_file_url}}" download="{{ $record->result_data_parsed['file_name'] }}" class="text-blue-500 hover:text-blue-700 hover:underline">
-                            <i class="fas fa-download mr-2"></i> Download
-                        </a>
+                            @if ($record->result_data_parsed && isset($record->result_data_parsed['file_name']))
+                            <a href="{{$record->result_file_url}}" download="{{ $record->result_data_parsed['file_name'] }}" class="text-blue-500 hover:text-blue-700 hover:underline">
+                                <i class="fas fa-download mr-2"></i> Download
+                            </a>
+                            @endif
                     </div>
                 </div> 
                 </div>

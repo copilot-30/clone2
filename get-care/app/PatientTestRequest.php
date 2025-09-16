@@ -12,7 +12,6 @@ class PatientTestRequest extends Model
 
     protected $fillable = [
         'soap_note_id',
-        'soap_note_id',
         'patient_id',
         'doctor_id',
         'content',
@@ -45,5 +44,10 @@ class PatientTestRequest extends Model
     public function doctor()
     {
         return $this->belongsTo(Doctor::class, 'doctor_id');
+    }
+
+    public function labResults()
+    {
+        return $this->hasMany(\App\LabResult::class, 'test_request_id');
     }
 }

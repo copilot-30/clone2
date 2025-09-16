@@ -12,6 +12,8 @@ class LabResult extends Model
     protected $fillable = [ 
         'patient_id',
         'result_data',
+        'test_request_id',
+        'result_data',
         'result_file_url',
         'result_date',
         'notes',
@@ -41,9 +43,8 @@ class LabResult extends Model
 
     public function testRequest()
     {
-        return $this->belongsTo(LabRequest::class, 'test_request_id');
+        return $this->belongsTo(\App\PatientTestRequest::class, 'test_request_id');
     }
-
     public function patient()
     {
         return $this->belongsTo(Patient::class, 'patient_id');

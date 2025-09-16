@@ -46,7 +46,7 @@
                         {{ $error }}
                     @endforeach
                 </div>
-                <button class="text-gray-100 hover:text-red-600" onclick="this.parentElement.remove()">
+                <button class="text-white hover:text-red-600" onclick="this.parentElement.remove()">
                     <i class="fa fa-times"></i>
                 </button>
             </div>

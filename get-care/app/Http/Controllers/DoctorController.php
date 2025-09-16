@@ -637,6 +637,7 @@ if ($request->hasFile('lab_files')) {
             'result_file_url' => Storage::url($path),
             'result_date' => now(),
             'notes' => $request->input('remarks_note') ?? 'Uploaded with SOAP note (Consultation ID: ' . $soapNote->id . ')',
+           
         ]);
         
         // Create a FileAttachment record for generic tracking, linking to the LabResult

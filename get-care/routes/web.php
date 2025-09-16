@@ -166,6 +166,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/appointments/confirmation/{appointment_id}', 'PatientController@showAppointmentConfirmation')->name('patient.appointment-confirmed');
             Route::get('/attending-physician-details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
             Route::get('/download-medical-records', 'PatientController@downloadMedicalRecords')->name('patient.download');
+            Route::post('/lab-results/upload/{patientTestRequest}', 'PatientController@uploadLabResult')->name('patient.lab-results.upload');
         });
         
     });
