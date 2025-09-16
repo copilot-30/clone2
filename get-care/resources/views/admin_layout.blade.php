@@ -18,6 +18,9 @@
     <style>
     body {font-family:  'Roboto', sans-serif !important;}
     [x-cloak] { display: none !important; }
+    #appointmentModal{
+        z-index: 999999999999999;
+    }
     </style>
   
     @yield('styles')

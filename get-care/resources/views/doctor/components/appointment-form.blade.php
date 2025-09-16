@@ -15,6 +15,16 @@
         <div class="mb-4 hidden" id="google_link_message_container">
             <p class="text-red-600">Google account not linked. <a href="{{ route('google.auth.redirect') }}" class="text-blue-600 hover:underline">Link your Google account</a> to book online appointments.</p>
         </div>
+        <div class="mb-4 hidden" id="clinic_selection_container">
+            <label for="clinic_id" class="block text-sm font-medium text-gray-700">Clinic</label>
+            <select name="clinic_id" id="clinic_id" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500">
+                <option value="">Select Clinic</option>
+                {{-- Clinics should be passed from the controller --}}
+                @foreach ($clinics as $clinic)
+                    <option value="{{ $clinic->id }}">{{ $clinic->name }}</option>
+                @endforeach
+            </select>
+        </div>
         
         <div class="mb-4">
             <label for="subtype" class="block text-sm font-medium text-gray-700">Subtype</label>
@@ -39,18 +49,6 @@
             </select>
         </div>
 
-
-
-        <div class="mb-4 hidden" id="clinic_selection_container">
-            <label for="clinic_id" class="block text-sm font-medium text-gray-700">Clinic</label>
-            <select name="clinic_id" id="clinic_id" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-emerald-500 focus:border-emerald-500">
-                <option value="">Select Clinic</option>
-                {{-- Clinics should be passed from the controller --}}
-                @foreach ($clinics as $clinic)
-                    <option value="{{ $clinic->id }}">{{ $clinic->name }}</option>
-                @endforeach
-            </select>
-        </div>
 
         <div class="mb-4">
             <label for="appointment_datetime" class="block text-sm font-medium text-gray-700">Date and Time</label>

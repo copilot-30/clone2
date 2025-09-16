@@ -192,7 +192,12 @@
             @endif 
 
             <div class="flex items-center justify-between mt-4">
-                 <button class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"><i class="fas fa-calendar-alt"></i> Schedule Follow up</button>
+                 <button type="button" class="schedule-follow-up-btn px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"
+                    data-patient-id="{{ $soapNote->patient_id }}"
+                    data-soap-note-id="{{ $soapNote->id }}"
+                    data-chief-complaint="{{ $soapNote->chief_complaint }}">
+                    <i class="fas fa-calendar-alt"></i> Schedule Follow up
+                </button>
                 <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"><i class="fas fa-save"></i> Update Note</button>
             </div>
         </form>
@@ -513,5 +518,54 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle "Schedule Follow up" button click
+        document.querySelectorAll('.schedule-follow-up-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const patientId = this.dataset.patientId;
+                const soapNoteId = this.dataset.soapNoteId;
+                const chiefComplaint = this.dataset.chiefComplaint;
+
+                // Open the appointment modal
+                const appointmentModal = document.getElementById('appointmentModal');
+                if (appointmentModal) {
+                    appointmentModal.classList.remove('hidden');
+                }
+
+                // Pre-fill the form
+                const subtypeSelect = document.getElementById('subtype');
+                const soapNoteIdSelect = document.getElementById('soap_note_id');
+                const chiefComplaintInput = document.getElementById('chief_complaint');
+
+                if (subtypeSelect) {
+                    subtypeSelect.value = 'follow-up';
+                    // Trigger change event to show SOAP note selection
+                    const event = new Event('change');
+                    subtypeSelect.dispatchEvent(event);
+                }
+                
+                if (soapNoteIdSelect && soapNoteId) {
+                    // Check if the option exists, if not, add it
+                    let optionExists = Array.from(soapNoteIdSelect.options).some(option => option.value === soapNoteId);
+                    if (!optionExists) {
+                        const newOption = document.createElement('option');
+                        newOption.value = soapNoteId;
+                        newOption.text = `SOAP Note from {{ \Carbon\Carbon::parse($soapNote->date)->format('M d, Y') }} (CC: ${chiefComplaint})`;
+                        soapNoteIdSelect.add(newOption);
+                    }
+                    soapNoteIdSelect.value = soapNoteId;
+                    // Trigger change event to populate chief complaint
+                    const event = new Event('change');
+                    soapNoteIdSelect.dispatchEvent(event);
+                }
+
+                if (chiefComplaintInput && chiefComplaint) {
+                    chiefComplaintInput.value = `Follow up for ${chiefComplaint}`;
+                }
+            });
+        });
+    });
 </script>
 @endpush

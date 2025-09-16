@@ -988,7 +988,11 @@ public function viewPatients(Request $request, $patient_id = null)
     }
  
     $clinics = Clinic::where('is_active', true)->get(); // Fetch active clinics
-    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor', 'name', 'clinics'));
+    
+    $prefillSubtype = $request->query('prefill_subtype');
+    $prefillSoapNoteId = $request->query('prefill_soap_note_id');
+
+    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor', 'name', 'clinics', 'prefillSubtype', 'prefillSoapNoteId'));
 }
 
 public function storeSharedCase(Request $request)
@@ -1285,12 +1289,20 @@ private function getPatientAge($birthdate)
 }
 
     // createSoapNote
-    public function createSoapNote()
+    public function createSoapNote(Request $request, $patient_id=null)
     {
         // $selectedPatient = Patient::find(request('patient_id'));
         $doctor = Auth::user()->doctor;
-        $patients = Auth::user()->doctor->attendingPhysicians;
-        return view('doctor.components.soap', compact( 'doctor', 'patients'));
+        if (!$doctor) {
+            dd("Unauthorized");
+        }
+        if($patient_id){
+            $patients = Patient::where('id', $patient_id)->get();
+        }else{
+            $patients = Auth::user()->doctor->attendingPhysicians;
+        }
+
+        return view('doctor.components.soap-note-create', compact( 'doctor', 'patients'));
     }
 
     public function storePatientPrescription(Request $request)

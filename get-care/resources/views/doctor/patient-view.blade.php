@@ -145,7 +145,7 @@
                             }
                         @endphp
                         @if($canAddSoapNotes)
-                            <a href="{{ route('doctor.soap-notes.create', ['patient' => $selectedPatient]) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700"><i class="fas fa-plus mr-2"></i>Add SOAP Note</a>
+                            <a href="{{ route('doctor.soap-notes.create', ['patient' => $selectedPatient->id]) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700"><i class="fas fa-plus mr-2"></i>Add SOAP Note</a>
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())
@@ -321,7 +321,9 @@
     <h2 class="text-2xl font-bold text-emerald-600 border-emerald-600 mb-4">Appointments</h2>
     <div class="space-y-4">
         @if(isset($selectedPatient))
-            <button id="openAppointmentModal" class="w-full bg-emerald-600 text-white p-2 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 mb-4"><i classs="fas fa-calendar-alt"></i> Book New Appointment</button>
+            <button id="openAppointmentModal" class="w-full bg-emerald-600 text-white p-2 rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 mb-4">
+           <i class="fas fa-calendar-plus mr-2"></i> Book New Appointment
+            </button>
             @include('doctor.components.past-appointments', ['selectedPatient' => $selectedPatient])
         @else
             <p class="text-gray-500 text-center">Select a patient to manage appointments.</p>
@@ -346,12 +348,56 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-// Ensure selectedPatientData is always defined
-let selectedPatientData = JSON.parse('{!! addslashes(json_encode($selectedPatient ?? new stdClass())) !!}');
-// Fallback in case the PHP expression doesn't produce a valid JavaScript object
-if (typeof selectedPatientData !== 'object' || selectedPatientData === null) {
-    selectedPatientData = {};
-}
+    // Ensure selectedPatientData is always defined
+    let selectedPatientData = JSON.parse('{!! addslashes(json_encode($selectedPatient ?? new stdClass())) !!}');
+    // Fallback in case the PHP expression doesn't produce a valid JavaScript object
+    if (typeof selectedPatientData !== 'object' || selectedPatientData === null) {
+        selectedPatientData = {};
+    }
+
+    // Pre-fill logic for appointment form
+    const prefillSubtype = "{{ $prefillSubtype ?? '' }}";
+    const prefillSoapNoteId = "{{ $prefillSoapNoteId ?? '' }}";
+
+    if (prefillSubtype === 'follow-up' && selectedPatientData && selectedPatientData.id) {
+        const appointmentModal = document.getElementById('appointmentModal');
+        if (appointmentModal) {
+            appointmentModal.classList.remove('hidden'); // Show the modal
+        }
+
+        const subtypeSelect = document.getElementById('subtype');
+        const soapNoteIdSelect = document.getElementById('soap_note_id');
+        const chiefComplaintInput = document.getElementById('chief_complaint');
+
+        if (subtypeSelect) {
+            subtypeSelect.value = 'follow-up';
+            subtypeSelect.dispatchEvent(new Event('change')); // Trigger change to show SOAP note field
+        }
+
+        if (soapNoteIdSelect && prefillSoapNoteId) {
+            // Check if the option already exists
+            let optionExists = Array.from(soapNoteIdSelect.options).some(option => option.value === prefillSoapNoteId);
+            if (!optionExists) {
+                // If not, add the option dynamically
+                // You might need to fetch the SOAP note details to get the CC and date
+                // For now, let's assume you have it or can construct a generic one
+                const newOption = document.createElement('option');
+                newOption.value = prefillSoapNoteId;
+                // This part is tricky without direct access to the SOAP note object here
+                // For demonstration, let's use a placeholder. Ideally, you'd pass this from the controller
+                newOption.text = `SOAP Note (ID: ${prefillSoapNoteId})`;
+                soapNoteIdSelect.add(newOption);
+            }
+            soapNoteIdSelect.value = prefillSoapNoteId;
+            soapNoteIdSelect.dispatchEvent(new Event('change')); // Trigger change to populate chief complaint
+        }
+
+        if (chiefComplaintInput) {
+            // This would ideally be fetched from the SOAP note data if available
+            chiefComplaintInput.value = `Follow up for patient ${selectedPatientData.full_name}`;
+        }
+    }
+
 const tabs = document.querySelectorAll('nav button');
 const tabContent = document.getElementById('tab-content');
 
