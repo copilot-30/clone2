@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
+        protected $keyType = 'string';
     protected $fillable = [
         'patient_id',
         'doctor_id',
@@ -28,6 +29,7 @@ class Appointment extends Model
         'id' => 'string',
         'appointment_datetime' => 'datetime',
         'is_online' => 'boolean',
+        'clinic_id' => 'string',
     ];
 
     public $incrementing = false;

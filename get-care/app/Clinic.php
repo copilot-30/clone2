@@ -8,7 +8,7 @@ use Illuminate\Support\Str; // Import Str for UUID generation
 class Clinic extends Model
 {
     protected $table = 'clinics'; // Explicitly define the table name
-
+    protected $keyType = 'string';
     protected $fillable = [
         'name',
         'address',
