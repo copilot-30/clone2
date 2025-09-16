@@ -13,10 +13,13 @@ use App\DoctorAvailability; // Import the DoctorAvailability model
 use App\Clinic; // Import the Clinic model
 use App\PatientTestRequest; // Import PatientTestRequest
 use App\LabResult; // Import LabResult
+use App\Plan; // Import the Plan model
+use App\Payment; // Import the Payment model
+use App\Subscription; // Import the Subscription model
 use Carbon\Carbon; // For date/time calculations
 use Illuminate\Support\Facades\Storage; // Import Storage facade
 use Illuminate\Support\Str; // For generating unique IDs
-use PDF; 
+use PDF;
 
 // Google API Client Library imports
 use Google\Client;
@@ -725,4 +728,58 @@ if (!$patient) {
     }
  
     
+    public function showPlans()
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
+        }
+
+        $currentSubscription = $patient->subscriptions()->first();
+        $plans = Plan::all();
+
+        return view('patient.plans.index', compact('plans', 'currentSubscription'));
+    }
+
+    public function showCheckoutForm(Plan $plan)
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
+        }
+
+        return view('patient.plans.checkout', compact('plan'));
+    }
+
+    public function processPlanPayment(Request $request, Plan $plan)
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
+        }
+
+        $validatedData = $request->validate([
+            'payment_method' => 'required|string|max:255', // Dummy payment method
+        ]);
+
+        // Create a pending payment record
+        Payment::create([
+            'user_id' => $user->id,
+            'payable_id' => $plan->id,
+            'payable_type' => 'App\\Plan', // or 'MEMBERSHIP' as requested, ensure consistency
+            'amount' => $plan->price,
+            'payment_method' => $validatedData['payment_method'],
+            'transaction_id' => (string) Str::uuid(), // Dummy transaction ID
+            'status' => 'PENDING',
+            'payment_date' => now(),
+        ]);
+
+        return redirect()->route('patient.dashboard')->with('success', 'Your payment is being processed. Please wait for admin approval.');
+    }
 }

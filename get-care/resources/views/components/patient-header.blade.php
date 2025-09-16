@@ -15,7 +15,7 @@
                 ['id' => 'chat', 'label' => 'Chat', 'url' => route('patient.chat')],
                 ['id' => 'ai-consult', 'label' => 'AI Consult', 'url' => route('patient.ai-consult')],
                 ['id' => 'Files', 'label' => 'Medical Records' , 'url' => route('patient.medical-records')],
-                ['id' => 'plan', 'label' => 'Plan'],
+                ['id' => 'plan', 'label' => 'Plan', 'url' => route('patient.plans')],
             ];
          }else{
             $menuItems = [

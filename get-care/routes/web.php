@@ -87,6 +87,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/subscriptions', 'AdminController@listSubscriptions')->name('admin.subscriptions');
         Route::get('/transactions', 'AdminController@monitorTransactions')->name('admin.transactions');
         Route::get('/audit-logs', 'AdminController@viewAuditLogs')->name('admin.audit_logs');
+
+        // Admin Payment Routes
+        Route::get('/payments', 'AdminController@listPayments')->name('admin.payments');
+        Route::post('/payments/{payment}/update-status', 'AdminController@updatePaymentStatus')->name('admin.payments.update-status');
+        
+        // Plan Management Routes
+        Route::get('/plans', 'AdminController@listPlans')->name('admin.plans');
+        Route::get('/plans/create', 'AdminController@createPlan')->name('admin.plans.create');
+        Route::post('/plans', 'AdminController@storePlan')->name('admin.plans.store');
+        Route::get('/plans/{plan}/edit', 'AdminController@editPlan')->name('admin.plans.edit');
+        Route::put('/plans/{plan}', 'AdminController@updatePlan')->name('admin.plans.update');
+        Route::delete('/plans/{plan}', 'AdminController@deletePlan')->name('admin.plans.delete');
     });
 
     // Doctor routes
@@ -169,8 +181,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/attending-physician-details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
             Route::get('/download-medical-records', 'PatientController@downloadMedicalRecords')->name('patient.download');
             Route::post('/lab-results/upload/{patientTestRequest}', 'PatientController@uploadLabResult')->name('patient.lab-results.upload');
+            
+            // Plan and Subscription Routes
+            Route::get('/plans', 'PatientController@showPlans')->name('patient.plans');
+            Route::get('/plans/{plan}/checkout', 'PatientController@showCheckoutForm')->name('patient.plans.checkout');
+            Route::post('/plans/{plan}/process-payment', 'PatientController@processPlanPayment')->name('patient.plans.process-payment');
         });
-        
     });
 });
 

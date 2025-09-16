@@ -15,9 +15,11 @@
                     ['id' => 'doctors', 'label' => 'Doctors', 'icon' => 'Users', 'url' => route('admin.doctors')],
                     ['id' => 'patients', 'label' => 'Patients', 'icon' => 'Users', 'url' => route('admin.patients')],
                     ['id' => 'users', 'label' => 'Users', 'icon' => 'Users', 'url' => route('admin.users')],
+                    ['id' => 'plans', 'label' => 'Plans', 'icon' => 'CreditCard', 'url' => route('admin.plans')],
                     ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('admin.appointments')],
                     ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit_logs')],
                     ['id' => 'subscriptions', 'label' => 'Subscriptions', 'icon' => 'CreditCard', 'url' => route('admin.subscriptions')],
+                    ['id' => 'payments', 'label' => 'Payments', 'icon' => 'DollarSign', 'url' => route('admin.payments')],
                     ['id' => 'transactions', 'label' => 'Transactions', 'icon' => 'DollarSign', 'url' => route('admin.transactions')],
                 ];
             @endphp
