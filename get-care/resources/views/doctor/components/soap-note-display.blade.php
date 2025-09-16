@@ -14,6 +14,16 @@
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="date-{{ $soapNote->id }}">Date</label>
                 <input type="date" value="{{ $soapNote->date->format('Y-m-d') ?? date('Y-m-d') }}" name="date" id="date-{{ $soapNote->id }}" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
+
+            @if($soapNote->appointment_id)
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="date-{{ $soapNote->id }}">Related Appointment</label>
+                <p class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                {{$soapNote->appointment->chief_complaint}} {{$soapNote->appointment_datetime}}
+                </p>
+            </div>
+            @endif
+
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
                     <label class="block text-emerald-700 text-sm font-bold mb-2">Subjective</label> 

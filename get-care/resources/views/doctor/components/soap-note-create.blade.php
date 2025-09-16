@@ -14,12 +14,22 @@
                 <input type="text" value="{{$selectedPatient->full_name}}" readonly  class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
             </div>
 
-
+           <div class="mb-4">
+               <label for="appointment_id" class="block text-gray-700 text-sm font-bold mb-2">Related Appointment (Optional)</label>
+               <select name="appointment_id" id="appointment_id" class="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                   <option value="">No Associated Appointment</option>
+                   @foreach($selectedPatient->appointments as $appointment)
+                       <option value="{{ $appointment->id }}">
+                           {{ $appointment->appointment_datetime->format('M d, Y H:i') }} - {{ $appointment->type }} - {{ $appointment->chief_complaint }}
+                       </option>
+                   @endforeach
+               </select>
+           </div>
 
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
             <div class="mb-4">
-                <label class="block text-gray-700 text-sm font-bold mb-2" for="follow_up_date">Date</label>
-                <input type="date" value="{{ date('Y-m-d') }}" name="follow_up_date" id="follow_up_date" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="date">Date</label>
+                <input type="date" value="{{ date('Y-m-d') }}" name="date" id="date" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
             <div class="grid grid-cols-1  gap-4 mb-4">
                 <div>
@@ -123,13 +133,15 @@
                     <textarea name="plan" id="plan" placeholder="Enter treatment plan" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="3"></textarea>
                     <textarea name="prescription" id="prescription" placeholder="Enter Prescription details" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2"></textarea>
                     <textarea name="test_request" id="test_request" placeholder="Test Request" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2"></textarea>
-                    <button class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"><i class="fas fa-calendar-alt"></i> Schedule Follow up</button>
                 </div>
             </div>
 
             <div class="flex items-center justify-between mt-4">
-                <button type="button" id="cancelSoapNoteBtn" class="px-4 py-2 text-gray-700 font-semibold -md hover:bg-gray-100">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700">Save Note</button>
+                <a href="{{ route('doctor.patients.view', $selectedPatient->id) }}#soap-notes" class="px-4 bg-red-300 py-2 text-white font-semibold -md hover:bg-red-500">
+                    <i class="fas fa-times"></i> Cancel
+                
+                </a>
+                <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"><i class="fas fa-save"></i> Save Note</button>
             </div>
         </form> 
     </div>
@@ -210,11 +222,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const testRequest = document.getElementById('test_request').value;
             const remarks = document.getElementById('remarks').value;
           
-            const followUpDate = document.getElementById('follow_up_date').value;
+            const date = document.getElementById('date').value;
+            const appointmentId = document.getElementById('appointment_id').value;
             
             const formData = new FormData();
-            formData.append('patient_id', this.querySelector('select[name="patient_id"]').value);
-            formData.append('doctor_id', this.querySelector('input[name="doctor_id"]').value);
+            formData.append('patient_id', document.getElementById('patient_id').value);
+            formData.append('doctor_id', document.querySelector('input[name="doctor_id"]').value);
+            formData.append('appointment_id', appointmentId); // Add appointment_id
             formData.append('subjective', subjective);
             formData.append('chief_complaint', chiefComplaint);
             formData.append('history_of_illness', historyOfIllness);
@@ -228,8 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('heart_rate', heartRate);
             formData.append('body_temperature', bodyTemperature);
             formData.append('capillary_blood_glucose', capillaryBloodGlucose);
-            formData.append('vitals_remark', vitalsRemark); 
-            formData.append('file_remarks', file_remarks);  
+            formData.append('vitals_remark', vitalsRemark);
+            formData.append('file_remarks', file_remarks);
             formData.append('assessment', assessment);
             formData.append('diagnosis', diagnosis);
  
@@ -237,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('prescription', prescription);
             formData.append('test_request', testRequest);
             formData.append('remarks', remarks);
+            formData.append('date', date);
             
             uploadedFiles.forEach(file => {
                 formData.append('lab_files[]', file);

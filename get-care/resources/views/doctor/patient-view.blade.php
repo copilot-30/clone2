@@ -145,7 +145,7 @@
                             }
                         @endphp
                         @if($canAddSoapNotes)
-                            <a href="{{ route('doctor.soap-notes.create', ['patient' => $selectedPatient->id]) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700"><i class="fas fa-plus mr-2"></i>Add SOAP Note</a>
+                            <a href="{{ route('doctor.soap-notes.create', $selectedPatient->id) }}" class="px-4 py-2 bg-emerald-600 text-white font-semibold rounded-md hover:bg-emerald-700"><i class="fas fa-plus mr-2"></i>Add SOAP Note</a>
                         @endif
                     </div>
                     @if($selectedPatient->soapNotes->isNotEmpty())

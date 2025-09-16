@@ -67,4 +67,10 @@ class Consultation extends Model
     {
         return $this->hasMany(LabResult::class, 'soap_note_id');
     }
+
+    
+    public function appointment()
+    {
+        return $this->belongsTo(Appointment::class, 'appointment_id');
+    }
 }

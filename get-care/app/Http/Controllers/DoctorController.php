@@ -643,6 +643,7 @@ public function storeSoapNote(Request $request)
  
     $validator = Validator::make($request->all(), [
         'patient_id' => 'required|uuid|exists:patients,id',
+        'appointment_id' => 'nullable|uuid|exists:appointments,id',
         'subjective' => 'nullable|string',
         'chief_complaint' => 'nullable|string', // New
         'history_of_illness' => 'nullable|string', // New
@@ -665,8 +666,8 @@ public function storeSoapNote(Request $request)
         'prescription' => 'nullable|string', // New
         'test_request' => 'nullable|string', // New
         'remarks' => 'nullable|string', // New
-        'file_remarks' => 'nullable|string', // New 
-        'follow_up_date' => 'nullable|date', // New
+        'file_remarks' => 'nullable|string', // New
+        'date' => 'nullable|date', // New (renamed from follow_up_date)
         'lab_files' => 'nullable|array', // Allow multiple lab files
         'lab_files.*' => 'file|mimes:pdf,jpg,png,doc,docx|max:256000', // Validate each file, max 256MB
     ]);
@@ -712,6 +713,7 @@ public function storeSoapNote(Request $request)
     $soapNote = \App\Consultation::create([
         'patient_id' => $patientId,
         'doctor_id' => $doctor->id,
+        'appointment_id' => $request->input('appointment_id'), // Save appointment_id
         'date' => $request->input('date'),
         'subjective' => $request->input('subjective'),
         'chief_complaint' => $request->input('chief_complaint'),
@@ -725,7 +727,7 @@ public function storeSoapNote(Request $request)
         'test_request' => $request->input('test_request'),
         'remarks' => $request->input('remarks'),
         'file_remarks' => $request->input('file_remarks'),
-        'vital_remarks' => $request->input('vital_remarks'), 
+        'vital_remarks' => $request->input('vital_remarks'),
     ]);
 
     event(new AuditableEvent(auth()->id(), 'soap_note_created', [
