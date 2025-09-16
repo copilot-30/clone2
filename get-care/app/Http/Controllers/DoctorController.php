@@ -1289,20 +1289,20 @@ private function getPatientAge($birthdate)
 }
 
     // createSoapNote
-    public function createSoapNote(Request $request, $patient_id=null)
+    public function createSoapNote(Request $request, $patient_id)
     {
-        // $selectedPatient = Patient::find(request('patient_id'));
+        $selectedPatient = Patient::find($patient_id);
         $doctor = Auth::user()->doctor;
         if (!$doctor) {
             dd("Unauthorized");
         }
-        if($patient_id){
-            $patients = Patient::where('id', $patient_id)->get();
-        }else{
-            $patients = Auth::user()->doctor->attendingPhysicians;
-        }
 
-        return view('doctor.components.soap-note-create', compact( 'doctor', 'patients'));
+        if (!$selectedPatient){
+            dd("Patient not found");
+        }
+        
+
+        return view('doctor.components.soap-note-create', compact( 'doctor', 'selectedPatient'));
     }
 
     public function storePatientPrescription(Request $request)

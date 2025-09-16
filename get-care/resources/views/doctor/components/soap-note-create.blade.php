@@ -10,16 +10,10 @@
             @csrf 
             <div class="mb-4">
                 <label class="block text-gray-700 text-sm font-bold mb-2" for="follow_up_date">Patient</label>
-                <select name="patient_id" id="patient_id" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                @foreach($patients as $attendingPhysician) 
-                    @if($attendingPhysician->patient)
-                        <option value="{{ $attendingPhysician->patient->id }}">{{ $attendingPhysician->patient->first_name }} {{
-                            $attendingPhysician->patient->last_name    
-                        }}</option>
-                    @endif
-                @endforeach
-                </select>
+                <input type="hidden" value="{{$selectedPatient->id}}" readonly name="patient_id" id="patient_id" class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
+                <input type="text" value="{{$selectedPatient->full_name}}" readonly  class="shadow appearance-none border  w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"/>
             </div>
+
 
 
             <input type="hidden" name="doctor_id" value="{{ $doctor->id }}">
