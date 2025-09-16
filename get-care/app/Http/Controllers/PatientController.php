@@ -13,6 +13,7 @@ use App\DoctorAvailability; // Import the DoctorAvailability model
 use App\Clinic; // Import the Clinic model
 use Carbon\Carbon; // For date/time calculations
 use Illuminate\Support\Str; // For generating unique IDs
+use PDF; 
 
 // Google API Client Library imports
 use Google\Client;
@@ -221,7 +222,6 @@ class PatientController extends Controller
 
        
 
- 
         
         return view('patient.select-appointment-type', compact('doctor', 'clinics'));
     }
@@ -314,7 +314,7 @@ $validatedData = $request->validate([
     'appointment_datetime' => 'required|date_format:Y-m-d H:i',
     'chief_complaint' => 'nullable|string|max:1000',
 ]);
-
+ 
         $doctor = Doctor::findOrFail($validatedData['doctor_id']);
 
         // Check if the patient has this doctor as their attending physician, or allow selection if no attending physician is set
@@ -371,7 +371,7 @@ $validatedData = $request->validate([
                 // Example for service account:
                 // $client->setAuthConfig(config('services.google.service_account_key_file'));
                 // $client->addScope(Calendar::CALENDAR_EVENTS);
-
+ 
                 // Example for OAuth 2.0 (assuming you have a token or an existing flow):
                 // $client->setClientId(config('services.google.client_id'));
                 // $client->setClientSecret(config('services.google.client_secret'));
@@ -513,7 +513,7 @@ $validatedData = $request->validate([
     {
         $user = Auth::user();
         $patient = $user->patient;
-
+ 
         if (!$patient) {
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
         }
@@ -644,7 +644,61 @@ $validatedData = $request->validate([
         }
 
         
+return view('patient.medical-records.view');
+}
 
-        return view('patient.medical-records.view');
-    }
+public function downloadMedicalRecords(Request $request)
+{
+$user = Auth::user();
+$patient = $user->patient;
+
+if (!$patient) {
+    return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
+}
+
+$type = $request->query('type', 'all-records'); // Default to 'all-records'
+$data = [];
+$title = '';
+$view = '';
+
+switch ($type) {
+    case 'all-records':
+        $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
+        $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
+        $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
+        $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
+        $title = 'All Medical Records';
+        $view = 'patient.medical-records.pdf-templates.all-records';
+        break;
+    case 'doctor-notes':
+        $data['patientNotes'] = $patient->patientNotes()->orderBy('created_at', 'desc')->get();
+        $title = 'Doctor Notes';
+        $view = 'patient.medical-records.pdf-templates.doctor-notes';
+        break;
+    case 'prescriptions':
+        $data['patientPrescriptions'] = $patient->patientPrescriptions()->orderBy('created_at', 'desc')->get();
+        $title = 'Prescriptions';
+        $view = 'patient.medical-records.pdf-templates.prescriptions';
+        break;
+    case 'lab-requests':
+        $data['patientTestRequests'] = $patient->patientTestRequests()->orderBy('created_at', 'desc')->get();
+        $title = 'Lab Requests';
+        $view = 'patient.medical-records.pdf-templates.lab-requests';
+        break;
+    case 'lab-results':
+        $data['labResults'] = $patient->labResults()->orderBy('created_at', 'desc')->get();
+        $title = 'Lab Results';
+        $view = 'patient.medical-records.pdf-templates.lab-results';
+        break;
+    default:
+        return redirect()->back()->with('error', 'Invalid medical record type for download.');
+}
+
+// Pass patient information to the PDF view
+$data['patient'] = $patient;
+
+$pdf = PDF::loadView($view, $data);
+return $pdf->download(Str::slug($title . '-' . $patient->full_name) . '.pdf');
+}
+
 }

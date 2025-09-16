@@ -25,6 +25,11 @@ class LabResult extends Model
 
     public $incrementing = false;
 
+    public function getResultDataAttribute()
+    {
+        return json_decode($this->attributes['result_data'], true);
+    }
+
     protected static function boot()
     {
         parent::boot();
