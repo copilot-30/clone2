@@ -338,7 +338,7 @@
     <button id="closeAppointmentModal" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
 </div>
 @if(isset($selectedPatient))
-    @include('doctor.components.appointment-form', ['selectedPatient' => $selectedPatient])
+    @include('doctor.components.appointment-form', ['selectedPatient' => $selectedPatient, 'clinics' => $clinics ?? []])
 @endif
 </div>
 </div>
@@ -618,6 +618,99 @@ document.querySelectorAll('.remove-rejected-btn').forEach(button => {
 });
 
  
+</script>
+<script>
+   document.addEventListener('DOMContentLoaded', function () {
+       const appointmentTypeSelect = document.getElementById('appointment_type');
+       const clinicSelectionContainer = document.getElementById('clinic_selection_container');
+       const onlineFieldsContainer = document.getElementById('online_fields_container');
+
+       function toggleAppointmentFields() {
+           const selectedType = appointmentTypeSelect.value;
+           if (selectedType === 'clinic') {
+               clinicSelectionContainer.classList.remove('hidden');
+               onlineFieldsContainer.classList.add('hidden');
+           } else if (selectedType === 'online') {
+               clinicSelectionContainer.classList.add('hidden');
+               onlineFieldsContainer.classList.remove('hidden');
+           } else {
+               clinicSelectionContainer.classList.add('hidden');
+               onlineFieldsContainer.classList.add('hidden');
+           }
+       }
+
+       if (appointmentTypeSelect) {
+           appointmentTypeSelect.addEventListener('change', toggleAppointmentFields);
+           // Initial call to set correct visibility based on default or pre-selected value
+           toggleAppointmentFields();
+       }
+   });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const subtypeSelect = document.getElementById('subtype');
+        const soapNoteIdContainer = document.getElementById('soap_note_id_container');
+        const soapNoteIdSelect = document.getElementById('soap_note_id');
+        const chiefComplaintInput = document.getElementById('chief_complaint');
+        const appointmentTypeSelect = document.getElementById('appointment_type');
+        const googleLinkMessageContainer = document.getElementById('google_link_message_container');
+        const bookAppointmentButton = document.querySelector('button[type="submit"]');
+
+        // Function to toggle SOAP note field visibility and populate chief complaint
+        function toggleSoapNoteField() {
+            if (subtypeSelect.value === 'follow-up') {
+                soapNoteIdContainer.classList.remove('hidden');
+            } else {
+                soapNoteIdContainer.classList.add('hidden');
+                chiefComplaintInput.value = ''; // Clear chief complaint if not follow-up
+            }
+        }
+
+        function populateChiefComplaint() {
+            const selectedOption = soapNoteIdSelect.options[soapNoteIdSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                const chiefComplaintText = selectedOption.textContent;
+                const match = chiefComplaintText.match(/CC: (.*?) \(/);
+                if (match && match[1]) {
+                    chiefComplaintInput.value = `Follow up for ${match[1]}`;
+                } else {
+                    chiefComplaintInput.value = '';
+                }
+            } else {
+                chiefComplaintInput.value = '';
+            }
+        }
+
+        // Function to toggle Google link message and button state
+        function toggleGoogleLinkMessage() {
+            if (appointmentTypeSelect.value === 'online') {
+                @if(!Auth::user()->doctor->google_access_token) // Check if doctor has Google tokens
+                    googleLinkMessageContainer.classList.remove('hidden');
+                    bookAppointmentButton.disabled = true;
+                @else
+                    googleLinkMessageContainer.classList.add('hidden');
+                    bookAppointmentButton.disabled = false;
+                @endif
+            } else {
+                googleLinkMessageContainer.classList.add('hidden');
+                bookAppointmentButton.disabled = false;
+            }
+        }
+
+        if (subtypeSelect) {
+            subtypeSelect.addEventListener('change', toggleSoapNoteField);
+            toggleSoapNoteField(); // Initial call
+        }
+
+        if (soapNoteIdSelect) {
+            soapNoteIdSelect.addEventListener('change', populateChiefComplaint);
+        }
+
+        if (appointmentTypeSelect) {
+            appointmentTypeSelect.addEventListener('change', toggleGoogleLinkMessage);
+            toggleGoogleLinkMessage(); // Initial call
+        }
+    });
 </script>
 @endpush
 <!-- Patient Note Modal -->

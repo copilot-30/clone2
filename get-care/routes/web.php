@@ -41,8 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', 'AuthController@logout')->name('logout');
 
     // Google OAuth Routes
-    Route::get('/auth/google/redirect', 'PatientController@redirectToGoogle')->name('google.auth.redirect');
-    Route::get('/auth/google/callback', 'PatientController@handleGoogleCallback')->name('google.auth.callback');
+    Route::get('/auth/google/redirect', 'PublicController@redirectToGoogle')->name('google.auth.redirect');
+    Route::get('/auth/google/callback', 'PublicController@handleGoogleCallback')->name('google.auth.callback');
 
     // Admin routes
     Route::prefix('admin')->middleware('role:admin')->group(function () {

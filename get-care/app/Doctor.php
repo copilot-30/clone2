@@ -24,6 +24,8 @@ class Doctor extends Model
         'affiliated_hospital',
         'training',
         'online_availability_enabled',
+        'google_access_token',
+        'google_refresh_token',
     ];
 
     protected $casts = [

@@ -8,7 +8,7 @@ use App\Patient;
 use App\Appointment;
 use App\Payment;
 use App\DoctorAvailability;
-use App\Clinic;
+use App\Clinic; // Already imported on line 11
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -24,7 +24,17 @@ use App\LabResult; // Import LabResult model
 use App\Consultation;   // Import Consultation model
 use App\PatientPrescription; // Import PatientPrescription model
 use App\PatientTestRequest; // Import PatientTestRequest model
-use Exception;
+use Exception; 
+
+use Google\Client;
+use Google\Service\Calendar;
+use Google\Service\Calendar\Event;
+use Google\Service\Calendar\EventDateTime;
+use Google\Service\Calendar\EventAttendee;
+use Google\Service\Calendar\ConferenceData;
+use Google\Service\Calendar\CreateConferenceRequest;
+use Google\Service\Calendar\ConferenceSolutionKey;
+use Socialite; // Import Socialite
 
 class DoctorController extends Controller
 {
@@ -486,36 +496,141 @@ class DoctorController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Appointment cancelled successfully.']);
     }
-public function storeAppointment(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'patient_id' => 'required|uuid|exists:patients,id',
-        'appointment_date' => 'required|date',
-        'appointment_time' => 'required|date_format:H:i',
-        'reason' => 'nullable|string',
-    ]);
-
-    if ($validator->fails()) {
-        return redirect()->back()->withErrors($validator)->withInput();
+    public function createAppointment(Patient $patient)
+    {
+        $clinics = Clinic::all(); // Fetch all clinics
+        return view('doctor.patient-view', ['selectedPatient' => $patient, 'clinics' => $clinics]);
     }
 
-    $doctor = Auth::user()->doctor;
+    public function storeAppointment(Request $request)
+    {
+        $validatedData = $request->validate([
+            'patient_id' => 'required|exists:patients,id',
+            'type' => 'required|in:online,clinic',
+            'clinic_id' => 'nullable|exists:clinics,id',
+            'appointment_datetime' => 'required|date',
+            'duration_minutes' => 'required|integer|min:1',
+            'subtype' => 'nullable|string|max:255',
+            'chief_complaint' => 'nullable|string',
+            'notes' => 'nullable|string',
+            // 'admin_notes' => 'nullable|string',
+            // 'meet_link' => 'nullable|url', // Removed meet_link validation
+            'soap_note_id' => 'nullable|exists:soap_notes,id', // Add validation for soap_note_id
+        ]);
 
-    Appointment::create([
-        'patient_id' => $request->input('patient_id'),
-        'doctor_id' => $doctor->id,
-        'appointment_datetime' => $request->input('appointment_date') . ' ' . $request->input('appointment_time'),
-        'reason' => $request->input('reason'),
-        'status' => 'scheduled',
-    ]);
+        if ($validatedData['subtype'] === 'follow-up' && !$validatedData['soap_note_id']) {
+            return redirect()->back()->withErrors(['soap_note_id' => 'SOAP note is required for follow-up subtype.'])->withInput();
+            
+        }
 
-    event(new AuditableEvent(auth()->id(), 'doctor_created_appointment', [
-        'patient_id' => $request->input('patient_id'),
-        'doctor_id' => $doctor->id,
-    ]));
+        $appointment = new Appointment();
+        $appointment->patient_id = $validatedData['patient_id'];
+        $appointment->doctor_id = Auth::user()->doctor->id; // Assuming logged in user is a doctor
+        $appointment->type = $validatedData['type'];
+        $appointment->appointment_datetime = $validatedData['appointment_datetime'];
+        $appointment->duration_minutes = $validatedData['duration_minutes'];
+        $appointment->subtype = $validatedData['subtype'];
+        $appointment->chief_complaint = $validatedData['chief_complaint'];
+        $appointment->notes = $validatedData['notes'];
+        // $appointment->admin_notes = $validatedData['admin_notes'];
+        $appointment->status = 'pending'; // Set status directly to 'pending'
+        $appointment->soap_note_id = $validatedData['soap_note_id'] ?? null; // Assign soap_note_id
 
-    return redirect()->back()->with('success', 'Appointment booked successfully!');
-}
+        if ($validatedData['type'] === 'clinic') {
+            $appointment->clinic_id = $validatedData['clinic_id'];
+            $appointment->is_online = false;
+        } else {
+            $appointment->is_online = true;
+            // $appointment->meet_link = $validatedData['meet_link']; // Meet link will be generated
+
+            // Google Meet link generation logic
+            $meetLink = null;
+            try {
+                $doctor = Auth::user()->doctor; // Get the authenticated doctor
+
+                $patient = Patient::find($validatedData['patient_id']);
+
+                if (!$patient) {
+                    throw new Exception('Patient not found.');
+                }
+                
+                // Initialize Google Client
+                $client = new Client();
+                $client->setClientId(env('GOOGLE_CLIENT_ID'));
+                $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
+                
+                $accessToken = $doctor->google_access_token;
+                $refreshToken = $doctor->google_refresh_token;
+
+                if (!$accessToken || !$refreshToken) {
+                    throw new Exception('Google account not linked or tokens missing for doctor.');
+                }
+
+                $client->setAccessToken($accessToken);
+
+                // Check if the access token is expired and refresh if necessary
+                if ($client->isAccessTokenExpired()) {
+                    if ($refreshToken) {
+                        $client->fetchAccessTokenWithRefreshToken($refreshToken);
+                        $newAccessToken = $client->getAccessToken();
+                        $doctor->google_access_token = $newAccessToken['access_token'];
+                        if (isset($newAccessToken['refresh_token'])) {
+                            $doctor->google_refresh_token = $newAccessToken['refresh_token'];
+                        }
+                        $doctor->save();
+                    } else {
+                        throw new Exception('Google access token expired and no refresh token available for doctor. Please re-link your Google account.');
+                    }
+                }
+
+                $client->addScope(Calendar::CALENDAR_EVENTS);
+                $service = new Calendar($client);
+
+                $event = new Event(array(
+                    'summary' => 'Appointment with patient ' . $patient->first_name . ' ' . $patient->last_name,
+                    'description' => $validatedData['chief_complaint'] ?? 'Online consultation',
+                    'start' => new EventDateTime([
+                        'dateTime' => \Carbon\Carbon::parse($validatedData['appointment_datetime'])->setTimezone(config('app.timezone'))->format('c'),
+                    ]),
+                    'end' => new EventDateTime([
+                        'dateTime' => \Carbon\Carbon::parse($validatedData['appointment_datetime'])->addMinutes($validatedData['duration_minutes'])->setTimezone(config('app.timezone'))->format('c'),
+                    ]),
+                    'attendees' => array(
+                        new EventAttendee(['email' => $patient->user->email]),
+                        new EventAttendee(['email' => $doctor->user->email]),
+                    ),
+                    'conferenceData' => new ConferenceData([
+                        'createRequest' => new CreateConferenceRequest([
+                            'requestId' => (string) Str::uuid(),
+                            'conferenceSolutionKey' => new ConferenceSolutionKey([
+                                'type' => 'hangoutsMeet',
+                            ]),
+                        ]),
+                    ]),
+                ));
+
+                $calendarId = 'primary';
+                $createdEvent = $service->events->insert($calendarId, $event, ['conferenceDataVersion' => 1]);
+
+                if ($createdEvent->getConferenceData() && $createdEvent->getConferenceData()->getEntryPoints()) {
+                    foreach ($createdEvent->getConferenceData()->getEntryPoints() as $entryPoint) {
+                        if ($entryPoint->getEntryPointType() === 'video') {
+                            $meetLink = $entryPoint->getUri();
+                            break;
+                        }
+                    }
+                }
+                $appointment->meet_link = $meetLink; // Assign the generated meet link
+            } catch (Exception $e) {
+                \Log::error('Google Meet generation failed for doctor: ' . $e->getMessage());
+                return redirect()->back()->withErrors(['google_meet_error' => 'Failed to generate Google Meet link. Please ensure your Google account is linked and try again.'])->withInput();
+            }
+        }
+ 
+        $appointment->save();
+
+        return redirect()->back()->with('success', 'Appointment booked successfully!');
+    }
 
 /**
  * Store a new SOAP note for a patient
@@ -872,7 +987,8 @@ public function viewPatients(Request $request, $patient_id = null)
         $selectedPatient = $patients->first(); // Select the first patient by default if no patient_id is provided
     }
  
-    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor', 'name'));
+    $clinics = Clinic::where('is_active', true)->get(); // Fetch active clinics
+    return view('doctor.patient-view', compact('patients', 'selectedPatient', 'filter', 'doctor', 'name', 'clinics'));
 }
 
 public function storeSharedCase(Request $request)

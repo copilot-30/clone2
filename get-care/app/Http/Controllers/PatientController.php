@@ -550,52 +550,7 @@ $validatedData = $request->validate([
         return view('patient.attending-physician-details', compact('attendingPhysician','doctor_clinics'));
     }
 
-    /**
-     * Redirect the user to the Google authentication page.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function redirectToGoogle()
-    {
-        return Socialite::driver('google')->scopes([
-            'https://www.googleapis.com/auth/calendar.events',
-            'https://www.googleapis.com/auth/userinfo.email',
-        ])->with(['access_type' => 'offline', 'prompt' => 'consent'])->redirect();
-    }
-
-    /**
-     * Obtain the user's information from Google.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function handleGoogleCallback()
-    {
-        try {
-            $user = Socialite::driver('google')->user();
-            $authenticatedPatientUser = Auth::user(); // Get the currently authenticated user (patient)
-
-            // Find the patient record associated with the authenticated user
-            $patient = $authenticatedPatientUser->patient;
-
-            if ($patient) {
-
-                // dd($user->token, $user->refresh_token);
-                // Store Google access token and refresh token for the patient
-                // Ensure your 'patients' table has 'google_access_token' and 'google_refresh_token' columns
-                $patient->google_access_token = $user->token;
-                $patient->google_refresh_token = $user->refreshToken; // Will be null if access_type 'offline' not used or already consented
-                $patient->save();
-
-                return redirect()->route('patient.select-appointment-type', ['doctor_id' => session('doctor_id_for_google_auth')])->with('success', 'Google account linked successfully!');
-            } else {
-                return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
-            }
-
-        } catch (\Exception $e) {
-            \Log::error('Google OAuth failed: ' . $e->getMessage());
-            return redirect()->route('patient.dashboard')->with('error', 'Failed to link Google account. Please try again.');
-        }
-    }
+  
     public function getPatientDetailsForApi()
     {
         $user = Auth::user();
