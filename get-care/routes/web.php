@@ -147,6 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
         Route::group(['middleware' => 'patient.profile.check'], function () {
             Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
+            Route::get('/medical-records', 'PatientController@getMedicalRecords')->name('patient.medical-records');
             Route::get('/appointments', 'PatientAppointmentController@index');
             Route::post('/appointments', 'PatientAppointmentController@store');
             // Route::get('/appointments/{id}', 'PatientAppointmentController@show');

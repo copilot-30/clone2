@@ -6,7 +6,10 @@
             Download
         </button>
     </div>
-<div class="text-gray-600 mb-6">{{ auth()->user()->patient->full_name ?? 'N/A' }} • Patient ID: {{ auth()->user()->patient->patient_id ?? 'N/A' }}</div>
+<div class="text-gray-600 mb-6">
+    <span class="text-gray-800 font-semibold">{{ ucwords(auth()->user()->patient->first_name . ' ' . auth()->user()->patient->last_name) }}</span>
+     • Patient ID: {{ auth()->user()->patient->id ?? 'N/A' }}
+</div>
 
 <div class="border-b border-gray-200">
     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -37,6 +40,7 @@
 </div>
 </div>
 
+@push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -77,4 +81,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 </script>
+@endpush
 

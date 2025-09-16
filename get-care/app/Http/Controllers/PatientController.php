@@ -632,4 +632,19 @@ $validatedData = $request->validate([
 
         return response()->json($doctors);
     }
+
+    public function getMedicalRecords()
+    {
+
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return redirect()->route('patient.dashboard')->with('error', 'Patient profile not found.');
+        }
+
+        
+
+        return view('patient.medical-records.view');
+    }
 }

@@ -68,13 +68,13 @@ class Patient extends Model
 
     public function subscriptions()
     {
-        return $this->hasMany(Subscription::class);
+        return $this->hasOne(Subscription::class);
     }
 
-    public function medicalBackground()
-    {
-        return $this->hasOne(MedicalBackground::class, 'patient_id');
-    }
+    // public function medicalBackground()
+    // {
+    //     return $this->hasOne(MedicalBackground::class, 'patient_id');
+    // }
 
     public function conversations()
     {
@@ -96,15 +96,15 @@ class Patient extends Model
         return $this->hasMany(PatientNote::class, 'patient_id');
     }
 
-    public function patientVisits()
-    {
-        return $this->hasMany(PatientVisit::class, 'patient_id');
-    }
+    // public function patientVisits()
+    // {
+    //     return $this->hasMany(PatientVisit::class, 'patient_id');
+    // }
 
-    public function prescriptions()
-    {
-        return $this->hasMany(Prescription::class, 'patient_id');
-    }
+    // public function prescriptions()
+    // {
+    //     return $this->hasMany(Prescription::class, 'patient_id');
+    // }
 
     public function sharedCases()
     {

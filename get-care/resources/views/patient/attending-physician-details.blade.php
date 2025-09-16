@@ -1,8 +1,8 @@
 @extends('patient_layout')
 
 @section('content')
-<div class="container mx-auto p-6">
-    <div class="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
+<div class="p-6 bg-gray-50 min-h-screen">
+    <div class="bg-white rounded-lg shadow-md p-6   mx-auto">
         <h2 class="text-2xl font-bold mb-6 text-center">Your Attending Physician</h2>
 
         @if($attendingPhysician && $attendingPhysician->doctor)
@@ -28,7 +28,7 @@
                     </div>
                     <div class="mt-4 md:mt-0">
                         <a href="{{ route('patient.select-appointment-type', ['doctor_id' => $attendingPhysician->doctor->id]) }}" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none transition duration-300">
-                            Create New Appointment
+                            <i class="fas fa-calendar"></i> Create New Appointment
                         </a>
                     </div>
                 </div>
