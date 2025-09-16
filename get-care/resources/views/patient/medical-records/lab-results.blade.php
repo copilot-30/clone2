@@ -3,7 +3,7 @@
     @if ($p->result_data_parsed && isset($p->result_data_parsed['file_name']))
     <div class="flex justify-between items-start">
          <div class="flex justify-between items-start w-4/5">
-        <a  href="{{$p -> result_file_url }}"  target="_blank" class="font-medium text-gray-800">
+        <a  href="{{$p -> result_file_url }}"  target="_blank" class="font-medium text-blue-500 hover:text-blue-700">
            <i class="fas fa-file mr-2"></i> {{$p->result_data_parsed['file_name']}}
         </a>
         <div class="flex justify-end">
@@ -16,9 +16,14 @@
     </div>
     @endif
     
-    @if ($p -> doctor)
+   
+    @if ($p->soapNote and $p->soapNote->doctor && is_null($p->test_request_id))
     <div class="mt-2 text-xs text-gray-500">
-        Dr. {{ $p->doctor->first_name ?? '' }} {{ $p->doctor->last_name ?? '' }}
+        Uploaded by: <span class="font-semibold">{{$p->soapNote->doctor->full_name}}</span>
+    </div>
+    @elseif($p->test_request_id)
+    <div class="mt-2 text-xs text-gray-500">
+        Uploaded by: <span class="font-semibold">{{$p->testRequest->patient->full_name}}</span>
     </div>
     @endif
 </div>

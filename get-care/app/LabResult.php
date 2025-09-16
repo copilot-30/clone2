@@ -49,4 +49,8 @@ class LabResult extends Model
     {
         return $this->belongsTo(Patient::class, 'patient_id');
     }
+
+    public function soapNote(){
+        return $this->belongsTo(Consultation::class, 'soap_note_id');
+    }
 }

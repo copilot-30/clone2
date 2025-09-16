@@ -61,10 +61,10 @@
                     @if($result->result_file_url)
                         <a href="{{ asset($result->result_file_url) }}" target="_blank" 
                             class="p-2 mb-2 text-blue-500 rounded-md hover:underline hover:text-blue-700 border border-blue-300">
-                            <i class="fas fa-file mr-2"></i> Lab Result ({{ $result->created_at->format('M j, Y') }})
+                            <i class="fas fa-file mr-2"></i> {{ isset($result->result_data_parsed['file_name']) ? $result->result_data_parsed['file_name'] : 'N/A' }}
                         </a>
                     @else
-                        Lab Result ({{ $result->created_at->format('M j, Y') }})
+                        {{ isset($result->result_data_parsed['file_name']) ? $result->result_data_parsed['file_name'] : 'N/A' }}
                     @endif
                     @if($result->notes)
                         <p class="text-gray-700 text-sm my-4 bg-blue-50 p-2">{{ $result->notes }}</p>

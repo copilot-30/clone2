@@ -33,6 +33,12 @@ class Doctor extends Model
 
     public $incrementing = false;
 
+    public function getFullNameAttribute()
+    {
+        $n= "Dr. ". $this->first_name . ' ' . $this->last_name . ' ' . $this->suffix;
+        return ucwords ($n);
+    }
+
     protected static function boot()
     {
         parent::boot();
