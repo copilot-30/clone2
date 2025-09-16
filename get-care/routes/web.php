@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Response;
 */
  
 
-Route::post('/ask-ai', 'GPTController@getMedicalSuggestion')->name('ask-ai');
+Route::post('/ask-ai', 'OpenLLMController@getMedicalSuggestion')->name('ask-ai');
 
 Route::get('/', 'PublicController@landingPage')->name('landing');
 
@@ -90,16 +90,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Admin Payment Routes
         Route::get('/payments', 'AdminController@listPayments')->name('admin.payments');
-        Route::post('/payments/{payment}/update-status', 'AdminController@updatePaymentStatus')->name('admin.payments.update-status');
-        
-        // Plan Management Routes
+        Route::post('/payments/{payment}/update-status', 'AdminController@updatePaymentStatus')->name('admin.payments.update-status');   // Plan Management Routes
         Route::get('/plans', 'AdminController@listPlans')->name('admin.plans');
         Route::get('/plans/create', 'AdminController@createPlan')->name('admin.plans.create');
         Route::post('/plans', 'AdminController@storePlan')->name('admin.plans.store');
         Route::get('/plans/{plan}/edit', 'AdminController@editPlan')->name('admin.plans.edit');
         Route::put('/plans/{plan}', 'AdminController@updatePlan')->name('admin.plans.update');
-        Route::delete('/plans/{plan}', 'AdminController@deletePlan')->name('admin.plans.delete');
-    });
+        Route::delete('/plans/{plan}', 'AdminController@deletePlan')->name('admin.plans.delete');    });
 
     // Doctor routes
     Route::prefix('doctor')->middleware('role:doctor')->group(function () {
