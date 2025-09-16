@@ -117,7 +117,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/appointments', 'DoctorController@storeAppointment')->name('doctor.appointments.store');
             Route::get('/appointments/{appointment}', 'DoctorController@viewAppointment')->name('doctor.appointments.view');
             Route::put('/appointments/{appointment}/cancel', 'DoctorController@cancelAppointment')->name('doctor.appointments.cancel');
+            Route::put('/appointments/{appointment}/reschedule', 'DoctorController@rescheduleAppointment')->name('doctor.appointments.reschedule');
          
+
             Route::get('/patients/{patient_id?}', 'DoctorController@viewPatients')->name('doctor.patients.view');
             Route::get('/patients/{id}/consultation-history', 'DoctorController@viewPatientConsultationHistory');
             Route::post('/patient-notes/store', 'PatientNoteController@store')->name('doctor.patient-notes.store');

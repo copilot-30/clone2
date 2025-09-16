@@ -63,8 +63,9 @@
                                     <a href="{{ $appointment->meet_link }}" target="_blank" class="text-blue-600 hover:text-blue-900 mr-3">Join Meeting</a>
                                 @endif
 
-                                @if($appointment->status == 'scheduled')
-                                    <button type="button" onclick="openCancelModal('{{ $appointment->id }}')" class="text-red-600 hover:text-red-900">Cancel</button>
+                                @if($appointment->status == 'pending' || $appointment->status == 'rescheduled')
+                                    <button type="button" onclick="openCancelModal('{{ $appointment->id }}')" class="text-red-600 hover:text-red-900 mr-3">Cancel</button>
+                                    <button type="button" onclick="openRescheduleModal('{{ $appointment->id }}', '{{ $appointment->appointment_datetime->format('Y-m-d\TH:i') }}')" class="text-indigo-600 hover:text-indigo-900">Reschedule</button>
                                 @endif
                             </td>
                         </tr>
@@ -82,8 +83,7 @@
 <!-- Cancel Appointment Modal -->
 <div id="cancelModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-        <h3 class="text-lg font-bold mb-4">Cancel Appointment</h3>
-        <form action="" method="POST" id="cancelForm">
+        <form id="cancelForm">
             @csrf
             @method('PUT')
             <input type="hidden" name="appointment_id" id="cancelAppointmentId">
@@ -99,10 +99,33 @@
     </div>
 </div>
 
+<!-- Reschedule Appointment Modal -->
+<div id="rescheduleModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <h3 class="text-lg font-bold mb-4">Reschedule Appointment</h3>
+        <form id="rescheduleForm">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="appointment_id" id="rescheduleAppointmentId">
+            <div class="mb-4">
+                <label for="new_appointment_datetime" class="block text-gray-700 text-sm font-bold mb-2">New Date and Time:</label>
+                <input type="datetime-local" name="new_appointment_datetime" id="new_appointment_datetime" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
+                <label for="reschedule_reason" class="block text-gray-700 text-sm font-bold mb-2">Reason for Rescheduling (Optional):</label>
+                <textarea name="reschedule_reason" id="reschedule_reason" rows="4" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded mr-2">Reschedule Appointment</button>
+                <button type="button" onclick="closeRescheduleModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Close</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     function openCancelModal(appointmentId) {
         document.getElementById('cancelAppointmentId').value = appointmentId;
-        document.getElementById('cancelForm').action = "{{ url('doctor/appointments') }}" + '/' + appointmentId + '/cancel';
         document.getElementById('cancelModal').classList.remove('hidden');
     }
 
@@ -110,5 +133,80 @@
         document.getElementById('cancelModal').classList.add('hidden');
         document.getElementById('cancellation_reason').value = ''; // Clear reason
     }
+
+    function openRescheduleModal(appointmentId, currentDatetime) {
+        document.getElementById('rescheduleAppointmentId').value = appointmentId;
+        document.getElementById('new_appointment_datetime').value = currentDatetime; // Pre-fill with current datetime
+        document.getElementById('rescheduleModal').classList.remove('hidden');
+    }
+
+    function closeRescheduleModal() {
+        document.getElementById('rescheduleModal').classList.add('hidden');
+        document.getElementById('new_appointment_datetime').value = '';
+        document.getElementById('reschedule_reason').value = ''; // Clear reason
+    }
+
+    document.getElementById('cancelForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const appointmentId = document.getElementById('cancelAppointmentId').value;
+        const cancellationReason = document.getElementById('cancellation_reason').value;
+        
+        fetch("{{ url('doctor/appointments') }}/" + appointmentId + '/cancel', {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ cancellation_reason: cancellationReason })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + (data.message || 'Could not cancel appointment.'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while cancelling the appointment.');
+        });
+    });
+
+    document.getElementById('rescheduleForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const appointmentId = document.getElementById('rescheduleAppointmentId').value;
+        const newAppointmentDatetime = document.getElementById('new_appointment_datetime').value;
+        const rescheduleReason = document.getElementById('reschedule_reason').value;
+
+        fetch("{{ url('doctor/appointments') }}/" + appointmentId + '/reschedule', {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                new_appointment_datetime: newAppointmentDatetime,
+                reschedule_reason: rescheduleReason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('Error: ' + (data.message || 'Could not reschedule appointment.'));
+                if (data.errors) {
+                    console.error('Validation Errors:', data.errors);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while rescheduling the appointment.');
+        });
+    });
 </script>
 @endsection

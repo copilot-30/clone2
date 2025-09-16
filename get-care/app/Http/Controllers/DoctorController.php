@@ -24,8 +24,8 @@ use App\LabResult; // Import LabResult model
 use App\Consultation;   // Import Consultation model
 use App\PatientPrescription; // Import PatientPrescription model
 use App\PatientTestRequest; // Import PatientTestRequest model
-use Exception; 
-
+use Exception;
+use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Calendar;
 use Google\Service\Calendar\Event;
@@ -34,7 +34,7 @@ use Google\Service\Calendar\EventAttendee;
 use Google\Service\Calendar\ConferenceData;
 use Google\Service\Calendar\CreateConferenceRequest;
 use Google\Service\Calendar\ConferenceSolutionKey;
-use Socialite; // Import Socialite
+use Laravel\Socialite\Facades\Socialite;
 
 class DoctorController extends Controller
 {
@@ -50,7 +50,6 @@ class DoctorController extends Controller
         $upcomingAppointments = Appointment::where('doctor_id', $doctor->id)
             ->where('appointment_datetime', '>=', now())
             ->orderBy('appointment_datetime')
-            ->limit(5) // Limit to 5 upcoming appointments for the dashboard
             ->with(['patient', 'clinic'])
             ->get();
 
@@ -496,6 +495,65 @@ class DoctorController extends Controller
 
         return response()->json(['success' => true, 'message' => 'Appointment cancelled successfully.']);
     }
+
+    public function rescheduleAppointment(Request $request, Appointment $appointment)
+    {
+        // Ensure the appointment belongs to the authenticated doctor
+        if ($appointment->doctor_id !== Auth::user()->doctor->id) {
+            abort(403, 'Unauthorized action.');
+        }
+        $validator = Validator::make($request->all(), [
+            'new_appointment_datetime' => [
+                'required',
+                'date',
+                'after_or_equal:now',
+                function ($attribute, $value, $fail) use ($appointment) {
+                    $newStartTime = Carbon::parse($value);
+                    $newEndTime = $newStartTime->addMinutes($appointment->duration_minutes);
+
+                    $conflictingAppointments = Appointment::where('doctor_id', $appointment->doctor_id)
+                        ->where('id', '!=', $appointment->id) // Exclude the current appointment being rescheduled
+                        ->where(function ($query) use ($newStartTime, $newEndTime) {
+                            $query->where(function ($q) use ($newStartTime, $newEndTime) {
+                                  $q->whereBetween('appointment_datetime', [$newStartTime, $newEndTime]);
+                            })
+                            ->orWhere(function ($q) use ($newStartTime, $newEndTime) {
+                                  // Check if existing appointment encompasses the new one
+                                  $q->where('appointment_datetime', '<=', $newStartTime)
+                                    ->whereRaw('appointment_datetime + (duration_minutes * interval \'1 minute\') >= ?', [$newEndTime]);
+                            });
+                        })
+                        ->count();
+
+                    if ($conflictingAppointments > 0) {
+                        $fail('The selected time slot conflicts with an existing appointment.');
+                    }
+                },
+            ],
+            'reschedule_reason' => 'nullable|string|max:255',
+        ]);
+        
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
+        }
+
+        $appointment->update([
+            'appointment_datetime' => $request->input('new_appointment_datetime'),
+            'status' => 'rescheduled', // Or 'scheduled' if it's considered just a date change
+            'reschedule_reason' => $request->input('reschedule_reason'),
+        ]);
+
+        event(new AuditableEvent(auth()->id(), 'doctor_appointment_rescheduled', [
+            'appointment_id' => $appointment->id,
+            'patient_id' => $appointment->patient_id,
+            'doctor_id' => $appointment->doctor_id,
+            'new_datetime' => $appointment->appointment_datetime,
+        ]));
+
+        return response()->json(['success' => true, 'message' => 'Appointment rescheduled successfully!']);
+    }
+ 
+
     public function createAppointment(Patient $patient)
     {
         $clinics = Clinic::all(); // Fetch all clinics
@@ -513,40 +571,36 @@ class DoctorController extends Controller
             'subtype' => 'nullable|string|max:255',
             'chief_complaint' => 'nullable|string',
             'notes' => 'nullable|string',
-            // 'admin_notes' => 'nullable|string',
-            // 'meet_link' => 'nullable|url', // Removed meet_link validation
-            'soap_note_id' => 'nullable|exists:soap_notes,id', // Add validation for soap_note_id
+            'reschedule_reason' => 'nullable|string',
+            'cancellation_reason' => 'nullable|string',
+            'soap_note_id' => 'nullable|exists:soap_notes,id',
         ]);
 
-        if ($validatedData['subtype'] === 'follow-up' && !$validatedData['soap_note_id']) {
+        if (($validatedData['subtype'] ?? null) === 'follow-up' && !($validatedData['soap_note_id'] ?? null)) {
             return redirect()->back()->withErrors(['soap_note_id' => 'SOAP note is required for follow-up subtype.'])->withInput();
-            
         }
 
         $appointment = new Appointment();
         $appointment->patient_id = $validatedData['patient_id'];
-        $appointment->doctor_id = Auth::user()->doctor->id; // Assuming logged in user is a doctor
+        $appointment->doctor_id = Auth::user()->doctor->id;
         $appointment->type = $validatedData['type'];
-        $appointment->appointment_datetime = $validatedData['appointment_datetime'];
+        $appointment->appointment_datetime = Carbon::parse($validatedData['appointment_datetime']);
         $appointment->duration_minutes = $validatedData['duration_minutes'];
-        $appointment->subtype = $validatedData['subtype'];
-        $appointment->chief_complaint = $validatedData['chief_complaint'];
-        $appointment->notes = $validatedData['notes'];
-        // $appointment->admin_notes = $validatedData['admin_notes'];
-        $appointment->status = 'pending'; // Set status directly to 'pending'
-        $appointment->soap_note_id = $validatedData['soap_note_id'] ?? null; // Assign soap_note_id
+        $appointment->subtype = $validatedData['subtype'] ?? null;
+        $appointment->chief_complaint = $validatedData['chief_complaint'] ?? null;
+        $appointment->notes = $validatedData['notes'] ?? null;
+        $appointment->status = 'pending';
+        $appointment->soap_note_id = $validatedData['soap_note_id'] ?? null;
 
         if ($validatedData['type'] === 'clinic') {
             $appointment->clinic_id = $validatedData['clinic_id'];
             $appointment->is_online = false;
         } else {
             $appointment->is_online = true;
-            // $appointment->meet_link = $validatedData['meet_link']; // Meet link will be generated
 
-            // Google Meet link generation logic
             $meetLink = null;
             try {
-                $doctor = Auth::user()->doctor; // Get the authenticated doctor
+                $doctor = Auth::user()->doctor;
 
                 $patient = Patient::find($validatedData['patient_id']);
 
@@ -554,7 +608,6 @@ class DoctorController extends Controller
                     throw new Exception('Patient not found.');
                 }
                 
-                // Initialize Google Client
                 $client = new Client();
                 $client->setClientId(env('GOOGLE_CLIENT_ID'));
                 $client->setClientSecret(env('GOOGLE_CLIENT_SECRET'));
@@ -568,7 +621,6 @@ class DoctorController extends Controller
 
                 $client->setAccessToken($accessToken);
 
-                // Check if the access token is expired and refresh if necessary
                 if ($client->isAccessTokenExpired()) {
                     if ($refreshToken) {
                         $client->fetchAccessTokenWithRefreshToken($refreshToken);
@@ -590,10 +642,10 @@ class DoctorController extends Controller
                     'summary' => 'Appointment with patient ' . $patient->first_name . ' ' . $patient->last_name,
                     'description' => $validatedData['chief_complaint'] ?? 'Online consultation',
                     'start' => new EventDateTime([
-                        'dateTime' => \Carbon\Carbon::parse($validatedData['appointment_datetime'])->setTimezone(config('app.timezone'))->format('c'),
+                        'dateTime' => Carbon::parse($validatedData['appointment_datetime'])->setTimezone(config('app.timezone'))->format('c'),
                     ]),
                     'end' => new EventDateTime([
-                        'dateTime' => \Carbon\Carbon::parse($validatedData['appointment_datetime'])->addMinutes($validatedData['duration_minutes'])->setTimezone(config('app.timezone'))->format('c'),
+                        'dateTime' => Carbon::parse($validatedData['appointment_datetime'])->addMinutes($validatedData['duration_minutes'])->setTimezone(config('app.timezone'))->format('c'),
                     ]),
                     'attendees' => array(
                         new EventAttendee(['email' => $patient->user->email]),
@@ -620,7 +672,7 @@ class DoctorController extends Controller
                         }
                     }
                 }
-                $appointment->meet_link = $meetLink; // Assign the generated meet link
+                $appointment->meet_link = $meetLink;
             } catch (Exception $e) {
                 \Log::error('Google Meet generation failed for doctor: ' . $e->getMessage());
                 return redirect()->back()->withErrors(['google_meet_error' => 'Failed to generate Google Meet link. Please ensure your Google account is linked and try again.'])->withInput();
@@ -628,7 +680,6 @@ class DoctorController extends Controller
         }
  
         $appointment->save();
-
         return redirect()->back()->with('success', 'Appointment booked successfully!');
     }
 

@@ -1,6 +1,6 @@
 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
   <div class="bg-emerald-600 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
-    <h2 class="text-lg font-semibold">Upcoming Appointments</h2>
+    <h2 class="text-lg font-semibold">My Appointments</h2>
     <a href="{{ route('patient.dashboard') }}" class="text-white hover:text-emerald-100 transition-colors">
       View All
     </a>
@@ -15,6 +15,9 @@
           </th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
             Doctor
+          </th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Chief Complaint
           </th>
           <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
             Mode
@@ -43,13 +46,20 @@
         @forelse ($upcomingAppointments as $appointment)
           <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location='{{ route('patient.appointment-confirmed', $appointment->id) }}'">
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-              {{ $appointment->appointment_datetime->format('M j, Y / g:i A') }}
+              {{ $appointment->appointment_datetime->format('M j, Y g:i A') }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-              Dr. {{ $appointment->doctor->first_name ?? '' }} {{ $appointment->doctor->last_name ?? '' }}
+            Dr. {{ $appointment->doctor->last_name }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600" alt="{{ $appointment->chief_complaint }}">
+              @if (strlen($appointment->chief_complaint) > 20)
+                {{ substr($appointment->chief_complaint, 0, 20) . '...' }}
+              @else
+                {{ ucfirst($appointment->chief_complaint) }}
+              @endif
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-              {{ ucfirst($appointment->type) }}
+              {{ ucfirst($appointment->type) }}({{ucfirst($appointment->subtype)}})
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
               <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $getStatusColor($appointment->status) }}">

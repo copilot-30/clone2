@@ -106,6 +106,7 @@ class PatientController extends Controller
         $upcomingAppointments = Appointment::where('patient_id', $patient->id)
                                          ->where('appointment_datetime', '>=', now()) // Use 'appointment_date'
                                          ->orderBy('appointment_datetime') // Order by 'appointment_date'
+                                         ->whereIn('status', ['pending', 'rescheduled'])
                                          ->get();
 
         // Fetch recent notes for the authenticated patient
