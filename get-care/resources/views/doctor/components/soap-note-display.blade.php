@@ -142,13 +142,47 @@
                 <div>
                     <label class="block text-emerald-700 text-sm font-bold mb-2">Sent Patient Test Requests</label>
                     @foreach($soapNote->patientTestRequests()->orderBy('created_at', 'desc')->get() as $p)
-                        <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 mb-4">
+                        <div class="border 
+                            @if($p->labResults->isEmpty())
+                                border-yellow-400
+                            @else
+                                border-green-400
+                            @endif
+                            
+                        rounded-lg p-3  mb-4">
                             <div class="flex justify-between items-start">
-                                <h4 class="font-medium text-gray-800">{{ $p->content }}</h4>
+                                <h4 class="font-medium text-gray-800">Test Requested: {{ $p->content }}</h4>
                                 <span class="text-xs text-gray-500">{{ $p->created_at->format('M j, Y') }}</span>
                             </div>
+
+                        @if(!$p->labResults->isEmpty()) 
+                        <div class="mt-2 text-sm text-gray-600">
+                            <div class="mb-2 font-semibold">Lab Results: </div>
+                            <div class="">
+                            @foreach($p->labResults as $result)
+                                <div class=" m-4 gap-2 "> 
+                                    <p class="text-gray-700 text-sm my-4   p-2">Upload Date: {{ $result->created_at->format('M j, Y') }}</p>
+                                    @if($result->result_file_url)
+                                        <a href="{{ asset($result->result_file_url) }}" target="_blank" 
+                                            class="p-2 mb-2 text-blue-500 rounded-md hover:underline hover:text-blue-700 border border-blue-300">
+                                            <i class="fas fa-file mr-2"></i> {{ isset($result->result_data_parsed['file_name']) ? $result->result_data_parsed['file_name'] : 'N/A' }}
+                                        </a>
+                                    @else
+                                        {{ isset($result->result_data_parsed['file_name']) ? $result->result_data_parsed['file_name'] : 'N/A' }}
+                                    @endif
+                                    
+                                    @if($result->notes)
+                                        <p class="text-gray-700 text-sm my-4 bg-blue-50 p-2">Patient Note: {{ $result->notes }}</p>
+                                    @endif
+                                    
+                                </div>
+                            @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                             <div class="mt-2 text-xs text-gray-500">
-                                Dr. {{ $p->doctor->first_name ?? '' }} {{ $p->doctor->last_name ?? '' }}
+                               Requested By: Dr. {{ $p->doctor->full_name ?? '' }} 
                             </div>
                         </div>
                     @endforeach
