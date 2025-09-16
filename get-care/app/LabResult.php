@@ -25,7 +25,7 @@ class LabResult extends Model
 
     public $incrementing = false;
 
-    public function getResultDataAttribute()
+    public function getResultDataParsedAttribute()
     {
         return json_decode($this->attributes['result_data'], true);
     }

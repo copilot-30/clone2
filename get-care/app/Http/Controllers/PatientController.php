@@ -80,7 +80,7 @@ class PatientController extends Controller
                 'allergies' => $validatedData['allergies'],
                 'surgeries' => $validatedData['previousSurgeries'],
                 'family_history' => $validatedData['familyHistory'],
-                'medications' => $validatedData['medication'],
+                'medications' => $validatedData['medications'],
                 'supplements' => $validatedData['supplements'],
                 // 'age' and 'tag' might be derived or set separately if needed
             ]
@@ -644,8 +644,37 @@ $validatedData = $request->validate([
         }
 
         
-return view('patient.medical-records.view');
-}
+        $patientNotes = $patient->patientNotes()->with('doctor')->get()->map(function($note) {
+            $note->record_type = 'doctor-note';
+            return $note;
+        });
+
+        $patientPrescriptions = $patient->patientPrescriptions()->with('doctor')->get()->map(function($prescription) {
+            $prescription->record_type = 'prescription';
+            return $prescription;
+        });
+
+        $patientTestRequests = $patient->patientTestRequests()->with('doctor')->get()->map(function($testRequest) {
+            $testRequest->record_type = 'lab-request';
+            return $testRequest;
+        });
+
+        $labResults = $patient->labResults()->get()->map(function($labResult) {
+            $labResult->record_type = 'lab-result';
+            // If the blade expects doctor directly, we can add it here from the testRequest
+            // $labResult->doctor = $labResult->doctor ?? null;
+            return $labResult;
+        });
+
+        $allRecords = $patientNotes
+            ->concat($patientPrescriptions)
+            ->concat($patientTestRequests)
+            ->concat($labResults)
+            ->sortByDesc('created_at');
+        
+        return view('patient.medical-records.view', compact('allRecords', 'patient'));
+    }
+
 
 public function downloadMedicalRecords(Request $request)
 {

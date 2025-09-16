@@ -56,7 +56,12 @@ class Consultation extends Model
         return $this->belongsTo(Doctor::class, 'doctor_id');
     }
  
- 
+    
+
+    public function patientTestRequests()
+    {
+        return $this->hasMany(PatientTestRequest::class, 'soap_note_id');
+    }
     
     public function labResults()
     {

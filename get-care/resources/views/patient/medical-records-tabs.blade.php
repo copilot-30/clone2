@@ -13,8 +13,8 @@
 
 <div class="border-b border-gray-200">
     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-        <a href="#" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="all-records">All Records</a>
-        <a href="#" class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="doctor-notes">Doctor Notes</a>
+        <a href="#" class="tab-button border-transparent text-blue-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="all-records">All Records</a>
+        <a href="#" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="doctor-notes">Doctor Notes</a>
         <a href="#" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="prescriptions">Prescriptions</a>
         <a href="#" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="lab-requests">Lab Requests</a>
         <a href="#" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-tab-target="lab-results">Lab Results</a>
@@ -23,7 +23,7 @@
 
 <div class="mt-6">
     <div id="all-records" class="tab-content hidden">
-        @include('patient.medical-records.all-records')
+        @include('patient.medical-records.all-records', ['allRecords' => $allRecords])
     </div>
     <div id="doctor-notes" class="tab-content">
         @include('patient.medical-records.doctor-notes')
@@ -84,10 +84,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Set default active tab (Doctor Notes) and update download button
-    const defaultActiveTab = document.querySelector('[data-tab-target="doctor-notes"]');
+    const defaultActiveTab = document.querySelector('[data-tab-target="all-records"]');
     if (defaultActiveTab) {
         defaultActiveTab.click();
-        updateDownloadButton('doctor-notes');
+        updateDownloadButton('all-records');
     }
 
     tabButtons.forEach(button => {

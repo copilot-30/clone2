@@ -9,7 +9,7 @@
             <div class="mb-4">
                 <div class="relative">
                     <form method="GET" action="{{route('doctor.patients.view')}}">
-                    <input type="text" name="name" value={{$name}} placeholder="Search patients..." class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                    <input type="text" name="name" value="{{$name}}" placeholder="Search patients..." class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500">
                     <svg class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
@@ -32,7 +32,7 @@
                     <div class="flex items-center p-3 rounded-lg shadow-sm cursor-pointer {{ $isActive }}" data-patient-id="{{ $patient->id }}">
                         <div class="w-10 h-10 bg-purple-200 rounded-full flex items-center justify-center text-purple-700 font-bold mr-3">{{ $initials }}</div>
                         <div>
-                            <p class="font-semibold text-gray-800">{{ $patient->first_name }} {{ $patient->last_name }}</p>
+                            <p class="font-semibold text-gray-800">{{ $patient->full_name }}</p>
                             <p class="text-sm text-gray-600">{{ $patient->age ?? 'N/A' }} years old • {{ $patient->sex ?? 'N/A' }} • {{ $patient->blood_type ?? 'N/A' }}</p>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                     {{ strtoupper(substr($selectedPatient->first_name, 0, 1) . substr($selectedPatient->last_name, 0, 1)) }}
                 </div>
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ $selectedPatient->first_name }} {{ $selectedPatient->last_name }}</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ $selectedPatient->full_name }}</h1>
                     <p class="text-lg text-gray-700">{{ $selectedPatient->age ?? 'N/A' }} years old • {{ $selectedPatient->sex ?? 'N/A' }} • {{ $selectedPatient->blood_type ?? 'N/A' }}</p>
                 </div>
             </div>
@@ -110,7 +110,7 @@
 
                     
                     
-                    @if($selectedPatient->medicalBackground)
+                    <!--  
                         <h3 class="text-xl font-bold text-gray-800 mb-4">Medical Background</h3>
                         <div class="space-y-2 text-gray-700">
                             <p><span class="font-semibold">Medical Conditions:</span> {{ $selectedPatient->medicalBackground->medical_conditions ?? 'N/A' }}</p>
@@ -120,9 +120,7 @@
                             <p><span class="font-semibold">Medications:</span> {{ $selectedPatient->medicalBackground->medications ?? 'N/A' }}</p>
                             <p><span class="font-semibold">Supplements:</span> {{ $selectedPatient->medicalBackground->supplements ?? 'N/A' }}</p>
                         </div>
-                    @else
-                        <!-- <p class="text-gray-500">No medical background information available for this patient.</p> -->
-                    @endif
+                    -->
                 </div>
 
                 <!-- SOAP Notes Tab Content -->
@@ -319,7 +317,7 @@
             @endif
         </div>
 <!-- Right Sidebar Panel for Appointments -->
-<div class="w-1/4 p-4 bg-white">
+<div class="w-1/5 p-4 bg-white">
     <h2 class="text-2xl font-bold text-emerald-600 border-emerald-600 mb-4">Appointments</h2>
     <div class="space-y-4">
         @if(isset($selectedPatient))

@@ -43,7 +43,8 @@ class Patient extends Model
 
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->middle_name . ' ' . $this->last_name . ' ' . $this->suffix;
+        $n= $this->first_name . ' ' . $this->middle_name . ' ' . $this->last_name . ' ' . $this->suffix;
+        return ucwords ($n);
     }
 
     protected static function boot()
@@ -91,10 +92,10 @@ class Patient extends Model
         return $this->hasMany(LabResult::class, 'patient_id');
     }
 
-    public function labTestRequests()
-    {
-        return $this->hasMany(LabRequest::class, 'patient_id');
-    }
+    // public function labTestRequests()
+    // {
+    //     return $this->hasMany(LabRequest::class, 'patient_id');
+    // }
 
     public function patientNotes()
     {

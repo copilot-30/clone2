@@ -126,13 +126,36 @@
                     @if(strlen($soapNote->prescription)> 0)
                         <button class="send-to-patient-btn bg-emerald-700 text-sm p-2 text-white font-semibold rounded-md hover:bg-emerald-800 float-right mx-2 my-2" data-type="prescription" data-patient-id="{{ $soapNote->patient_id }}" data-doctor-id="{{ $doctor->id }}" data-soap-note-id="{{ $soapNote->id }}" data-content-id="prescription-{{ $soapNote->id }}"><i class="fas fa-paper-plane"></i> Send Prescription to Patient</button>
                     @endif
+                    
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="test_request-{{ $soapNote->id }}">Test Request</label>
                     <textarea name="test_request" id="test_request-{{ $soapNote->id }}" placeholder="Test Request" class="shadow appearance-none border w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-2" rows="2">{{$soapNote->test_request}}</textarea>
                     @if(strlen($soapNote->test_request)> 0)
                         <button class="send-to-patient-btn bg-emerald-700 text-sm p-2 text-white font-semibold rounded-md hover:bg-emerald-800 float-right mx-2 my-2" data-type="test_request" data-patient-id="{{ $soapNote->patient_id }}" data-doctor-id="{{ $doctor->id }}" data-soap-note-id="{{ $soapNote->id }}" data-content-id="test_request-{{ $soapNote->id }}"><i class="fas fa-paper-plane"></i> Send Test Request to Patient</button>
                     @endif
+
+
                 </div>
             </div>
+
+            @if($soapNote->patientTestRequests->count() > 0)
+            <div class="grid grid-cols-1  gap-4 mb-4">
+                <div>
+                    <label class="block text-emerald-700 text-sm font-bold mb-2">Sent Patient Test Requests</label>
+                    @foreach($soapNote->patientTestRequests()->orderBy('created_at', 'desc')->get() as $p)
+                        <div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 mb-4">
+                            <div class="flex justify-between items-start">
+                                <h4 class="font-medium text-gray-800">{{ $p->content }}</h4>
+                                <span class="text-xs text-gray-500">{{ $p->created_at->format('M j, Y') }}</span>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500">
+                                Dr. {{ $p->doctor->first_name ?? '' }} {{ $p->doctor->last_name ?? '' }}
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+    
+            </div>
+            @endif 
 
             <div class="flex items-center justify-between mt-4">
                  <button class="px-4 py-2 bg-emerald-600 text-white font-semibold -md hover:bg-emerald-700"><i class="fas fa-calendar-alt"></i> Schedule Follow up</button>

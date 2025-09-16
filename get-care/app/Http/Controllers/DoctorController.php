@@ -827,14 +827,14 @@ public function viewPatients(Request $request, $patient_id = null)
                 $query->where('doctor_id', $doctor->id);
             });
         })
-        ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+        ->with([ 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
         ;
     } elseif ($filter === 'shared-cases') {
         $q = Patient::whereHas('sharedCases', function ($query) use ($doctor) {
             $query->where('receiving_doctor_id', $doctor->id)
                   ->where('status', 'ACCEPTED');
         })
-        ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+        ->with(['attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
         ;
     }
 
@@ -860,7 +860,7 @@ public function viewPatients(Request $request, $patient_id = null)
         // If not found in filtered list, try to find it directly (e.g., if link was directly clicked for a patient not in the current filter)
         if (!$selectedPatient) {
             $selectedPatient = Patient::where('id', $patient_id)
-                ->with(['medicalBackground', 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
+                ->with([ 'attendingPhysician.doctor', 'sharedCases.sharingDoctor', 'sharedCases.receivingDoctor', 'soapNotes', 'patientNotes', 'appointments'])
                 ->first();
         }
 
