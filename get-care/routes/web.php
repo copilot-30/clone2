@@ -181,9 +181,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
                 Route::get('/attending-physician/details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
                 Route::post('/attending-physician/store', 'PatientController@storeAttendingPhysician')->name('patient.storeAttendingPhysician');
-                
-                Route::get('/appointments', 'PatientAppointmentController@index');
-                Route::post('/appointments', 'PatientAppointmentController@store');
+      
                 Route::get('/appointments/select-type/{doctor_id}', 'PatientController@showAppointmentTypeForm')->name('patient.select-appointment-type');
                 Route::get('/appointments/select-date-time', 'PatientController@showDateTimeSelectionForm')->name('patient.show-date-time-selection');
                 Route::post('/appointments/store', 'PatientController@storeAppointment')->name('patient.store-appointment');
