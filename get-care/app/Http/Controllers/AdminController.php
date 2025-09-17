@@ -450,14 +450,63 @@ class AdminController extends Controller
         return view('admin.admin-transactions'); // Assuming you'll create this
     }
 
-    public function viewAuditLogs()
+    public function viewAuditLogs(Request $request)
     {
-        return view('admin.admin-audit-log-viewer');
+        $query = \App\AuditLog::query();
+
+        if ($request->has('user_email') && !empty($request->input('user_email'))) {
+            $query->where('user_email', 'ILIKE', '%' . $request->input('user_email') . '%');
+        }
+
+        if ($request->has('event_type') && !empty($request->input('event_type'))) {
+            $query->where('event_type', 'ILIKE', '%' . $request->input('event_type') . '%');
+        }
+
+        if ($request->has('ip_address') && !empty($request->input('ip_address'))) {
+            $query->where('ip_address', 'ILIKE', '%' . $request->input('ip_address') . '%');
+        }
+
+        $auditLogs = $query->orderBy('created_at', 'desc')->paginate(10);
+        $eventTypes = \App\AuditLog::select('event_type')->distinct()->pluck('event_type')->toArray();
+
+        return view('admin.admin-audit-log-viewer', compact('auditLogs', 'eventTypes'));
     }
 
     public function dashboard()
     {
-        return view('admin.admin-dashboard');
+        $totalUsers = User::count();
+        $totalDoctors = Doctor::count();
+        $totalPatients = Patient::count();
+        $totalAppointments = \App\Appointment::count();
+        $pendingAppointments = \App\Appointment::where('status', 'pending')->count();
+        $totalSubscriptions = Subscription::count();
+        $activeSubscriptions = Subscription::where('status', 'ACTIVE')->count();
+        $totalPayments = Payment::count();
+        $totalRevenue = Payment::where('status', 'PAID')->sum('amount');
+
+        // Recent users (e.g., last 5 registered users)
+        $recentUsers = User::orderBy('created_at', 'desc')->take(5)->get();
+
+        // Upcoming appointments (e.g., next 5 appointments)
+        $upcomingAppointments = \App\Appointment::with('patient.user', 'doctor.user')
+                                                ->where('appointment_datetime', '>=', now())
+                                                ->orderBy('appointment_datetime', 'asc')
+                                                ->take(5)
+                                                ->get();
+
+        return view('admin.admin-dashboard', compact(
+            'totalUsers',
+            'totalDoctors',
+            'totalPatients',
+            'totalAppointments',
+            'pendingAppointments',
+            'totalSubscriptions',
+            'activeSubscriptions',
+            'totalPayments',
+            'totalRevenue',
+            'recentUsers',
+            'upcomingAppointments'
+        ));
     }
 
     public function editDoctor(Request $request, $id)

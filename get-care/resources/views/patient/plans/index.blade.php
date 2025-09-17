@@ -1,15 +1,10 @@
 @extends('patient_layout')
 
 @section('content')
-<div class="bg-gray-900 text-white py-20">
-    <div class=" text-center">
-        <h2 class="text-5xl font-bold mb-4">Quality care & flexible plans for your needs.</h2>
-        <p class="text-xl mb-8">Get the care that you deserved.</p>
-    </div>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Available Plans</h1>
 
-    <div class="w-full max-w-3xl mx-auto">
-        
-        
+    <div class="w-full max-w-3xl mx-auto mb-6">
         @if ($currentSubscription)
             <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3 mb-6 rounded-lg shadow-lg" role="alert">
                 <p class="font-bold text-lg mb-2">Current Subscription:</p>
@@ -29,50 +24,61 @@
                 <p class="text-gray-800">Choose a plan below to get started!</p>
             </div>
         @endif
-        </div>
+    </div>
 
-    </div>
-    
-    <div class="container mx-auto  -mt-16">
-  
-    
-    
-    
-        <div class="flex flex-wrap -mx-4 justify-center gap-10">
-            @foreach ($plans as $plan)
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col justify-between md:w-1/{{ count($plans) +1}} mb-6">
-                    <div class="p-8">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">{{strtoupper($plan->name)}}</h2>
-              
-                        <div class="text-4xl font-extrabold text-indigo-600 mb-6 text-center">
-                            ₱{{ number_format($plan->price, 2) }} <span class="text-xl text-gray-500">/mo</span>
-                        </div>
-                        <ul class="text-gray-700 mb-8 space-y-3">
-                            {{-- Assuming plan benefits are stored as a delimited string or can be parsed --}}
-                            @php
-                                $benefits = explode(',', str_replace("\n", ",", e($plan->description)));
-                            @endphp
-                            @foreach ($benefits as $benefit)
-                                <li class="flex items-center">
-                                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    {{ trim($benefit) }}
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <div class="p-8 border-t border-gray-200">
-                        @if ($currentSubscription || $pendingPlanPayment)
-                            <button class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-md cursor-not-allowed text-lg font-semibold" disabled>
-                                {{ $currentSubscription ? 'Current Plan' : 'Pending Approval' }}
-                            </button>
-                        @else
-                            <a href="{{ route('patient.plans.checkout', $plan->id) }}" class="block w-full text-center bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-lg font-semibold">
-                                Select Plan
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
+    @if ($plans->isEmpty())
+        <p class="text-gray-600">No plans found.</p>
+    @else
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plan Name</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach ($plans as $plan)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ ucfirst($plan->name) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ₱{{ number_format($plan->price, 2) }} /mo
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900">
+                                {{-- Assuming plan benefits are stored as a delimited string or can be parsed --}}
+                                @php
+                                    $benefits = explode(',', str_replace("\n", ",", e($plan->description)));
+                                @endphp
+                                <ul class="list-disc list-inside">
+                                    @foreach ($benefits as $benefit)
+                                        <li>{{ trim($benefit) }}</li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                @if ($currentSubscription && $currentSubscription->plan_id === $plan->id)
+                                    <button class="block w-full text-center bg-gray-400 text-white py-2 px-4 rounded-md cursor-not-allowed text-sm font-semibold" disabled>
+                                        Current Plan
+                                    </button>
+                                @elseif ($pendingPlanPayment)
+                                    <button class="block w-full text-center bg-gray-400 text-white py-2 px-4 rounded-md cursor-not-allowed text-sm font-semibold" disabled>
+                                        Pending Approval
+                                    </button>
+                                @else
+                                    <a href="{{ route('patient.plans.checkout', $plan->id) }}" class="block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-sm font-semibold">
+                                        Select Plan
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
-    </div>
+    @endif
+</div>
 @endsection

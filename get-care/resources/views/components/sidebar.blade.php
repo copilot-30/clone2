@@ -4,7 +4,7 @@
   </div>
 
   <nav class="mt-8">
-  
+          <!-- ['id' => 'transactions', 'label' => 'Transactions', 'icon' => 'DollarSign', 'url' => route('admin.transactions')], -->
     @php $menuItems = []; @endphp
 
     @if (Auth::check())
@@ -17,7 +17,7 @@
                     ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit_logs')],
                     ['id' => 'subscriptions', 'label' => 'Subscriptions', 'icon' => 'CreditCard', 'url' => route('admin.subscriptions')],
                     ['id' => 'payments', 'label' => 'Payments', 'icon' => 'DollarSign', 'url' => route('admin.payments')],
-                    ['id' => 'transactions', 'label' => 'Transactions', 'icon' => 'DollarSign', 'url' => route('admin.transactions')],
+            
                 ];
             @endphp
         @elseif (Auth::user()->role == 'DOCTOR')

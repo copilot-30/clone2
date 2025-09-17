@@ -1,42 +1,72 @@
 @extends('admin_layout')
 
 @section('content')
-<div class="p-4">
-  <h1 class="text-2xl font-bold mb-4">Admin: Audit Log Viewer</h1>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Audit Log Viewer</h1>
 
-  <div class="bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-semibold mb-4">System Audit Logs</h2>
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Agent</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white divide-y divide-gray-200">
-        {{-- Dummy data, replace with dynamic data --}}
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap">2025-09-06T08:00:00Z</td>
-          <td class="px-6 py-4 whitespace-nowrap">admin@example.com</td>
-          <td class="px-6 py-4 whitespace-nowrap">login_success</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{"user_id":"user1","email":"admin@example.com","user_type":"admin"}</td>
-          <td class="px-6 py-4 whitespace-nowrap">192.168.1.1</td>
-          <td class="px-6 py-4 whitespace-nowrap">Mozilla/5.0</td>
-        </tr>
-        <tr>
-          <td class="px-6 py-4 whitespace-nowrap">2025-09-06T08:05:00Z</td>
-          <td class="px-6 py-4 whitespace-nowrap">doctor@example.com</td>
-          <td class="px-6 py-4 whitespace-nowrap">doctor_created</td>
-          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{"doctor_id":"doc1","user_id":"user2","email":"doctor@example.com","specialty":"Cardiology"}</td>
-          <td class="px-6 py-4 whitespace-nowrap">192.168.1.2</td>
-          <td class="px-6 py-4 whitespace-nowrap">Postman</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-bold mb-4">Filter Audit Logs</h2>
+        <form action="{{ route('admin.audit-logs') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label for="user_email" class="block text-gray-700 text-sm font-bold mb-2">User Email:</label>
+                <input type="text" name="user_email" id="user_email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ request('user_email') }}">
+            </div>
+            <div>
+                <label for="event_type" class="block text-gray-700 text-sm font-bold mb-2">Event Type:</label>
+                <select name="event_type" id="event_type" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="">All</option>
+                    @foreach ($eventTypes as $type)
+                        <option value="{{ $type }}" {{ request('event_type') == $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="ip_address" class="block text-gray-700 text-sm font-bold mb-2">IP Address:</label>
+                <input type="text" name="ip_address" id="ip_address" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" value="{{ request('ip_address') }}">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Filter</button>
+                <a href="{{ route('admin.audit-logs') }}" class="ml-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Clear</a>
+            </div>
+        </form>
+    </div>
+
+    @if ($auditLogs->isEmpty())
+        <p class="text-gray-600">No audit logs found.</p>
+    @else
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Email</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Old Values</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Values</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User Agent</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach ($auditLogs as $log)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->created_at->format('M d, Y H:i:s') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->user_id }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->user_email }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->event_type }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->old_values) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->new_values) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->ip_address }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->user_agent }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">
+            {{ $auditLogs->links() }}
+        </div>
+    @endif
 </div>
 @endsection
