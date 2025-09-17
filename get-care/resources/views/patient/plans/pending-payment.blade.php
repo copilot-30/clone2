@@ -1,42 +1,82 @@
 @extends('patient_layout')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Payment Details for {{ strtoupper($plan->name) }} Plan</h1>
-
-    @if (session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <span class="block sm:inline">{{ session('error') }}</span>
+<div class="container mx-auto px-4 py-12">
+    <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white text-center">
+            <h1 class="text-3xl font-bold mb-2">Pending Payment Details</h1>
+            <p class="text-lg">For the {{ strtoupper($plan->name) }} Plan</p>
         </div>
-    @endif
 
-    <div class="bg-white rounded-lg shadow-md overflow-hidden p-6 mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-2">Plan Details</h2>
-        <p class="text-gray-600 mb-2"><strong>Name:</strong> {{ $plan->name }}</p>
-        <p class="text-gray-600 mb-2"><strong>Description:</strong> {{ $plan->description }}</p>
-        <p class="text-gray-600 mb-4"><strong>Price:</strong> ₱{{ number_format($plan->price, 2) }}</p>
+        @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mx-6 mt-6" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
+        @endif
 
-        <h3 class="text-xl font-bold text-gray-800 mb-4">Payment Information</h3>
-        <p class="text-gray-600 mb-2"><strong>Payment By:</strong> 
-        <span class="uppercase font-semibold text-yellow-600">{{ $payment->user->patient->full_name }}</span></p>
-        <p class="text-gray-600 mb-2"><strong>Payment ID:</strong> 
-        <span class="uppercase font-semibold text-yellow-600">{{ $payment->id }}</span></p>
-                <p class="text-gray-600 mb-2"><strong>User ID:</strong> 
-        <span class="uppercase font-semibold text-yellow-600">{{ $payment->user_id }}</span></p>
-        
-        <p class="text-gray-600 mb-2"><strong>Status:</strong> <span class="uppercase font-semibold text-yellow-600">{{ $payment->status }}</span></p>
-        <p class="text-gray-600 mb-2"><strong>Payment Method:</strong> {{ $payment->payment_method }}</p>
-        @if($payment->transaction_id)
-        <p class="text-gray-600 mb-2"><strong>Transaction ID:</strong> {{ $payment->transaction_id }}</p>
-        @endif
-        @if ($payment->payment_date)
-        <p class="text-gray-600 mb-4"><strong>Payment Date:</strong> {{ $payment->payment_date->format('M d, Y H:i A') }}</p>
-        @endif
-        <div class="flex items-center justify-between">
-            <p class="text-gray-800 font-bold">Your payment is currently being processed. Please wait for administrator approval.</p>
-            <a href="{{ route('patient.plans') }}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">
-               <i class="fa fa-arrow-left"></i> Back to Plans
-            </a>
+        <div class="p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Plan Information</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Plan Name:</dt>
+                        <dd class="text-gray-900 font-semibold">{{ $plan->name }}</dd>
+                    </div>
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Price:</dt>
+                        <dd class="text-gray-900 font-semibold">₱{{ number_format($plan->price, 2) }} / month</dd>
+                    </div>
+                    <div class="col-span-full mt-2">
+                        <dt class="font-medium text-gray-600">Description:</dt>
+                        <dd class="text-gray-900">{{ $plan->description }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Payment Details</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Payment Status:</dt>
+                        <dd class="text-yellow-600 font-semibold uppercase">{{ $payment->status }}</dd>
+                    </div>
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Payment By:</dt>
+                        <dd class="text-gray-900">{{ $payment->user->patient->full_name }}</dd>
+                    </div>
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Payment ID:</dt>
+                        <dd class="text-gray-900">{{ $payment->id }}</dd>
+                    </div>
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">User ID:</dt>
+                        <dd class="text-gray-900">{{ $payment->user_id }}</dd>
+                    </div>
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Payment Method:</dt>
+                        <dd class="text-gray-900">{{ $payment->payment_method }}</dd>
+                    </div>
+                    @if($payment->transaction_id)
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Transaction ID:</dt>
+                        <dd class="text-gray-900">{{ $payment->transaction_id }}</dd>
+                    </div>
+                    @endif
+                    @if ($payment->payment_date)
+                    <div class="col-span-1">
+                        <dt class="font-medium text-gray-600">Payment Date:</dt>
+                        <dd class="text-gray-900">{{ $payment->payment_date->format('M d, Y H:i A') }}</dd>
+                    </div>
+                    @endif
+                </dl>
+            </div>
+
+            <div class="mt-8 pt-6 border-t text-center">
+                <p class="text-lg text-gray-700 mb-4 font-semibold">Your payment is currently being processed. Please wait for administrator approval.</p>
+                <a href="{{ route('patient.plans') }}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fa fa-arrow-left mr-2"></i> Back to Plans
+                </a>
+            </div>
         </div>
     </div>
 </div>
