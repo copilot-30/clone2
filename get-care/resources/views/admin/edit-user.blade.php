@@ -2,19 +2,16 @@
 
 @section('content')
 <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-    <div class="  w-full  grid grid-cols-1 md:grid-cols-2 gap-8">
+    <div class="
+     @if ($user->role !== 'ADMIN')
+    md:grid-cols-2 grid   w-full  gap-8  grid-cols-1
+    @else
+          mx-auto w-1/3 my-8
+    @endif">
         <div class="bg-white p-8 rounded-lg shadow-xl">
             <h2 class="text-3xl font-bold text-emerald-600 mb-8 text-center">Edit User</h2>
 
-            @if ($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
+           
 
             <form action="{{ route('admin.users.update', $user->id) }}" method="POST" class="space-y-6">
                 @csrf
@@ -77,7 +74,7 @@
                         type="submit"
                         class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300"
                     >
-                        Update User
+                        <i class="fas fa-save mr-2"></i> Update User
                     </button>
                 </div>
             </form>

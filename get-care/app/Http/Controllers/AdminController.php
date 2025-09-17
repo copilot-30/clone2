@@ -17,10 +17,31 @@ use App\Events\AuditableEvent; // Import the event
 
 class AdminController extends Controller
 {
-    public function listUsers()
+    public function listUsers(Request $request)
     {
-        $users = User::all();
-        return view('admin.admin-user-management', compact('users'));
+        $query = User::query();
+
+        // Filter by role
+        if ($request->has('role') && $request->input('role') !== 'all') {
+            $query->where('role', $request->input('role'));
+        }
+
+        // Filter by username (email)
+        if ($request->has('username') && !empty($request->input('username'))) {
+            $query->where('email', 'ILIKE', '%' . $request->input('username') . '%');
+        }
+
+        // Filter by is_active status
+        if ($request->has('is_active') && ($request->input('is_active') === '1' || $request->input('is_active') === '0')) {
+            $query->where('is_active', (bool)$request->input('is_active'));
+        }
+
+        $users = $query->paginate(10); // Paginate with 10 items per page
+
+        // Get unique roles for filter dropdown
+        $roles = User::select('role')->distinct()->pluck('role')->toArray();
+
+        return view('admin.admin-user-management', compact('users', 'roles'));
     }
 
     public function createUser(){

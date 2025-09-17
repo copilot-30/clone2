@@ -21,6 +21,43 @@
     #appointmentModal{
         z-index: 999999999999999;
     }
+
+    /* Pagination Styling */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        list-style: none;
+        padding: 0;
+    }
+
+    .pagination li {
+        margin: 0 4px;
+    }
+
+    .pagination li a,
+    .pagination li span {
+        display: block;
+        padding: 8px 12px;
+        border: 1px solid #cbd5e0; /* gray-300 */
+        border-radius: 0.25rem; /* rounded */
+        color: #4a5568; /* gray-700 */
+        text-decoration: none;
+    }
+
+    .pagination li a:hover {
+        background-color: #edf2f7; /* gray-100 */
+    }
+
+    .pagination li.active span {
+        background-color: #4299e1; /* blue-500 */
+        color: white;
+        border-color: #4299e1; /* blue-500 */
+    }
+
+    .pagination li.disabled span {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
     </style>
   
     @yield('styles')

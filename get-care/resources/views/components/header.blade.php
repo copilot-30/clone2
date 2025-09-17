@@ -64,16 +64,17 @@
             @auth
               @if(Auth::user()->doctor)
                 <div class="block px-4 py-2 text-sm text-gray-700"> 
-                  Dr. {{ Auth::user()->doctor->first_name }} {{ Auth::user()->doctor->last_name }} 
+                  {{ Auth::user()->doctor->full_name}}
                 </div>
               @endif
+               <!-- <span class="text-xs text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">({{ Auth::user()->role }})</span> -->
               <div class="block px-4 py-2 text-sm text-gray-700">
                   {{ Auth::user()->email }}
                 </div>
-                @if(Auth::user()->role === 'PATIENT')
-                    <a href="{{ route('patient-details') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Patient Details</a>
+                @if(Auth::user()->role === 'ADMIN')
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin Profile</a>
                 @elseif(Auth::user()->role === 'DOCTOR')
-                    <a href="{{ route('doctor.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Doctor Details</a>
+                    <a href="{{ route('doctor.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Doctor Profile</a>
                 
                     @endif
                 <form method="POST" action="{{ route('logout') }}">
