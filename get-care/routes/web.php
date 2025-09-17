@@ -96,7 +96,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/plans', 'AdminController@storePlan')->name('admin.plans.store');
         Route::get('/plans/{plan}/edit', 'AdminController@editPlan')->name('admin.plans.edit');
         Route::put('/plans/{plan}', 'AdminController@updatePlan')->name('admin.plans.update');
-        Route::delete('/plans/{plan}', 'AdminController@deletePlan')->name('admin.plans.delete');    });
+        Route::delete('/plans/{plan}', 'AdminController@deletePlan')->name('admin.plans.delete');
+
+        // Subscription management routes (handled by DoctorController as per instructions)
+        Route::get('/subscriptions/{subscription}/edit', 'DoctorController@editSubscription')->name('admin.subscriptions.edit');
+        Route::put('/subscriptions/{subscription}', 'DoctorController@updateSubscription')->name('admin.subscriptions.update');
+    });
 
     // Doctor routes
     Route::prefix('doctor')->middleware('role:doctor')->group(function () {

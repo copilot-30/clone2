@@ -1405,4 +1405,39 @@ private function getPatientAge($birthdate)
 
         return response()->json(['success' => true, 'message' => 'Test request sent successfully.']);
     }
+
+    public function editSubscription(\App\Subscription $subscription)
+    {
+        // Admin-only action, should be protected by middleware (e.g., 'role:admin')
+        // For now, assuming this is called from an admin route.
+        $plans = \App\Plan::all(); // Fetch all plans to populate dropdown
+
+        return view('admin.subscriptions.edit', compact('subscription', 'plans'));
+    }
+
+    public function updateSubscription(Request $request, \App\Subscription $subscription)
+    {
+        // Admin-only action, should be protected by middleware (e.g., 'role:admin')
+        // For now, assuming this is called from an admin route.
+        $validatedData = $request->validate([
+            'status' => 'required|string|in:ACTIVE,INACTIVE,EXPIRED',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'plan_id' => 'required|uuid|exists:plans,id',
+        ]);
+
+        DB::transaction(function () use ($subscription, $validatedData) {
+            // If the subscription is being set to ACTIVE, deactivate other active subscriptions for this patient
+            if ($validatedData['status'] === 'ACTIVE') {
+                \App\Subscription::where('patient_id', $subscription->patient_id)
+                                 ->where('id', '!=', $subscription->id)
+                                 ->where('status', 'ACTIVE')
+                                 ->update(['status' => 'INACTIVE']);
+            }
+
+            $subscription->update($validatedData);
+        });
+
+        return redirect()->route('admin.subscriptions')->with('success', 'Subscription updated successfully.');
+    }
 }

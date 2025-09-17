@@ -39,6 +39,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -61,12 +62,15 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $subscription->start_date->format('M d, Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $subscription->end_date->format('M d, Y') }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
                                     @if ($subscription->status === 'ACTIVE') bg-green-100 text-green-800
                                     @elseif ($subscription->status === 'PENDING') bg-yellow-100 text-yellow-800
                                     @else bg-red-100 text-red-800 @endif">
                                     {{ $subscription->status }}
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{{ route('admin.subscriptions.edit', $subscription->id) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                             </td>
                         </tr>
                     @endforeach
