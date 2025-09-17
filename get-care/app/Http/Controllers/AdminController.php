@@ -139,9 +139,7 @@ class AdminController extends Controller
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
-
-        $user->save();
-
+ 
         $oldUserValues = $user->getOriginal();
         $user->save();
 
@@ -163,10 +161,7 @@ class AdminController extends Controller
         }
 
         DB::transaction(function () use ($user) {
-            $user_id = $user->id;
-            $email = $user->email;
-            $user->delete();
-
+ 
             $oldUserValues = $user->toArray(); // Capture values before deletion
             $user_id = $user->id; // Ensure $user_id is available after $user->toArray()
             $email = $user->email; // Ensure $email is available after $user->toArray()
@@ -594,8 +589,7 @@ class AdminController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $doctor->update($request->all());
-
+       
         $oldDoctorValues = $doctor->toArray(); // Capture old values
         $doctor->update($request->all());
 
@@ -620,11 +614,6 @@ class AdminController extends Controller
         }
 
         DB::transaction(function () use ($doctor) {
-            $user_id = $doctor->user_id;
-            $email = $doctor->email;
-            $doctor->delete();
-            User::where('id', $user_id)->delete();
-
             $oldDoctorValues = $doctor->toArray(); // Capture values before deletion
             $user_id = $doctor->user_id; // Ensure $user_id is available
             $email = $doctor->email; // Ensure $email is available

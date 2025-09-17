@@ -1461,9 +1461,7 @@ private function getPatientAge($birthdate)
         if ($validator->fails()) {
             return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
         }
-
-        PatientPrescription::create($validator->validated());
-
+ 
         $prescription = PatientPrescription::create($validator->validated());
 
         event(new AuditableEvent(auth()->id(), 'patient_prescription_created', [
