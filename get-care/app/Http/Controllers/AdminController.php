@@ -452,14 +452,17 @@ class AdminController extends Controller
 
     public function viewAuditLogs(Request $request)
     {
-        $query = \App\AuditLog::query();
+        $query = \App\AuditLog::with('user'); // Eager load the user relationship
 
         if ($request->has('user_email') && !empty($request->input('user_email'))) {
-            $query->where('user_email', 'ILIKE', '%' . $request->input('user_email') . '%');
+            $email = $request->input('user_email');
+            $query->whereHas('user', function ($q) use ($email) {
+                $q->where('email', 'ILIKE', '%' . $email . '%');
+            });
         }
 
-        if ($request->has('event_type') && !empty($request->input('event_type'))) {
-            $query->where('event_type', 'ILIKE', '%' . $request->input('event_type') . '%');
+        if ($request->has('action') && !empty($request->input('action'))) {
+            $query->where('action', 'ILIKE', '%' . $request->input('action') . '%');
         }
 
         if ($request->has('ip_address') && !empty($request->input('ip_address'))) {
@@ -467,9 +470,9 @@ class AdminController extends Controller
         }
 
         $auditLogs = $query->orderBy('created_at', 'desc')->paginate(10);
-        $eventTypes = \App\AuditLog::select('event_type')->distinct()->pluck('event_type')->toArray();
+        $actions = \App\AuditLog::select('action')->distinct()->pluck('action')->toArray();
 
-        return view('admin.admin-audit-log-viewer', compact('auditLogs', 'eventTypes'));
+        return view('admin.admin-audit-log-viewer', compact('auditLogs', 'actions'));
     }
 
     public function dashboard()

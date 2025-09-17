@@ -14,7 +14,7 @@
                     ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'LayoutDashboard', 'url' => route('admin.dashboard')],
                     ['id' => 'users', 'label' => 'Users', 'icon' => 'Users', 'url' => route('admin.users')],
                     ['id' => 'plans', 'label' => 'Plans', 'icon' => 'CreditCard', 'url' => route('admin.plans')],
-                    ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit_logs')],
+                    ['id' => 'audit_logs', 'label' => 'Audit Logs', 'icon' => 'FileText', 'url' => route('admin.audit-logs')],
                     ['id' => 'subscriptions', 'label' => 'Subscriptions', 'icon' => 'CreditCard', 'url' => route('admin.subscriptions')],
                     ['id' => 'payments', 'label' => 'Payments', 'icon' => 'DollarSign', 'url' => route('admin.payments')],
             

@@ -86,7 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/patients/{id}/consultation-history', 'AdminController@viewConsultationHistory');
         Route::get('/subscriptions', 'AdminController@listSubscriptions')->name('admin.subscriptions');
         Route::get('/transactions', 'AdminController@monitorTransactions')->name('admin.transactions');
-        Route::get('/audit-logs', 'AdminController@viewAuditLogs')->name('admin.audit_logs');
+        Route::get('/audit-logs', 'AdminController@viewAuditLogs')->name('admin.audit-logs');
 
         // Admin Payment Routes
         Route::get('/payments', 'AdminController@listPayments')->name('admin.payments');
