@@ -13,9 +13,7 @@ class AddForeignKeysToGetCareTables extends Migration
      */
     public function up()
     {
-        Schema::table('admin_activities', function (Blueprint $table) {
-            $table->foreign('admin_id')->references('id')->on('users')->onDelete('set null');
-        });
+ 
 
         Schema::table('appointments', function (Blueprint $table) {
             $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
@@ -46,12 +44,7 @@ class AddForeignKeysToGetCareTables extends Migration
             $table->foreign('uploaded_by_id')->references('id')->on('users')->onDelete('set null');
         });
 
-      
-
-
-        Schema::table('medical_backgrounds', function (Blueprint $table) {
-            $table->foreign('patient_id')->references('id')->on('patients')->onDelete('cascade');
-        });
+    
 
         Schema::table('messages', function (Blueprint $table) {
             $table->foreign('conversation_id')->references('id')->on('conversations')->onDelete('cascade');
@@ -111,9 +104,6 @@ class AddForeignKeysToGetCareTables extends Migration
      */
     public function down()
     {
-        Schema::table('admin_activities', function (Blueprint $table) {
-            $table->dropForeign(['admin_id']);
-        });
 
         Schema::table('appointments', function (Blueprint $table) {
             $table->dropForeign(['patient_id']);
@@ -143,14 +133,7 @@ class AddForeignKeysToGetCareTables extends Migration
         Schema::table('file_attachments', function (Blueprint $table) {
             $table->dropForeign(['uploaded_by_id']);
         });
-
-   
-
  
-
-        Schema::table('medical_backgrounds', function (Blueprint $table) {
-            $table->dropForeign(['patient_id']);
-        });
 
         Schema::table('messages', function (Blueprint $table) {
             $table->dropForeign(['conversation_id']);

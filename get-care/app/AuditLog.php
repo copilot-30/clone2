@@ -6,28 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditLog extends Model
 {
-    protected $table = 'admin_activities';
+    protected $table = 'audit_logs';
 
     protected $fillable = [
-        'admin_id',
+        'user_id',
+        'url',
         'action',
-        'entity_type',
-        'entity_id',
-        'description',
-        'details',
+        'data',
         'ip_address',
         'user_agent',
-        // 'created_at' will be handled by Laravel if timestamps are enabled, but we manually cast it below.
     ];
 
     protected $casts = [
         'id' => 'string',
-        'details' => 'array',
+        'data' => 'array',
         'created_at' => 'datetime',
     ];
 
     public $incrementing = false;
-    public $timestamps = false; // Only 'created_at' exists, no 'updated_at'
+    public $timestamps = true; // Only 'created_at' exists, no 'updated_at'
 
     protected static function boot()
     {
@@ -38,8 +35,8 @@ class AuditLog extends Model
         });
     }
 
-    public function admin()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'admin_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }
