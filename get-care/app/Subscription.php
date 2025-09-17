@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Subscription extends Model
 {
-    protected $guarded = ['plan_id', 'status']; // Allowing mass assignment for plan_id and status for convenience in creation
-
+    protected $guarded = [ 'status']; // Allowing mass assignment for plan_id and status for convenience in creation
+    protected $keyType = 'string';
     protected $casts = [
         'id' => 'string',
         'start_date' => 'datetime',

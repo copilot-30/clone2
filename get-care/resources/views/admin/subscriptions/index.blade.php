@@ -46,14 +46,14 @@
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if ($subscription->patient && $subscription->patient->user)
-                                    {{ $subscription->patient->user->first_name }} {{ $subscription->patient->user->last_name }}
+                                    {{ $subscription->patient->full_name}}
                                 @else
                                     N/A
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if ($subscription->plan)
-                                    {{ $subscription->plan->name }}
+                                    {{ ucfirst($subscription->plan->name) }}
                                 @else
                                     N/A
                                 @endif

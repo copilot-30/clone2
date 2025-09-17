@@ -620,18 +620,16 @@ class AdminController extends Controller
     }
     public function listPayments(Request $request)
     {
-        $query = Payment::with('user', 'payable');
+        $query = Payment::with('user');
 
         if ($request->has('patient_name')) {
+
             $patientName = $request->input('patient_name');
             $query->whereHasMorph('payable', [Patient::class], function ($q) use ($patientName) {
                 $q->where('first_name', 'ILIKE', '%' . $patientName . '%')
                     ->orWhere('last_name', 'ILIKE', '%' . $patientName . '%');
             });
-            // If payable is a Plan, we still want to show it.
-            $query->orWhereHasMorph('payable', [Plan::class], function ($q) use ($patientName) {
-                $q->where('name', 'ILIKE', '%' . $patientName . '%');
-            });
+   
         }
 
         if ($request->has('status') && $request->input('status') !== 'all') {
@@ -649,27 +647,39 @@ class AdminController extends Controller
         $validatedData = $request->validate([
             'status' => 'required|string|in:PENDING,PAID,FAILED,REFUNDED',
         ]);
+ 
 
-        $payment->status = $validatedData['status'];
-        $payment->save();
+        DB::transaction(function () use ($payment, $validatedData) {
+            $payment->status = $validatedData['status'];
+            $payment->save();
 
-        // If payment is marked as PAID and it's for a plan, create/update subscription
-        if ($payment->status === 'PAID' && $payment->payable_type === 'App\\Plan') {
-            $plan = $payment->payable; // This will be the Plan model instance
-            $patient = Patient::where('user_id', $payment->user_id)->first(); // Assuming patient has user_id
+            // If payment is marked as PAID and it's for a plan, create/update subscription
+            if ($payment->status === 'PAID' && $payment->payable_type === 'MEMBERSHIP') {
+                $plan = $payment->payable; // This will be the Plan model instance
+                $patient = Patient::where('user_id', $payment->user_id)->first(); // Assuming patient has user_id
 
-            if ($patient && $plan) {
-                Subscription::updateOrCreate(
-                    ['patient_id' => $patient->id],
-                    [
-                        'plan_id' => $plan->id,
-                        'start_date' => now(),
-                        'end_date' => now()->addMonth(), // Example: 1-month subscription
-                        'status' => 'ACTIVE',
-                    ]
-                );
+                if ($patient && $plan) {
+                    // Deactivate any existing active subscriptions for this patient
+                    $exists = Subscription::where('patient_id', $patient->id)->where('status', 'ACTIVE')->first();
+
+                    if ($exists) {
+                        DB::rollback();
+                        return response()->json(['message' => 'Patient already has an active subscription.'], 400);
+                    }
+
+                    // Create or update the new subscription
+                    Subscription::updateOrCreate(
+                        ['patient_id' => $patient->id],
+                        [
+                            'plan_id' => $plan->id,
+                            'start_date' => now(),
+                            'end_date' => now()->addMonth(), // Example: 1-month subscription
+                            'status' => 'ACTIVE',
+                        ]
+                    );
+                }
             }
-        }
+        }); // End of DB::transaction
 
         return redirect()->back()->with('success', 'Payment status updated successfully.');
     }

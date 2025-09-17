@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Appointment extends Model
 {
-        protected $keyType = 'string';
+    protected $keyType = 'string';
     protected $fillable = [
         'patient_id',
         'doctor_id',

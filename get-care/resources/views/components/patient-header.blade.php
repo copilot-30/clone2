@@ -22,9 +22,7 @@
                 ['id' => 'dashboard', 'label' => 'Dashboard', 'url' => route('patient.dashboard')],
                 ['id' => 'doctors', 'label' => 'Doctors', 'url' => route('patient.select-doctor')],
                 ['id' => 'ai-consult', 'label' => 'AI Consult', 'url' => route('patient.ai-consult')],
-                ['id' => 'plan', 'label' => 'Plan', 'url' => route('patient.plans')],
-            
-                 
+                ['id' => 'plan', 'label' => 'Plan', 'url' => route('patient.plans')],   
             ];
          }
         @endphp

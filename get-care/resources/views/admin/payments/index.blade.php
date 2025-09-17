@@ -40,12 +40,15 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Updated</th>
+                        <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment ID</th> -->
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External TXN ID</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient Name</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid Date</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
@@ -53,24 +56,26 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach ($payments as $payment)
                         <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->updated_at ? $payment->updated_at->format('M d, Y H:i') : 'N/A' }}</td>
+                            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->id }}</td> -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->transaction_id }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if ($payment->user && $payment->user->patient)
-                                    {{ $payment->user->patient->first_name }} {{ $payment->user->patient->last_name }}
+                                    {{ $payment->user->patient->full_name }}
                                 @else
                                     N/A
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                @if ($payment->payable_type === 'App\Plan' && $payment->payable)
-                                    {{ $payment->payable->name }} Plan
+                                @if ($payment->payable_type === 'MEMBERSHIP' && $payment->payable)
+                                    {{ ucfirst($payment->payable->name) }} Membership
                                 @else
                                     {{ class_basename($payment->payable_type) }}
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₱{{ number_format($payment->amount, 2) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->payment_method }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->payment_date->format('M d, Y H:i') }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $payment->payment_date ? $payment->payment_date->format('M d, Y H:i') : 'N/A' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                     @if ($payment->status === 'PAID') bg-green-100 text-green-800
