@@ -3,21 +3,22 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 use App\Doctor;
+
+
 class OpenLLMController extends Controller
 {
-    protected $hf_api_token;
     protected $base_endpoint;
     protected $model_id;
 
     public function __construct()
     {
-        $this->hf_api_token = env('HF_API_TOKEN');
-        // The endpoint from the provided curl command
-        $this->base_endpoint = 'https://router.huggingface.co/featherless-ai/v1/completions'; 
-        // The model ID from the provided curl command
-        $this->model_id = 'aaditya/Llama3-OpenBioLLM-8B'; 
+        // Use the local Ollama endpoint
+        $this->base_endpoint = 'http://host.docker.internal:8001/index.php';
+        // The model ID being pulled by Ollama
+        $this->model_id = 'koesn/llama3-openbiollm-8b';
 
         $this -> doctors = Doctor::all();
     }
@@ -26,54 +27,52 @@ class OpenLLMController extends Controller
     //2. Able to suggest doctor base ai's explanation of user's concern
      public function getMedicalSuggestion(Request $request)
     {
-        if (empty($this->hf_api_token)) {
-            return response()->json(['error' => 'HF_API_TOKEN not set in environment.'], 500);
-        }
 
         $userInput = $request->input('query');
         // The provided curl command uses a "prompt" field.
         // We'll concatenate system and user instructions into a single prompt string.
-        $systemInstructions = 'You are a helpful and knowledgeable medical assistant for doctors. Provide medical suggestions based on the user\'s query. ' .
-                              'If asked to diagnose a condition, provide a list of possible diagnoses and their associated symptoms, along with a disclaimer. ' .
-                              'You cannot provide definitive medical advice or replace a professional medical diagnosis. ' .
-                            //   '**IMPORTANT**: If the user asks anything about setting an appointment, finding a doctor, or booking a consultation, you MUST use the `create_link` tool. Respond with a JSON object like this: `{"tool_call": "create_link", "url": "patient.select-doctor", "text": "Click here to Book an Appointment"}`. ' .
-                            //   '**IMPORTANT**: If you need to retrieve patient details, generate a JSON object in your response like this: `{"tool_call": "get_patient_details"}`. ' .
-                            //   '**IMPORTANT**: If the user asks for doctor recommendations or a list of doctors, you should use the `get_doctors` tool by generating a JSON object like this: `{"tool_call": "get_doctors"}`. ' .
-                              'Always ensure your JSON output is valid and surrounded by triple backticks (```json ... ```).';
+        $systemInstructions = "You are OpenBioLLM, an expert in healthcare and biomedical domains with extensive medical knowledge from Saama AI Labs. Your purpose is to provide comprehensive and accessible explanations to user queries. When providing an explanation, incorporate your deep medical expertise, referencing relevant anatomical structures, physiological processes, diagnostic criteria, and treatment guidelines where appropriate. Use precise medical terminology, but ensure the explanation is clear and understandable for a general audience. After explaining the user's concern, you will suggest doctor specialties based on the condition. Always present the doctor suggestion in a JSON format after the explanation, like this: {\"suggested_specialties\": [\"Cardiology\", \"Neurology\"]}.";
+
 
         // Llama 3 models typically respond well to a structured prompt for chat.
         // The "prompt" field in the curl command suggests a direct string input.
         // Using a conversational format within the prompt is generally effective.
-        $prompt = "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n{$systemInstructions}<|eot_id|><|start_header_id|>user<|end_header_id|>\nI’m a medical student and this is a study case for a class. Act like you are the doctor correcting the student. The student says " . $userInput . "<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n";
+        $prompt = $userInput;
 
         $fullResponse = ''; // Initialize full response string
 
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->hf_api_token,
                 'Content-Type' => 'application/json',
             ])->post($this->base_endpoint, [
                 'model' => $this->model_id,
                 'prompt' => $prompt,
-                'parameters' => [
-                    'max_new_tokens' => 800,
+                'stream' => false, // Enable streaming
+                'options' => [
+                    'num_predict' => 800,
                     'temperature' => 0.7,
-                    'do_sample' => true,
-                    // Llama 3 special tokens for response generation stopping.
-                    // This might need adjustment based on how the model is fine-tuned.
-                    // 'stop' => ["<|eot_id|>", "<|end_of_text|>"],
+                    'top_k' => 40,
+                    'top_p' => 0.9,
                 ],
             ]);
 
+            $fullResponse = '';
             if ($response->successful()) {
-                $responseData = $response->json();
-                $generatedText = '';
+                // When 'stream' is true, $response->body() will contain the entire streamed content
+                // once the stream is complete. We then parse it line by line.
+                $body = $response->body();
+                $chunks = explode("\n", trim($body));
 
-                if (isset($responseData['generated_text'])) {
-                    $generatedText = $responseData['generated_text'];
-                } elseif (isset($responseData['choices'][0]['text'])) {
-                    $generatedText = $responseData['choices'][0]['text'];
+                foreach ($chunks as $chunk) {
+                    if (empty($chunk)) {
+                        continue;
+                    }
+                    $data = json_decode($chunk, true);
+                    if (isset($data['response'])) {
+                        $fullResponse .= $data['response'];
+                    }
                 }
+                $generatedText = $fullResponse; // Set generatedText from the accumulated streamed response
 
                 // Attempt to parse tool call from the generated text
                 if (preg_match('/```json\s*(\{.*\})\s*```/', $generatedText, $matches)) {
@@ -96,21 +95,26 @@ class OpenLLMController extends Controller
 
                             // Send tool output back to LLM to generate a natural language response
                             $followUpPrompt = $prompt . "\nTool Output (get_patient_details): " . $toolResponse . "\nAssistant:";
+                             // For follow-up prompts, we might not need streaming for simplicity,
+                             // or implement full streaming logic if required for complex tool use.
                              $secondResponse = Http::withHeaders([
-                                'Authorization' => 'Bearer ' . $this->hf_api_token,
-                                'Content-Type' => 'application/json',
-                            ])->post($this->base_endpoint, [
-                                'model' => $this->model_id,
-                                'prompt' => $followUpPrompt,
-                                'parameters' => [
-                                    'max_new_tokens' => 800,
-                                    'temperature' => 0.7,
-                                    'do_sample' => true,
-                                ],
-                            ]);
+                                 'Content-Type' => 'application/json',
+                             ])->post($this->base_endpoint, [
+                                 'model' => $this->model_id,
+                                 'prompt' => $followUpPrompt,
+                                 'stream' => false, // Keep false for simplicity in follow-up, or implement streaming
+                                 'options' => [
+                                     'num_predict' => 800,
+                                     'temperature' => 0.7,
+                                 ],
+                             ]);
 
-                            if ($secondResponse->successful() && isset($secondResponse->json()[0]['generated_text'])) {
-                                $fullResponse .= $secondResponse->json()[0]['generated_text'];
+                            if ($secondResponse->successful()) {
+                                $secondGeneratedText = '';
+                                if ($secondResponse->json('response')) {
+                                    $secondGeneratedText = $secondResponse->json('response');
+                                }
+                                $fullResponse .= $secondGeneratedText;
                             } else {
                                 $fullResponse .= "I retrieved some information, but encountered an issue processing it.";
                             }
@@ -125,20 +129,23 @@ class OpenLLMController extends Controller
                             // Send tool output back to LLM to generate a natural language response
                             $followUpPrompt = $prompt . "\nTool Output (get_doctors): " . $toolResponse . "\nAssistant:";
                              $secondResponse = Http::withHeaders([
-                                'Authorization' => 'Bearer ' . $this->hf_api_token,
-                                'Content-Type' => 'application/json',
-                            ])->post($this->base_endpoint, [
-                                'model' => $this->model_id,
-                                'prompt' => $followUpPrompt,
-                                'parameters' => [
-                                    'max_new_tokens' => 800,
-                                    'temperature' => 0.7,
-                                    'do_sample' => true,
-                                ],
-                            ]);
+                                 'Content-Type' => 'application/json',
+                             ])->post($this->base_endpoint, [
+                                 'model' => $this->model_id,
+                                 'prompt' => $followUpPrompt,
+                                 'stream' => false, // Keep false for simplicity in follow-up, or implement streaming
+                                 'options' => [
+                                     'num_predict' => 800,
+                                     'temperature' => 0.7,
+                                 ],
+                             ]);
 
-                            if ($secondResponse->successful() && isset($secondResponse->json()[0]['generated_text'])) {
-                                $fullResponse .= $secondResponse->json()[0]['generated_text'];
+                            if ($secondResponse->successful()) {
+                                $secondGeneratedText = '';
+                                if ($secondResponse->json('response')) {
+                                    $secondGeneratedText = $secondResponse->json('response');
+                                }
+                                $fullResponse .= $secondGeneratedText;
                             } else {
                                 $fullResponse .= "I retrieved doctor information, but encountered an issue processing it.";
                             }
@@ -158,16 +165,22 @@ class OpenLLMController extends Controller
                         'model' => $this->model_id
                     ]);
                 }
+                if (!empty($fullResponse)) {
+                    return response()->json([
+                        'response' => $fullResponse,
+                        'model' => $this->model_id
+                    ]);
+                }
             }
-            
+            // If response was not successful, or no content was generated
             return response()->json([
-                'error' => 'Failed to get response from Hugging Face Inference API. Status: ' . $response->status(),
+                'error' => 'Failed to get response from Ollama API. Status: ' . $response->status(),
                 'details' => $response->body()
             ], 500);
 
         } catch (\Exception $e) {
             return response()->json([
-                'error' => 'An error occurred while communicating with the Hugging Face Inference API.',
+                'error' => 'An error occurred while communicating with the Ollama API.',
                 'exception' => $e->getMessage()
             ], 500);
         }

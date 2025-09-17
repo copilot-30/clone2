@@ -1,0 +1,72 @@
+services:
+  app_php81:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gcai_php
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    networks:
+      - getcare_network
+    depends_on:
+      ollama:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ollama:
+    image: ollama/ollama
+    container_name: gcai_ollama
+    restart: unless-stopped
+    networks:
+      - getcare_network 
+    cpus: 4
+    mem_limit: 8g
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8192M
+            #  pids: 1
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    ports:
+      - "11435:11434" 
+    volumes:
+      - ./.ollama_data:/root/.ollama
+      - ./entrypoint.sh:/entrypoint.sh
+    entrypoint: ["/usr/bin/bash", "/entrypoint.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:11434 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: gcai_nginx
+    restart: unless-stopped
+    ports:
+      - "8001:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./:/var/www/html
+    networks:
+      - getcare_network
+    depends_on:
+      - app_php81
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  getcare_network: 
+    driver: bridge
+
+volumes:
+  ollama_data:
+    driver: local
