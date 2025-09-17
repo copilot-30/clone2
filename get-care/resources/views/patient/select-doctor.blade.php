@@ -82,9 +82,8 @@
         <form id="selectDoctorForm" method="POST" action="{{ route('patient.storeAttendingPhysician') }}">
             @csrf
             <input type="hidden" name="doctor_id" id="selectedDoctorId">
-            <div class="flex justify-between mt-8">
-                <button type="button" class="bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-400 focus:outline-none">Cancel</button>
-                <button type="submit" id="nextButton" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none" disabled>Next</button>
+            <div class="flex justify-center mt-8">
+                <button type="submit" id="nextButton" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none" disabled>Select Doctor</button>
             </div>
         </form>
     </div>

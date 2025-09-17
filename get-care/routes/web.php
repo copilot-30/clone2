@@ -157,33 +157,48 @@ Route::middleware('auth:sanctum')->group(function () {
         
         Route::post('/patient-profile', 'PatientController@storeProfile')->name('patient.profile.store');
         Route::group(['middleware' => 'patient.profile.check'], function () {
+            //patient free routes
             Route::get('/dashboard', 'PatientController@dashboard')->name('patient.dashboard');
-            Route::get('/medical-records', 'PatientController@getMedicalRecords')->name('patient.medical-records');
-            Route::get('/appointments', 'PatientAppointmentController@index');
-            Route::post('/appointments', 'PatientAppointmentController@store');
-            // Route::get('/appointments/{id}', 'PatientAppointmentController@show');
-            // Route::put('/appointments/{id}', 'PatientAppointmentController@update');
-            // Route::delete('/appointments/{id}', 'PatientAppointmentController@destroy');
             Route::get('/profile', 'PatientProfileController@show');
             Route::put('/profile', 'PatientProfileController@update');
-            Route::get('/chat', 'PatientController@chat')->name('patient.chat');
             Route::get('/ai-consult', 'PatientController@aiConsult')->name('patient.ai-consult');
             Route::post('/ai-consult', 'OpenLLMController@getMedicalSuggestion');
+
             Route::get('/select-doctor', 'PatientController@showDoctorSelectionForm')->name('patient.select-doctor');
-            Route::post('/attending-physician', 'PatientController@storeAttendingPhysician')->name('patient.storeAttendingPhysician');
-            Route::get('/appointments/select-type/{doctor_id}', 'PatientController@showAppointmentTypeForm')->name('patient.select-appointment-type');
-            Route::get('/appointments/select-date-time', 'PatientController@showDateTimeSelectionForm')->name('patient.show-date-time-selection');
-            Route::post('/appointments/store', 'PatientController@storeAppointment')->name('patient.store-appointment');
-            Route::get('/appointments/confirmation/{appointment_id}', 'PatientController@showAppointmentConfirmation')->name('patient.appointment-confirmed');
-            Route::get('/attending-physician-details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
-            Route::get('/download-medical-records', 'PatientController@downloadMedicalRecords')->name('patient.download');
-            Route::post('/lab-results/upload/{patientTestRequest}', 'PatientController@uploadLabResult')->name('patient.lab-results.upload');
-            
-            // Plan and Subscription Routes
+                
+
+            //Plan routes
             Route::get('/plans', 'PatientController@showPlans')->name('patient.plans');
             Route::get('/plans/{plan}/checkout', 'PatientController@showCheckoutForm')->name('patient.plans.checkout');
             Route::post('/plans/{plan}/process-payment', 'PatientController@processPlanPayment')->name('patient.plans.process-payment');
+            //payment routes
             Route::get('/payments/{payment}', 'PatientController@showPaymentDetails')->name('patient.payment');
+
+
+            //core plan routes
+            Route::group(['middleware' => 'membership:core,premium'], function () {
+                Route::get('/medical-records', 'PatientController@getMedicalRecords')->name('patient.medical-records');
+
+                Route::get('/attending-physician/details', 'PatientController@showAttendingPhysicianDetails')->name('patient.attending-physician-details');
+                Route::post('/attending-physician/store', 'PatientController@storeAttendingPhysician')->name('patient.storeAttendingPhysician');
+                
+                Route::get('/appointments', 'PatientAppointmentController@index');
+                Route::post('/appointments', 'PatientAppointmentController@store');
+                Route::get('/appointments/select-type/{doctor_id}', 'PatientController@showAppointmentTypeForm')->name('patient.select-appointment-type');
+                Route::get('/appointments/select-date-time', 'PatientController@showDateTimeSelectionForm')->name('patient.show-date-time-selection');
+                Route::post('/appointments/store', 'PatientController@storeAppointment')->name('patient.store-appointment');
+                Route::get('/appointments/confirmation/{appointment_id}', 'PatientController@showAppointmentConfirmation')->name('patient.appointment-confirmed');
+                Route::get('/chat', 'PatientController@chat')->name('patient.chat');
+                Route::get('/download-medical-records', 'PatientController@downloadMedicalRecords')->name('patient.download');
+                Route::post('/lab-results/upload/{patientTestRequest}', 'PatientController@uploadLabResult')->name('patient.lab-results.upload');
+            });
+
+
+            //premium only plan routes
+            Route::group(['middleware' => 'membership:premium'], function () { 
+
+            });
+
         });
     });
 });

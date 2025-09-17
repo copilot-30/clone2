@@ -86,7 +86,7 @@ class PatientController extends Controller
                 'allergies' => $validatedData['allergies'],
                 'surgeries' => $validatedData['previousSurgeries'],
                 'family_history' => $validatedData['familyHistory'],
-                'medications' => $validatedData['medications'],
+                'medications' => $validatedData['medication'],
                 'supplements' => $validatedData['supplements'],
                 // 'age' and 'tag' might be derived or set separately if needed
             ]

@@ -16,6 +16,23 @@
             <p class="text-sm text-gray-500 mt-4">ID: {{ Auth::user()->patient->id ?? 'N/A' }}</p>
             <h3 class="text-xl font-bold text-gray-800 mt-1">{{ Auth::user()->patient->first_name ?? '' }} {{ Auth::user()->patient->last_name ?? '' }}</h3>
             <p class="text-gray-600 text-sm">{{ Auth::user()->email }}</p>
+         
+                @if(Auth::user()->patient->is_member)
+                    <span class="bg-green-100 text-green-800 text-lg font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-600">
+                        {{ Auth::user()->patient->subscription->name ?? 'N/A' }}
+                    </span>
+                @else 
+                    <p class="bg-red-100 text-white text-lg font-medium mr-2 px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-600">
+                        <i class="fa fa-user"></i> Free Member
+
+                    </p>
+                    <div>
+                        <a href="{{ route('patient.plans') }}" class="text-emerald-500 hover:text-emerald-600 transition-colors text-lg font-medium">
+                            <i class="fa fa-unlock"></i> Unlock Features, Clich here to view Plans
+                        </a>
+                    </div>
+                @endif
+ 
         </div>
 
         <div class="col-span-2 grid grid-cols-2 gap-4">

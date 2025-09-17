@@ -1,3 +1,7 @@
+@if (!auth()->user()->patient->is_member)
+  @php return; @endphp
+@endif
+
 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
   <div class="bg-emerald-600 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
     <h2 class="text-lg font-semibold">Recent Notes</h2>

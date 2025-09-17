@@ -47,6 +47,17 @@ class Patient extends Model
         return ucwords ($n);
     }
 
+    public function getIsMemberAttribute()
+    {
+        return $this->subscriptions()
+            ->where('status', 'ACTIVE')
+            ->where('start_date', '<=', now())
+            ->where('end_date', '>=', now())
+            ->count();
+    }
+
+ 
+
     protected static function boot()
     {
         parent::boot();

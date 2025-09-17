@@ -37,15 +37,7 @@
       </div>
     </div>
 
-    @if ($errors->any())
-        <div class="fixed top-4 right-4 z-50">
-            @foreach ($errors->all() as $error)
-                <div class="bg-red-500 text-white px-4 py-2 rounded shadow-md mb-2">
-                    {{ $error }}
-                </div>
-            @endforeach
-        </div>
-    @endif
+
 
   @if ($errors->any())
         <div class="fixed top-4 right-4 z-50">
@@ -69,6 +61,19 @@
                     {{ session('success') }}
                 </div>
                 <button class="text-gray-100 hover:text-red-600" onclick="this.parentElement.remove()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
+        @if (session('error'))
+        <div class="fixed top-20 right-4 z-50">
+            <div class="flex items-center justify-between bg-red-500 text-white px-4 py-2 rounded shadow-md mb-2">
+                <div>
+                    {{ session('error') }}
+                </div>
+                <button class="text-gray-100 hover:text-white" onclick="this.parentElement.remove()">
                     <i class="fa fa-times"></i>
                 </button>
             </div>

@@ -1,9 +1,14 @@
+@if (!auth()->user()->patient->is_member)
+  @php return; @endphp
+@endif
+
+
 <div class="bg-white rounded-lg shadow-sm border border-gray-200">
   <div class="bg-emerald-600 text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
     <h2 class="text-lg font-semibold">My Appointments</h2>
-    <a href="{{ route('patient.dashboard') }}" class="text-white hover:text-emerald-100 transition-colors">
+    <!-- <a href="{{ route('patient.dashboard') }}" class="text-white hover:text-emerald-100 transition-colors">
       View All
-    </a>
+    </a> -->
   </div>
 
   <div class="overflow-x-auto">
