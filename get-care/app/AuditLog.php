@@ -10,16 +10,23 @@ class AuditLog extends Model
 
     protected $fillable = [
         'user_id',
-        'url',
         'action',
-        'data',
+        'auditable_id',
+        'auditable_type',
+        'old_values',
+        'new_values',
+        'url',
         'ip_address',
         'user_agent',
+        'tags',
     ];
 
     protected $casts = [
         'id' => 'string',
-        'data' => 'array',
+        'auditable_id' => 'string',
+        'old_values' => 'array',
+        'new_values' => 'array',
+        'tags' => 'array',
         'created_at' => 'datetime',
     ];
 
