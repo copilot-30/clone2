@@ -93,6 +93,19 @@
         </div>
     @endif
 
+            @if (session('error'))
+        <div class="fixed top-20 right-4 z-50">
+            <div class="flex items-center justify-between bg-red-500 text-white px-4 py-2 rounded shadow-md mb-2">
+                <div>
+                    {{ session('error') }}
+                </div>
+                <button class="text-gray-100 hover:text-white" onclick="this.parentElement.remove()">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
     @if (session('success'))
         <div class="fixed top-20 right-4 z-50">
             <div class="flex items-center justify-between bg-green-500 text-white px-4 py-2 rounded shadow-md mb-2">

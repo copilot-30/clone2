@@ -1,6 +1,4 @@
-@extends('admin_layout')
-
-@section('content')
+ 
 <!-- <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4"> -->
     <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-5xl">
         <h2 class="text-1xl text-emerald-600 mb-8 text-center">Create Patient Profile </h2>
@@ -201,7 +199,7 @@
                         type="submit"
                         class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300"
                     >
-                        Create Patient
+                      <i class="fas fa-save mr-2"></i>  Create Patient
                     </button>
                 </div>
             </div>

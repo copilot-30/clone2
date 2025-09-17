@@ -141,7 +141,7 @@
                         type="submit"
                         class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300"
                     >
-                        Save Information
+                       <i class="fas fa-save mr-2"></i> Save Information
                     </button>
                 </div>
             </div>

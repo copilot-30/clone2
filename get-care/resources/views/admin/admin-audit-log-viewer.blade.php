@@ -41,7 +41,7 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                          <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auditable ID</th>
+                        <!-- <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auditable ID</th> -->
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auditable Type</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Old Values</th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">New Values</th>
@@ -57,10 +57,14 @@
   
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->user->email ?? 'N/A' }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->action }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->auditable_id }}</td>
+                            <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->auditable_id }}</td> -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->auditable_type }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->old_values) }}</td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->new_values) }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <textarea class="w-full" readonly>{{ json_encode($log->old_values) }}</textarea>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <textarea class="w-full" readonly>{{ json_encode($log->new_values) }}</textarea>
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->tags) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->ip_address }}</td>
                             <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->user_agent }}</td> -->

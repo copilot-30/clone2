@@ -114,7 +114,7 @@ class DoctorController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Doctor::create([
+        $doctor = Doctor::create([
             'user_id' => $user->id,
             'first_name' => $request->input('first_name'),
             'middle_name' => $request->input('middle_name'),
@@ -132,8 +132,11 @@ class DoctorController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_details_added', [
-            'doctor_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $doctor->id,
+            'auditable_type' => \App\Doctor::class,
+            'new_values' => $doctor->toArray(),
+            'doctor_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->route('doctor.edit')->with('success', 'Doctor details added successfully.');
@@ -163,6 +166,9 @@ class DoctorController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+ 
+
+        $oldDoctorValues = $doctor->getOriginal();
         $doctor->update([
             'first_name' => $request->input('first_name'),
             'middle_name' => $request->input('middle_name'),
@@ -179,8 +185,12 @@ class DoctorController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_details_updated', [
-            'doctor_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $doctor->id,
+            'auditable_type' => \App\Doctor::class,
+            'old_values' => $oldDoctorValues,
+            'new_values' => $doctor->toArray(),
+            'doctor_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->back()->with('success', 'Doctor details updated successfully.');
@@ -292,8 +302,18 @@ class DoctorController extends Controller
         DB::transaction(function () use ($request, $doctor_id) {
             // Update overall availability status on Doctor model
             $doctor = Auth::user()->doctor;
+            $oldAvailabilityStatus = $doctor->online_availability_enabled; // Capture old value
             $doctor->online_availability_enabled = $request->input('status');
             $doctor->save();
+
+            event(new AuditableEvent(auth()->id(), 'doctor_availability_updated', [
+                'auditable_id' => $doctor->id,
+                'auditable_type' => Doctor::class,
+                'old_values' => ['online_availability_enabled' => $oldAvailabilityStatus],
+                'new_values' => ['online_availability_enabled' => $request->input('status')],
+                'doctor_id' => $doctor_id,
+                'enabled' => $request->input('status'), // Keep for backward compatibility if needed
+            ]));
  
             // First, delete existing availability for the doctor to handle removals
             DoctorAvailability::where('doctor_id', $doctor_id)->delete();
@@ -371,8 +391,11 @@ class DoctorController extends Controller
         $clinic = Clinic::create($validatedData);
 
         event(new AuditableEvent(auth()->id(), 'clinic_created', [
-            'clinic_id' => $clinic->id,
-            'clinic_name' => $clinic->name,
+            'auditable_id' => $clinic->id,
+            'auditable_type' => \App\Clinic::class,
+            'new_values' => $clinic->toArray(),
+            'clinic_id' => $clinic->id, // Keep for backward compatibility
+            'clinic_name' => $clinic->name, // Keep for backward compatibility
         ]));
 
         return redirect()->route('doctor.clinics.list')->with('success', 'Clinic created successfully.');
@@ -425,11 +448,16 @@ class DoctorController extends Controller
         }
         $validatedData['facilities'] = $facilities;
 
+        $oldClinicValues = $clinic->getOriginal();
         $clinic->update($validatedData);
 
         event(new AuditableEvent(auth()->id(), 'clinic_updated', [
-            'clinic_id' => $clinic->id,
-            'clinic_name' => $clinic->name,
+            'auditable_id' => $clinic->id,
+            'auditable_type' => \App\Clinic::class,
+            'old_values' => $oldClinicValues,
+            'new_values' => $clinic->toArray(),
+            'clinic_id' => $clinic->id, // Keep for backward compatibility
+            'clinic_name' => $clinic->name, // Keep for backward compatibility
         ]));
 
         return redirect()->route('doctor.clinics.list')->with('success', 'Clinic updated successfully.');
@@ -437,11 +465,16 @@ class DoctorController extends Controller
 
     public function deleteClinic(Clinic $clinic)
     {
+
+        $oldClinicValues = $clinic->toArray(); // Capture values before deletion
         $clinic->delete();
 
         event(new AuditableEvent(auth()->id(), 'clinic_deleted', [
-            'clinic_id' => $clinic->id,
-            'clinic_name' => $clinic->name,
+            'auditable_id' => $clinic->id,
+            'auditable_type' => \App\Clinic::class,
+            'old_values' => $oldClinicValues,
+            'clinic_id' => $clinic->id, // Keep for backward compatibility
+            'clinic_name' => $clinic->name, // Keep for backward compatibility
         ]));
 
         return redirect()->route('doctor.clinics.list')->with('success', 'Clinic deleted successfully.');
@@ -482,15 +515,20 @@ class DoctorController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        $oldAppointmentValues = $appointment->getOriginal();
         $appointment->update([
             'status' => 'cancelled',
             'cancellation_reason' => $request->input('cancellation_reason'),
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_appointment_cancelled', [
-            'appointment_id' => $appointment->id,
-            'patient_id' => $appointment->patient_id,
-            'doctor_id' => $appointment->doctor_id,
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'old_values' => $oldAppointmentValues,
+            'new_values' => $appointment->toArray(),
+            'appointment_id' => $appointment->id, // Keep for backward compatibility
+            'patient_id' => $appointment->patient_id, // Keep for backward compatibility
+            'doctor_id' => $appointment->doctor_id, // Keep for backward compatibility
         ]));
 
         return response()->json(['success' => true, 'message' => 'Appointment cancelled successfully.']);
@@ -537,6 +575,8 @@ class DoctorController extends Controller
             return response()->json(['success' => false, 'message' => $validator->errors()->first()], 422);
         }
 
+  
+        $oldAppointmentValues = $appointment->getOriginal();
         $appointment->update([
             'appointment_datetime' => $request->input('new_appointment_datetime'),
             'status' => 'rescheduled', // Or 'scheduled' if it's considered just a date change
@@ -544,10 +584,14 @@ class DoctorController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_appointment_rescheduled', [
-            'appointment_id' => $appointment->id,
-            'patient_id' => $appointment->patient_id,
-            'doctor_id' => $appointment->doctor_id,
-            'new_datetime' => $appointment->appointment_datetime,
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'old_values' => $oldAppointmentValues,
+            'new_values' => $appointment->toArray(),
+            'appointment_id' => $appointment->id, // Keep for backward compatibility
+            'patient_id' => $appointment->patient_id, // Keep for backward compatibility
+            'doctor_id' => $appointment->doctor_id, // Keep for backward compatibility
+            'new_datetime' => $appointment->appointment_datetime, // Keep for backward compatibility
         ]));
 
         return response()->json(['success' => true, 'message' => 'Appointment rescheduled successfully!']);
@@ -680,6 +724,15 @@ class DoctorController extends Controller
         }
  
         $appointment->save();
+
+        event(new AuditableEvent(auth()->id(), 'doctor_appointment_created', [
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'new_values' => $appointment->toArray(), // Store all new values
+            'appointment_id' => $appointment->id, // Keep for backward compatibility if needed
+            'patient_id' => $appointment->patient_id, // Keep for backward compatibility if needed
+            'doctor_id' => $appointment->doctor_id, // Keep for backward compatibility if needed
+        ]));
         return redirect()->back()->with('success', 'Appointment booked successfully!');
     }
 
@@ -782,9 +835,12 @@ public function storeSoapNote(Request $request)
     ]);
 
     event(new AuditableEvent(auth()->id(), 'soap_note_created', [
-        'soap_note_id' => $soapNote->id,
-        'patient_id' => $patientId,
-        'doctor_id' => $doctor->id,
+        'auditable_id' => $soapNote->id,
+        'auditable_type' => \App\Consultation::class,
+        'new_values' => $soapNote->toArray(),
+        'soap_note_id' => $soapNote->id, // Keep for backward compatibility
+        'patient_id' => $patientId, // Keep for backward compatibility
+        'doctor_id' => $doctor->id, // Keep for backward compatibility
     ]));
 // Handle lab file uploads
 if ($request->hasFile('lab_files')) {
@@ -902,16 +958,18 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
             'vitals_remark' => $request->input('vitals_remark'),
         ];
 
-        // Update the SOAP note
+ 
+
+        $oldSoapNoteValues = $soapNote->getOriginal();
         $soapNote->update([
             'patient_id' => $patientId,
             'doctor_id' => $doctor->id,
-            'date' => $request->input('date'), // Or use request date if provided for editing existing notes
+            'date' => $request->input('date'),
             'subjective' => $request->input('subjective'),
             'chief_complaint' => $request->input('chief_complaint'),
             'history_of_illness' => $request->input('history_of_illness'),
             'objective' => $request->input('objective'),
-            'vital_signs' => empty(array_filter($vitalSigns)) ? null : $vitalSigns, // Store as JSON
+            'vital_signs' => empty(array_filter($vitalSigns)) ? null : $vitalSigns,
             'assessment' => $request->input('assessment'),
             'diagnosis' => $request->input('diagnosis'),
             'plan' => $request->input('plan'),
@@ -919,13 +977,17 @@ return response()->json(['success' => true, 'message' => 'SOAP note added succes
             'test_request' => $request->input('test_request'),
             'remarks' => $request->input('remarks'),
             'vital_remarks' => $request->input('vital_remarks'),
-            'file_remarks' => $request->input('file_remarks'), 
+            'file_remarks' => $request->input('file_remarks'),
         ]);
 
         event(new AuditableEvent(auth()->id(), 'soap_note_updated', [
-            'soap_note_id' => $soapNote->id,
-            'patient_id' => $patientId,
-            'doctor_id' => $doctor->id,
+            'auditable_id' => $soapNote->id,
+            'auditable_type' => \App\Consultation::class,
+            'old_values' => $oldSoapNoteValues,
+            'new_values' => $soapNote->toArray(),
+            'soap_note_id' => $soapNote->id, // Keep for backward compatibility
+            'patient_id' => $patientId, // Keep for backward compatibility
+            'doctor_id' => $doctor->id, // Keep for backward compatibility
         ]));
 
         // Handle deleted lab files
@@ -1070,22 +1132,26 @@ public function storeSharedCase(Request $request)
         return redirect()->back()->with('error', 'You cannot share a case with yourself.')->withInput();
     }
  
-    SharedCase::create([
+
+    $sharedCase = SharedCase::create([
         'patient_id' => $request->input('patient_id'),
         'sharing_doctor_id' => $sharingDoctor->id,
         'receiving_doctor_id' => $receivingDoctor->id,
         'case_description' => $request->input('case_description'),
-        'shared_data' => $request->input('permissions'), // This should be an array of permissions
-        'permissions' => $request->input('permissions'), // Keeping for compatibility, ideally combine with shared_data
+        'shared_data' => $request->input('permissions'),
+        'permissions' => $request->input('permissions'),
         'status' => 'PENDING',
         'expires_at' => $request->input('expires_at'),
-        'urgency' => $request->input('urgency'), // Save urgency
+        'urgency' => $request->input('urgency'),
     ]);
 
     event(new AuditableEvent(auth()->id(), 'shared_case_created', [
-        'patient_id' => $request->input('patient_id'),
-        'sharing_doctor_id' => $sharingDoctor->id,
-        'receiving_doctor_id' => $receivingDoctor->id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'new_values' => $sharedCase->toArray(),
+        'patient_id' => $request->input('patient_id'), // Keep for backward compatibility
+        'sharing_doctor_id' => $sharingDoctor->id, // Keep for backward compatibility
+        'receiving_doctor_id' => $receivingDoctor->id, // Keep for backward compatibility
     ]));
 
     return redirect()->back()->with('success', 'Case shared successfully and is pending acceptance.');
@@ -1201,13 +1267,18 @@ public function acceptSharedCaseInvitation(SharedCase $sharedCase)
         abort(403, 'Unauthorized action or invalid shared case status.');
     }
 
+    $oldSharedCaseValues = $sharedCase->getOriginal();
     $sharedCase->status = 'ACCEPTED';
     $sharedCase->save();
 
     event(new AuditableEvent(auth()->id(), 'shared_case_accepted', [
-        'shared_case_id' => $sharedCase->id,
-        'patient_id' => $sharedCase->patient_id,
-        'receiving_doctor_id' => Auth::user()->doctor->id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'old_values' => $oldSharedCaseValues,
+        'new_values' => $sharedCase->toArray(),
+        'shared_case_id' => $sharedCase->id, // Keep for backward compatibility
+        'patient_id' => $sharedCase->patient_id, // Keep for backward compatibility
+        'receiving_doctor_id' => Auth::user()->doctor->id, // Keep for backward compatibility
     ]));
 
     return redirect()->back()->with('success', 'Shared case accepted successfully.');
@@ -1219,14 +1290,19 @@ public function declineSharedCaseInvitation(SharedCase $sharedCase)
     if ($sharedCase->receiving_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'PENDING') {
         abort(403, 'Unauthorized action or invalid shared case status.');
     }
-
+ 
+    $oldSharedCaseValues = $sharedCase->getOriginal();
     $sharedCase->status = 'DECLINED';
     $sharedCase->save();
 
     event(new AuditableEvent(auth()->id(), 'shared_case_declined', [
-        'shared_case_id' => $sharedCase->id,
-        'patient_id' => $sharedCase->patient_id,
-        'receiving_doctor_id' => Auth::user()->doctor->id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'old_values' => $oldSharedCaseValues,
+        'new_values' => $sharedCase->toArray(),
+        'shared_case_id' => $sharedCase->id, // Keep for backward compatibility
+        'patient_id' => $sharedCase->patient_id, // Keep for backward compatibility
+        'receiving_doctor_id' => Auth::user()->doctor->id, // Keep for backward compatibility
     ]));
 
     return redirect()->back()->with('success', 'Shared case invitation declined.');
@@ -1238,14 +1314,20 @@ public function cancelSharedCaseInvitation(SharedCase $sharedCase)
     if ($sharedCase->sharing_doctor_id !== Auth::user()->doctor->id || $sharedCase->status !== 'PENDING') {
         abort(403, 'Unauthorized action or invalid shared case status.');
     }
+ 
 
+    $oldSharedCaseValues = $sharedCase->getOriginal();
     $sharedCase->status = 'CANCELLED';
     $sharedCase->save();
 
     event(new AuditableEvent(auth()->id(), 'shared_case_cancelled', [
-        'shared_case_id' => $sharedCase->id,
-        'patient_id' => $sharedCase->patient_id,
-        'sharing_doctor_id' => Auth::user()->doctor->id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'old_values' => $oldSharedCaseValues,
+        'new_values' => $sharedCase->toArray(),
+        'shared_case_id' => $sharedCase->id, // Keep for backward compatibility
+        'patient_id' => $sharedCase->patient_id, // Keep for backward compatibility
+        'sharing_doctor_id' => Auth::user()->doctor->id, // Keep for backward compatibility
     ]));
 
     return response()->json(['success' => true, 'message' => 'Shared case invitation cancelled successfully.']);
@@ -1289,14 +1371,19 @@ public function removeSharedCase(SharedCase $sharedCase)
         return response()->json(['success' => false, 'message' => 'Unauthorized action or invalid shared case status.'], 403);
     }
 
-    // Inactivate the shared case by setting status to 'INACTIVE'
+    // Inactivate the shared case by setting status to 'REVOKED' 
+    $oldSharedCaseValues = $sharedCase->getOriginal();
     $sharedCase->status = 'REVOKED';
     $sharedCase->save();
 
     event(new AuditableEvent(auth()->id(), 'shared_case_removed', [
-        'shared_case_id' => $sharedCase->id,
-        'patient_id' => $sharedCase->patient_id,
-        'receiving_doctor_id' => $sharedCase->receiving_doctor_id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'old_values' => $oldSharedCaseValues,
+        'new_values' => $sharedCase->toArray(),
+        'shared_case_id' => $sharedCase->id, // Keep for backward compatibility
+        'patient_id' => $sharedCase->patient_id, // Keep for backward compatibility
+        'receiving_doctor_id' => $sharedCase->receiving_doctor_id, // Keep for backward compatibility
     ]));
 
     return response()->json(['success' => true, 'message' => 'Doctor removed from shared case successfully.']);
@@ -1315,13 +1402,17 @@ public function removeDeclinedSharedCase(SharedCase $sharedCase)
         return response()->json(['success' => false, 'message' => 'Unauthorized action or invalid shared case status.'], 403);
     }
 
-    // Delete the rejected shared case
+    // Delete the rejected shared case 
+    $oldSharedCaseValues = $sharedCase->toArray(); // Capture values before deletion
     $sharedCase->delete();
 
     event(new AuditableEvent(auth()->id(), 'rejected_shared_case_removed', [
-        'shared_case_id' => $sharedCase->id,
-        'patient_id' => $sharedCase->patient_id,
-        'receiving_doctor_id' => $sharedCase->receiving_doctor_id,
+        'auditable_id' => $sharedCase->id,
+        'auditable_type' => \App\SharedCase::class,
+        'old_values' => $oldSharedCaseValues,
+        'shared_case_id' => $sharedCase->id, // Keep for backward compatibility
+        'patient_id' => $sharedCase->patient_id, // Keep for backward compatibility
+        'receiving_doctor_id' => $sharedCase->receiving_doctor_id, // Keep for backward compatibility
     ]));
 
     return response()->json(['success' => true, 'message' => 'Rejected invitation removed successfully.']);
@@ -1373,10 +1464,15 @@ private function getPatientAge($birthdate)
 
         PatientPrescription::create($validator->validated());
 
+        $prescription = PatientPrescription::create($validator->validated());
+
         event(new AuditableEvent(auth()->id(), 'patient_prescription_created', [
-            'patient_id' => $request->input('patient_id'),
-            'doctor_id' => $request->input('doctor_id'),
-            'soap_note_id' => $request->input('soap_note_id'),
+            'auditable_id' => $prescription->id,
+            'auditable_type' => \App\PatientPrescription::class,
+            'new_values' => $prescription->toArray(),
+            'patient_id' => $request->input('patient_id'), // Keep for backward compatibility
+            'doctor_id' => $request->input('doctor_id'), // Keep for backward compatibility
+            'soap_note_id' => $request->input('soap_note_id'), // Keep for backward compatibility
         ]));
 
         return response()->json(['success' => true, 'message' => 'Prescription sent successfully.']);
@@ -1395,12 +1491,15 @@ private function getPatientAge($birthdate)
             return response()->json(['success' => false, 'message' => 'Validation failed.', 'errors' => $validator->errors()], 422);
         }
 
-        PatientTestRequest::create($validator->validated());
+        $testRequest = PatientTestRequest::create($validator->validated());
 
         event(new AuditableEvent(auth()->id(), 'patient_test_request_created', [
-            'patient_id' => $request->input('patient_id'),
-            'doctor_id' => $request->input('doctor_id'),
-            'soap_note_id' => $request->input('soap_note_id'),
+            'auditable_id' => $testRequest->id,
+            'auditable_type' => \App\PatientTestRequest::class,
+            'new_values' => $testRequest->toArray(),
+            'patient_id' => $request->input('patient_id'), // Keep for backward compatibility
+            'doctor_id' => $request->input('doctor_id'), // Keep for backward compatibility
+            'soap_note_id' => $request->input('soap_note_id'), // Keep for backward compatibility
         ]));
 
         return response()->json(['success' => true, 'message' => 'Test request sent successfully.']);
@@ -1435,7 +1534,19 @@ private function getPatientAge($birthdate)
                                  ->update(['status' => 'INACTIVE']);
             }
 
+            // Capture old values before update
+            $oldSubscriptionValues = $subscription->toArray();
             $subscription->update($validatedData);
+
+            event(new AuditableEvent(auth()->id(), 'subscription_updated_by_admin', [
+                'auditable_id' => $subscription->id,
+                'auditable_type' => \App\Subscription::class,
+                'old_values' => $oldSubscriptionValues,
+                'new_values' => $subscription->toArray(), // Get the updated values
+                'subscription_id' => $subscription->id, // Keep for backward compatibility if needed
+                'patient_id' => $subscription->patient_id, // Keep for backward compatibility if needed
+                'status' => $validatedData['status'], // Keep for backward compatibility if needed
+            ]));
         });
 
         return redirect()->route('admin.subscriptions')->with('success', 'Subscription updated successfully.');

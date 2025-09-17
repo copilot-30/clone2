@@ -47,7 +47,7 @@
                 </div>
                 <div>
                     <label for="role" class="block text-gray-700 text-sm font-bold mb-2">Role</label>
-                    <select
+                    <!-- <select
                         id="role"
                         name="role"
                         class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
@@ -56,7 +56,8 @@
                         <option value="ADMIN" {{ old('role', $user->role) == 'ADMIN' ? 'selected' : '' }}>Admin</option>
                         <option value="DOCTOR" {{ old('role', $user->role) == 'DOCTOR' ? 'selected' : '' }}>Doctor</option>
                         <option value="PATIENT" {{ old('role', $user->role) == 'PATIENT' ? 'selected' : '' }}>Patient</option>
-                    </select>
+                    </select> -->
+                    <input type="text" name="role" id="role" value="{{ $user->role }}" readonly class="w-full bg-gray-200 border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2">
                 </div>
                 <div class="flex items-center">
                     <input
@@ -84,7 +85,7 @@
             @if ($patient)
                     @include('admin.edit-patient-details-form', ['user' => $user, 'patient' => $patient])
             @else
-                    @include('admin.create-patient-details-form', ['user' => $user])
+            @include('admin.create-patient-details-form', ['user' => $user])
             @endif
         @elseif ($user->role === 'DOCTOR')
             @if ($doctor)

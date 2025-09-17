@@ -14,7 +14,7 @@ use Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Events\AuditableEvent; // Import the event
-
+use Exception;
 class AdminController extends Controller
 {
     public function listUsers(Request $request)
@@ -69,9 +69,12 @@ class AdminController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'user_created', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'role' => $user->role,
+            'auditable_id' => $user->id,
+            'auditable_type' => \App\User::class,
+            'new_values' => $user->toArray(),
+            'user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
+            'role' => $user->role, // Keep for backward compatibility
         ]));
 
 
@@ -111,6 +114,7 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, $id)
     {
+ 
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
@@ -126,10 +130,11 @@ class AdminController extends Controller
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
+ 
 
         $user->email = $request->email ?? $user->email;
         $user->role = $request->role ?? $user->role;
-        $user->is_active = $request->has('is_active') ? $request->is_active : $user->is_active;
+        $user->is_active = $request->has('is_active') ? true: false;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -137,10 +142,14 @@ class AdminController extends Controller
 
         $user->save();
 
+        $oldUserValues = $user->getOriginal();
+        $user->save();
+
         event(new AuditableEvent(auth()->id(), 'user_updated', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-            'role' => $user->role,
+            'auditable_id' => $user->id,
+            'auditable_type' => \App\User::class,
+            'old_values' => $oldUserValues,
+            'new_values' => $user->toArray(), 
         ]));
 
         return redirect()->back()->with('success', 'User updated successfully.');
@@ -158,9 +167,17 @@ class AdminController extends Controller
             $email = $user->email;
             $user->delete();
 
+            $oldUserValues = $user->toArray(); // Capture values before deletion
+            $user_id = $user->id; // Ensure $user_id is available after $user->toArray()
+            $email = $user->email; // Ensure $email is available after $user->toArray()
+            $user->delete();
+
             event(new AuditableEvent(auth()->id(), 'user_deleted', [
-                'user_id' => $user_id,
-                'email' => $email,
+                'auditable_id' => $user_id,
+                'auditable_type' => \App\User::class,
+                'old_values' => $oldUserValues,
+                'user_id' => $user_id, // Keep for backward compatibility
+                'email' => $email, // Keep for backward compatibility
             ]));
         });
 
@@ -169,33 +186,36 @@ class AdminController extends Controller
 
     public function storePatientDetails(Request $request, $user_id)
     {
-        $user = User::findOrFail($user_id);
+        try{
 
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'middleName' => 'nullable|string|max:255',
-            'suffix' => 'nullable|string|max:255',
-            'address' => 'required|string|max:255',
-            'sex' => 'required|string|in:Male,Female,Other',
-            'civilStatus' => 'required|string|in:Single,Married,Widowed,Separated,Divorced',
-            'dateOfBirth' => 'required|date',
-            'mobileNumber' => 'required|string|max:255',
-            'bloodType' => 'nullable|string|max:255',
-            'philhealthNo' => 'nullable|string|max:255',
-            'knownMedicalCondition' => 'nullable|string',
-            'allergies' => 'nullable|string',
-            'previousSurgeries' => 'nullable|string',
-            'familyHistory' => 'nullable|string',
-            'medication' => 'nullable|string',
-            'supplements' => 'nullable|string',
-        ]);
+            $user = User::findOrFail($user_id);
+
+            $validator = Validator::make($request->all(), [
+                'firstName' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'middleName' => 'nullable|string|max:255',
+                'suffix' => 'nullable|string|max:255',
+                'address' => 'required|string|max:255',
+                'sex' => 'required|string|in:Male,Female,Other',
+                'civilStatus' => 'required|string|in:Single,Married,Widowed,Separated,Divorced',
+                'dateOfBirth' => 'required|date',
+                'mobileNumber' => 'required|string|max:255',
+                'bloodType' => 'nullable|string|max:255',
+                'philhealthNo' => 'nullable|string|max:255',
+                'knownMedicalCondition' => 'nullable|string',
+                'allergies' => 'nullable|string',
+                'previousSurgeries' => 'nullable|string',
+                'familyHistory' => 'nullable|string',
+                'medication' => 'nullable|string',
+                'supplements' => 'nullable|string',
+            ]);
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Patient::create([
+
+        $patient = Patient::create([
             'user_id' => $user->id,
             'first_name' => $request->input('firstName'),
             'last_name' => $request->input('lastName'),
@@ -215,13 +235,25 @@ class AdminController extends Controller
             'medications' => $request->input('medication'),
             'supplements' => $request->input('supplements'),
         ]);
+ 
+
+        if (!$patient) {
+            return redirect()->back()->with('error', 'Failed to add patient details.');
+        }
+ 
 
         event(new AuditableEvent(auth()->id(), 'patient_details_added', [
-            'patient_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $patient->id,
+            'auditable_type' => \App\Patient::class,
+            'new_values' => $patient->toArray(),
+            'patient_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->route('admin.users')->with('success', 'Patient details added successfully.');
+        }catch(Exception $e){
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function updatePatientDetails(Request $request, $user_id)
@@ -253,6 +285,8 @@ class AdminController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+
+        $oldPatientValues = $patient->getOriginal();
         $patient->update([
             'first_name' => $request->input('firstName'),
             'last_name' => $request->input('lastName'),
@@ -274,8 +308,12 @@ class AdminController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'patient_details_updated', [
-            'patient_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $patient->id,
+            'auditable_type' => \App\Patient::class,
+            'old_values' => $oldPatientValues,
+            'new_values' => $patient->toArray(),
+            'patient_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->back()->with('success', 'Patient details updated successfully.');
@@ -340,10 +378,16 @@ class AdminController extends Controller
         $appointment->status = 'cancelled';
         $appointment->save();
 
+        $oldAppointmentValues = $appointment->getOriginal();
+
         event(new AuditableEvent(auth()->id(), 'appointment_cancelled', [
-            'appointment_id' => $appointment->id,
-            'patient_id' => $appointment->patient_id,
-            'doctor_id' => $appointment->doctor_id,
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'old_values' => $oldAppointmentValues,
+            'new_values' => $appointment->toArray(),
+            'appointment_id' => $appointment->id, // Keep for backward compatibility
+            'patient_id' => $appointment->patient_id, // Keep for backward compatibility
+            'doctor_id' => $appointment->doctor_id, // Keep for backward compatibility
         ]));
 
         return response()->json(['message' => 'Appointment cancelled successfully', 'appointment' => $appointment]);
@@ -369,10 +413,16 @@ class AdminController extends Controller
         $appointment->status = 'rescheduled';
         $appointment->save();
 
+        $oldAppointmentValues = $appointment->getOriginal();
+       
         event(new AuditableEvent(auth()->id(), 'appointment_rescheduled', [
-            'appointment_id' => $appointment->id,
-            'old_datetime' => $oldDateTime,
-            'new_datetime' => $appointment->appointment_datetime,
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'old_values' => $oldAppointmentValues,
+            'new_values' => $appointment->toArray(),
+            'appointment_id' => $appointment->id, // Keep for backward compatibility
+            'old_datetime' => $oldDateTime, // Keep for backward compatibility
+            'new_datetime' => $appointment->appointment_datetime, // Keep for backward compatibility
         ]));
 
         return response()->json(['message' => 'Appointment rescheduled successfully', 'appointment' => $appointment]);
@@ -397,10 +447,16 @@ class AdminController extends Controller
         $appointment->doctor_id = $request->new_doctor_id;
         $appointment->save();
 
+        $oldAppointmentValues = $appointment->getOriginal();
+    
         event(new AuditableEvent(auth()->id(), 'appointment_reassigned', [
-            'appointment_id' => $appointment->id,
-            'old_doctor_id' => $oldDoctorId,
-            'new_doctor_id' => $appointment->doctor_id,
+            'auditable_id' => $appointment->id,
+            'auditable_type' => \App\Appointment::class,
+            'old_values' => $oldAppointmentValues,
+            'new_values' => $appointment->toArray(),
+            'appointment_id' => $appointment->id, // Keep for backward compatibility
+            'old_doctor_id' => $oldDoctorId, // Keep for backward compatibility
+            'new_doctor_id' => $appointment->doctor_id, // Keep for backward compatibility
         ]));
 
         return response()->json(['message' => 'Appointment reassigned successfully', 'appointment' => $appointment]);
@@ -540,10 +596,17 @@ class AdminController extends Controller
 
         $doctor->update($request->all());
 
-        event(new AuditableEvent(auth()->id(), 'doctor_updated', [
-            'doctor_id' => $doctor->id,
-            'user_id' => $doctor->user_id,
-            'email' => $doctor->email,
+        $oldDoctorValues = $doctor->toArray(); // Capture old values
+        $doctor->update($request->all());
+
+        event(new AuditableEvent(auth()->id(), 'doctor_profile_updated_by_admin', [
+            'auditable_id' => $doctor->id,
+            'auditable_type' => \App\Doctor::class,
+            'old_values' => $oldDoctorValues,
+            'new_values' => $doctor->toArray(), // Get the updated values
+            'doctor_id' => $doctor->id, // Keep for backward compatibility if needed
+            'user_id' => $doctor->user_id, // Keep for backward compatibility if needed
+            'email' => $doctor->email, // Keep for backward compatibility if needed
         ]));
 
         return response()->json(['message' => 'Doctor updated successfully', 'doctor' => $doctor]);
@@ -562,9 +625,18 @@ class AdminController extends Controller
             $doctor->delete();
             User::where('id', $user_id)->delete();
 
+            $oldDoctorValues = $doctor->toArray(); // Capture values before deletion
+            $user_id = $doctor->user_id; // Ensure $user_id is available
+            $email = $doctor->email; // Ensure $email is available
+            $doctor->delete();
+            User::where('id', $user_id)->delete();
+
             event(new AuditableEvent(auth()->id(), 'doctor_deleted', [
-                'user_id' => $user_id,
-                'email' => $email,
+                'auditable_id' => $doctor->id,
+                'auditable_type' => \App\Doctor::class,
+                'old_values' => $oldDoctorValues,
+                'user_id' => $user_id, // Keep for backward compatibility
+                'email' => $email, // Keep for backward compatibility
             ]));
         });
 
@@ -599,7 +671,7 @@ class AdminController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        Doctor::create([
+        $doctor=Doctor::create([
             'user_id' => $user->id,
             'first_name' => $request->input('first_name'),
             'middle_name' => $request->input('middle_name'),
@@ -617,8 +689,11 @@ class AdminController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_details_added', [
-            'doctor_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $doctor->id,
+            'auditable_type' => \App\Doctor::class,
+            'new_values' => $doctor->toArray(),
+            'doctor_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->route('admin.users')->with('success', 'Doctor details added successfully.');
@@ -648,6 +723,8 @@ class AdminController extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+      
+        $oldDoctorValues = $doctor->getOriginal();
         $doctor->update([
             'first_name' => $request->input('first_name'),
             'middle_name' => $request->input('middle_name'),
@@ -664,8 +741,12 @@ class AdminController extends Controller
         ]);
 
         event(new AuditableEvent(auth()->id(), 'doctor_details_updated', [
-            'doctor_user_id' => $user->id,
-            'email' => $user->email,
+            'auditable_id' => $doctor->id,
+            'auditable_type' => \App\Doctor::class,
+            'old_values' => $oldDoctorValues,
+            'new_values' => $doctor->toArray(),
+            'doctor_user_id' => $user->id, // Keep for backward compatibility
+            'email' => $user->email, // Keep for backward compatibility
         ]));
 
         return redirect()->back()->with('success', 'Doctor details updated successfully.');
@@ -723,8 +804,19 @@ class AdminController extends Controller
  
 
         DB::transaction(function () use ($payment, $validatedData) {
+            $oldPaymentValues = $payment->toArray(); // Capture old values
             $payment->status = $validatedData['status'];
             $payment->save();
+
+            event(new AuditableEvent(auth()->id(), 'payment_status_updated', [
+                'auditable_id' => $payment->id,
+                'auditable_type' => \App\Payment::class,
+                'old_values' => $oldPaymentValues,
+                'new_values' => $payment->toArray(), // Get the updated values
+                'payment_id' => $payment->id, // Keep for backward compatibility if needed
+                'status' => $validatedData['status'], // Keep for backward compatibility if needed
+                'user_id' => $payment->user_id, // Keep for backward compatibility if needed
+            ]));
 
             // If payment is marked as PAID and it's for a plan, create/update subscription
             if ($payment->status === 'PAID' && $payment->payable_type === 'MEMBERSHIP') {
@@ -775,8 +867,15 @@ class AdminController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
-        \App\Plan::create($validatedData);
+        $plan = \App\Plan::create($validatedData);
 
+        event(new AuditableEvent(auth()->id(), 'plan_created', [
+            'auditable_id' => $plan->id,
+            'auditable_type' => \App\Plan::class,
+            'new_values' => $plan->toArray(),
+            'plan_id' => $plan->id, // Keep for backward compatibility if needed
+            'name' => $validatedData['name'], // Keep for backward compatibility if needed
+        ]));
         return redirect()->route('admin.plans')->with('success', 'Plan created successfully!');
     }
 
@@ -793,14 +892,31 @@ class AdminController extends Controller
             'price' => 'required|numeric|min:0',
         ]);
 
+        $oldPlanValues = $plan->toArray(); // Capture old values
         $plan->update($validatedData);
 
+        event(new AuditableEvent(auth()->id(), 'plan_updated', [
+            'auditable_id' => $plan->id,
+            'auditable_type' => \App\Plan::class,
+            'old_values' => $oldPlanValues,
+            'new_values' => $plan->toArray(), // Get the updated values
+            'plan_id' => $plan->id, // Keep for backward compatibility if needed
+            'name' => $validatedData['name'], // Keep for backward compatibility if needed
+        ]));
         return redirect()->route('admin.plans')->with('success', 'Plan updated successfully!');
     }
 
     public function deletePlan(\App\Plan $plan)
     {
         $plan->delete();
+
+        event(new AuditableEvent(auth()->id(), 'plan_deleted', [
+            'auditable_id' => $plan->id,
+            'auditable_type' => \App\Plan::class,
+            'old_values' => $plan->toArray(), // Capture old values before deletion
+            'plan_id' => $plan->id, // Keep for backward compatibility if needed
+            'name' => $plan->name, // Keep for backward compatibility if needed
+        ]));
         return redirect()->route('admin.plans')->with('success', 'Plan deleted successfully!');
     }
 }

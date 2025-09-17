@@ -63,7 +63,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/users/create','AdminController@createUser')->name('admin.users.create');
         Route::post('/users', 'AdminController@storeUser')->name('admin.users.store');
         Route::get('/users/{id}/edit', 'AdminController@editUser')->name('admin.users.edit');
-        Route::put('/users/{id}', 'AdminController@editUser')->name('admin.users.update');
+        Route::put('/users/{id}', 'AdminController@updateUser')->name('admin.users.update');
         Route::delete('/users/{id}', 'AdminController@deleteUser')->name('admin.users.delete');
         
         
