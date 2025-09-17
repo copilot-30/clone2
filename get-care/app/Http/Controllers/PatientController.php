@@ -742,12 +742,12 @@ if (!$patient) {
  
 
         // Check for pending payments for plans
-        $hasPendingPlanPayment = Payment::where('user_id', $user->id)
-                                        ->where('payable_type', 'App\\Plan')
+        $pendingPlanPayment = Payment::where('user_id', $user->id)
+                                        ->where('payable_type', 'MEMBERSHIP')
                                         ->where('status', 'PENDING')
-                                        ->exists();
+                                        ->first();
 
-        return view('patient.plans.index', compact('plans', 'currentSubscription', 'hasPendingPlanPayment'));
+        return view('patient.plans.index', compact('plans', 'currentSubscription', 'pendingPlanPayment'));
     }
 
     public function showCheckoutForm(Plan $plan)
@@ -776,17 +776,41 @@ if (!$patient) {
         ]);
 
         // Create a pending payment record
-        Payment::create([
+        $payment=Payment::create([
             'user_id' => $user->id,
             'payable_id' => $plan->id,
-            'payable_type' => 'App\\Plan', // or 'MEMBERSHIP' as requested, ensure consistency
+            'payable_type' => 'MEMBERSHIP',
             'amount' => $plan->price,
             'payment_method' => $validatedData['payment_method'],
-            'transaction_id' => (string) Str::uuid(), // Dummy transaction ID
+            'transaction_id' => null,
             'status' => 'PENDING',
-            'payment_date' => now(),
+            'payment_date' => null, // Dummy payment date
         ]);
 
-        return redirect()->route('patient.dashboard')->with('success', 'Your payment is being processed. Please wait for admin approval.');
+        return redirect()->route('patient.payment', $payment)->with('success', 'Your payment is being processed. Please wait for admin approval.');
+    }
+
+    public function showPaymentDetails(Payment $payment)
+    {
+        $user = Auth::user();
+        $patient = $user->patient;
+
+        if (!$patient) {
+            return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
+        }
+
+        // Ensure the payment belongs to the authenticated user and is pending
+        if ($payment->user_id !== $user->id || $payment->status !== 'PENDING' || $payment->payable_type !== 'MEMBERSHIP') {
+            return redirect()->route('patient.plans')->with('error', 'Invalid or non-pending payment details.');
+        }
+
+        // Load the plan associated with the payment
+        $plan = Plan::find($payment->payable_id);
+
+        if (!$plan) {
+            return redirect()->route('patient.plans')->with('error', 'Associated plan not found.');
+        }
+
+        return view('patient.plans.pending-payment', compact('payment', 'plan'));
     }
 }

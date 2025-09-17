@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Checkout for {{ $plan->name }} Plan</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Checkout for {{ strtoupper($plan->name) }} Plan</h1>
 
     @if (session('error'))
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">

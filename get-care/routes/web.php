@@ -183,6 +183,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/plans', 'PatientController@showPlans')->name('patient.plans');
             Route::get('/plans/{plan}/checkout', 'PatientController@showCheckoutForm')->name('patient.plans.checkout');
             Route::post('/plans/{plan}/process-payment', 'PatientController@processPlanPayment')->name('patient.plans.process-payment');
+            Route::get('/payments/{payment}', 'PatientController@showPaymentDetails')->name('patient.payment');
         });
     });
 });
