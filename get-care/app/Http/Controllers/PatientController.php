@@ -739,6 +739,7 @@ if (!$patient) {
 
         $currentSubscription = $patient->subscriptions()->first();
         $plans = Plan::all();
+ 
 
         // Check for pending payments for plans
         $hasPendingPlanPayment = Payment::where('user_id', $user->id)
