@@ -740,7 +740,13 @@ if (!$patient) {
         $currentSubscription = $patient->subscriptions()->first();
         $plans = Plan::all();
 
-        return view('patient.plans.index', compact('plans', 'currentSubscription'));
+        // Check for pending payments for plans
+        $hasPendingPlanPayment = Payment::where('user_id', $user->id)
+                                        ->where('payable_type', 'App\\Plan')
+                                        ->where('status', 'PENDING')
+                                        ->exists();
+
+        return view('patient.plans.index', compact('plans', 'currentSubscription', 'hasPendingPlanPayment'));
     }
 
     public function showCheckoutForm(Plan $plan)

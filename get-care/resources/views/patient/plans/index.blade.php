@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6 text-gray-800">Available Plans</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800 w-full text-center">Get The Care You Deserve</h1>
 
     @if (session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -20,8 +20,14 @@
         <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3 mb-6" role="alert">
             <p class="font-bold">Current Subscription:</p>
             <p>You are currently subscribed to the <strong>{{ $currentSubscription->plan->name }}</strong> plan.</p>
+            <p><strong>Benefits:</strong> {{ $currentSubscription->plan->description }}</p>
             <p>Ends: {{ $currentSubscription->end_date->format('M d, Y') }}</p>
             <p>Status: <span class="uppercase font-semibold">{{ $currentSubscription->status }}</span></p>
+        </div>
+    @elseif ($hasPendingPlanPayment)
+        <div class="bg-yellow-100 border-t border-b border-yellow-500 text-yellow-700 px-4 py-3 mb-6" role="alert">
+            <p class="font-bold">Pending Plan Selection</p>
+            <p>You have a pending payment for a plan.</p>
         </div>
     @else
         <div class="bg-yellow-100 border-t border-b border-yellow-500 text-yellow-700 px-4 py-3 mb-6" role="alert">
@@ -39,9 +45,15 @@
                     <div class="text-3xl font-extrabold text-indigo-600 mb-4">
                         ₱{{ number_format($plan->price, 2) }}
                     </div>
-                    <a href="{{ route('patient.plans.checkout', $plan->id) }}" class="block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                        {{ $currentSubscription ? 'Upgrade Plan' : 'Select Plan' }}
-                    </a>
+                    @if ($currentSubscription || $hasPendingPlanPayment)
+                        <button class="block w-full text-center bg-gray-400 text-white py-2 px-4 rounded-md cursor-not-allowed" disabled>
+                            {{ $currentSubscription ? 'Current Plan' : 'Pending Approval' }}
+                        </button>
+                    @else
+                        <a href="{{ route('patient.plans.checkout', $plan->id) }}" class="block w-full text-center bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            Select Plan
+                        </a>
+                    @endif
                 </div>
             </div>
         @endforeach
