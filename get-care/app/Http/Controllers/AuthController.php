@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail; // Add Mail facade
+use Illuminate\Support\Str; // Add Str facade for token generation
+use Illuminate\Support\Facades\DB; // For database interaction to store token
+use Carbon\Carbon; // For timestamp
+use App\PasswordReset;
 use App\Events\AuditableEvent; // Correct placement
 
 class AuthController extends Controller
@@ -76,12 +81,18 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
+        
         // Dispatch audit event for successful login
         event(new AuditableEvent($user->id, 'login_success', [
             'user_id' => $user->id,
             'email' => $user->email,
             'role' => $user->role,
         ]));
+
+        if ($user -> is_active == false) {
+            Auth::logout();
+            return redirect('/login')->with('error', 'Your account is inactive. Please contact the administrator.');
+        }
 
         // Redirect based on the user's role
         switch ($user->role) {
@@ -116,10 +127,73 @@ public function sendPasswordResetEmail(Request $request)
         return redirect()->back()->withErrors($validator)->withInput();
     }
 
-    // Logic to send password reset email (e.g., using Laravel's built-in password broker)
-    // For demonstration, we'll just redirect with a success message.
-    // In a real application, you would use Password::sendResetLink($request->only('email'));
+    $user = User::where('email', $request->email)->first();
+
+    // Delete any existing password reset tokens for this email
+    PasswordReset::where('email', $request->email)->delete();
+
+    // Generate a new token
+    $token = Str::random(60);
+
+    // Store the token in the database
+    PasswordReset::create([
+        'email' => $request->email,
+        'token' => $token,
+        'created_at' => Carbon::now()
+    ]);
+
+    // Send the password reset email
+    Mail::send('emails.password_reset', ['token' => $token, 'email' => $request->email], function ($message) use ($request) {
+        $message->to($request->email);
+        $message->subject('Reset Your Password');
+    });
 
     return redirect()->back()->with('status', 'Password reset link sent to your email!');
 }
+    public function showResetForm(Request $request, $token = null)
+    {
+        return view('auth.passwords.reset')->with(
+            ['token' => $token, 'email' => $request->email]
+        );
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $passwordReset = PasswordReset::where('email', $request->email)
+                                      ->where('token', $request->token)
+                                      ->first();
+
+        if (!$passwordReset) {
+            return redirect()->back()->withErrors(['email' => 'Invalid token or email.'])->withInput();
+        }
+
+        // Check if token has expired (e.g., 60 minutes)
+        if (Carbon::parse($passwordReset->created_at)->addMinutes(config('auth.passwords.users.expire'))->isPast()) {
+            $passwordReset->delete(); // Delete expired token
+            return redirect()->back()->withErrors(['email' => 'Password reset token has expired. Please request a new one.'])->withInput();
+        }
+
+        $user = User::where('email', $request->email)->where('is_active', true)->first();
+
+        if (!$user) {
+            return redirect()->back()->withErrors(['email' => 'User not found.'])->withInput();
+        }
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        $passwordReset->delete(); // Delete used token
+
+        return redirect('/login')->with('status', 'Your password has been reset!');
+    }
 }

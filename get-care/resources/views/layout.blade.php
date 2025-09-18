@@ -14,47 +14,8 @@
     <div id="root">
        @yield('content')
     </div>
-
- @if ($errors->any())
-        <div class="fixed top-4 right-4 z-50">
-            <div class="flex items-center justify-between bg-red-500 text-white px-4 py-2 rounded shadow-md mb-2">
-                <div>
-                    @foreach ($errors->all() as $error)
-                        {{ $error }}
-                    @endforeach
-                </div>
-                <button class="text-gray-100 hover:text-red-600" onclick="this.parentElement.remove()">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
-
-    @if (session('success'))
-        <div class="fixed top-20 right-4 z-50">
-            <div class="flex items-center justify-between bg-green-500 text-white px-4 py-2 rounded shadow-md mb-2">
-                <div>
-                    {{ session('success') }}
-                </div>
-                <button class="text-gray-100 hover:text-red-600" onclick="this.parentElement.remove()">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
-
-    @if (session('status'))
-        <div class="fixed top-4 right-4 z-50">
-            <div class="flex items-center justify-between bg-blue-500 text-white px-4 py-2 rounded shadow-md mb-2">
-                <div>
-                    {{ session('status') }}
-                </div>
-                <button class="text-gray-100 hover:text-red-600" onclick="this.parentElement.remove()">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-        </div>
-    @endif
+ 
+    @include('components.alert')
 
   </body>
 </html>
