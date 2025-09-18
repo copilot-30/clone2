@@ -1,13 +1,23 @@
 @extends('patient_layout')
 
 @section('content')
-<div class="bg-gray-900 text-white py-20">
-    <div class=" text-center">
-        <h2 class="text-5xl font-bold mb-4">Quality care & flexible plans for your needs.</h2>
-        <p class="text-xl mb-8">Get the care that you deserved.</p>
+<div class="bg-gray-900  bg-opacity-50 text-white py-20" style="
+    background-size: cover; 
+    background-image: url('https://media.istockphoto.com/id/1437830105/photo/cropped-shot-of-a-female-nurse-hold-her-senior-patients-hand-giving-support-doctor-helping.jpg?s=612x612&w=0&k=20&c=oKR-00at4oXr4tY5IxzqsswaLaaPsPRkdw2MJbYHWgA='); 
+    backdrop-filter: blur(10px) brightness(0) contrast(0) invert(1);
+    background-blend-mode: soft-light;
+        margin-top: -23px;
+    ">
+    <div class="bg-gray-900 bg-opacity-50 h-full w-full" style="
+        background-size: cover; 
+        background-image: inherit;
+    "></div>
+    <div class="text-center relative" >
+        <h2 class="text-5xl font-bold mb-4 text-shadow-lg shadow-gray-800" style="text-shadow: 2px 2px 4px #000000;">Quality care & flexible plans for your needs.</h2>
+        <p class="text-xl mb-8 text-shadow-lg shadow-gray-800" style="text-shadow: 2px 2px 4px #000000;">Get the care that you deserved.</p>
     </div>
 
-    <div class="w-full max-w-3xl mx-auto">
+    <div class="w-full max-w-3xl mx-auto relative">
         
         
         @if ($currentSubscription)
@@ -32,15 +42,12 @@
         </div>
 
     </div>
+</div>
     
-    <div class="container mx-auto  -mt-16">
-  
-    
-    
-    
+    <div class="container mx-auto  -mt-26">
         <div class="flex flex-wrap -mx-4 justify-center gap-10">
             @foreach ($plans as $plan)
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col justify-between md:w-1/{{ count($plans) +1}} mb-6">
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden border border-gray-200 hover:border-indigo-600 hover:shadow-2xl flex flex-col justify-between md:w-1/{{ count($plans) +1}} mb-6" style="z-index:1">
                     <div class="p-8">
                         <h2 class="text-2xl font-bold text-gray-900 mb-2 text-center">{{strtoupper($plan->name)}}</h2>
               
@@ -74,6 +81,5 @@
                 </div>
             @endforeach
         </div>
-    </div>
-
+    </div> 
 @endsection
