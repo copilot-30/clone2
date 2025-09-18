@@ -21,16 +21,43 @@
             
             <div class="mt-4">
                 @if(Auth::user()->patient && Auth::user()->patient->subscriptions)
-                    <p class="bg-emerald-100 text-emerald-800 text-base font-medium px-3 py-1 rounded-full">
+                    <p class="
+                    @if(Auth::user()->patient->subscriptions->status == 'ACTIVE')
+                        bg-emerald-100 
+                    @else
+                        bg-red-100
+                    @endif
+                        text-center text-emerald-800 text-base font-medium px-3 py-1 rounded-full">
                         {{ Auth::user()->patient->subscriptions->plan->name ?? 'N/A' }} Member
-</p>
+ 
+                        @if(Auth::user()->patient->subscriptions->status != 'ACTIVE')
+                        <p class="mt-2 text-center">
+                            <a href="{{ route('patient.plans') }}" class="text-indigo-600 hover:text-indigo-800 transition-colors text-base font-semibold">
+                                <i class="fas fa-lock-open mr-1"></i> Unlock Features
+                            </a>
+                        </p>
+                        @endif
+                        @if(Auth::user()->patient->subscriptions->start_date && Auth::user()->patient->subscriptions->end_date)
+                            {{ Auth::user()->patient->subscriptions->start_date->format('F d, Y') ?? 'N/A' }} ~ 
+                            {{ Auth::user()->patient->subscriptions->end_date->format('F d, Y') ?? 'N/A' }}
+                        @endif
+                               <p class="text-sm text-center
+                               @if(Auth::user()->patient->subscriptions->status == 'ACTIVE')
+                               text-emerald-600
+                               @else
+                               text-red-600
+                               @endif
+                               
+                               ">({{ Auth::user()->patient->subscriptions->status }})</p>
+                
+               
                 @else 
                     <p class="bg-gray-200 text-gray-800 text-base text-center font-medium px-3 py-1 rounded-full">
                         Free Member
 </p>
                     <p class="mt-2 text-center">
                         <a href="{{ route('patient.plans') }}" class="text-indigo-600 hover:text-indigo-800 transition-colors text-base font-semibold">
-                            <i class="fas fa-lock-open mr-1"></i> Unlock Premium Features
+                            <i class="fas fa-lock-open mr-1"></i> Unlock Features
                         </a>
 </p>
                 @endif

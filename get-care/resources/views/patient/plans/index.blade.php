@@ -25,9 +25,26 @@
             <div class="bg-blue-100 border-t border-b border-blue-500 text-blue-700 px-4 py-3 mb-6 rounded-lg shadow-lg" role="alert">
                 <p class="font-bold text-lg mb-2">Current Subscription:</p>
                 <p class="text-gray-800">You are currently subscribed to the <strong class="text-indigo-600">{{ $currentSubscription->plan->name }}</strong> plan.</p>
-                <p class="text-gray-700"><strong>Benefits:</strong> <pre>{{ str_replace("\n", "<br>", e($currentSubscription->plan->description)) }}</pre></p>
+                <p class="text-gray-700"><strong>Benefits:</strong> 
+                     @php
+                        $benefits = explode(',', str_replace("\n", ",", e($currentSubscription->plan->description)));
+                    @endphp
+                    @foreach ($benefits as $benefit)
+                        <li class="flex items-center">
+                            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            {{ trim($benefit) }}
+                        </li>
+                    @endforeach
+                </p>
                 <p class="text-gray-700">Ends: {{ $currentSubscription->end_date->format('M d, Y') }}</p>
-                <p class="text-gray-700">Status: <span class="uppercase font-semibold text-green-700">{{ $currentSubscription->status }}</span></p>
+                <p class="text-gray-700">Status: <span class="uppercase font-semibold
+                @if ($currentSubscription->status == 'ACTIVE')
+                    text-emerald-600
+                @else
+                    text-red-600
+                @endif
+                
+                ">{{ $currentSubscription->status }}</span></p>
             </div>
         @elseif ($pendingPlanPayment)
             <div class="bg-yellow-100 border-t border-b border-yellow-500 text-yellow-700 px-4 py-3 mb-6 rounded-lg shadow-lg" role="alert">
@@ -69,10 +86,8 @@
                         </ul>
                     </div>
                     <div class="p-8 border-t border-gray-200">
-                        @if ($currentSubscription || $pendingPlanPayment)
-                            <button class="block w-full text-center bg-gray-400 text-white py-3 px-4 rounded-md cursor-not-allowed text-lg font-semibold" disabled>
-                                {{ $currentSubscription ? 'Current Plan' : 'Pending Approval' }}
-                            </button>
+                        @if ($currentSubscription && $currentSubscription->status == 'ACTIVE' || $pendingPlanPayment)
+                        
                         @else
                             <a href="{{ route('patient.plans.checkout', $plan->id) }}" class="block w-full text-center bg-indigo-600 text-white py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-lg font-semibold">
                                 Select Plan

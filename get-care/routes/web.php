@@ -156,6 +156,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/soap-notes/{soap_note_id}/update', 'DoctorController@updateSoapNote')->name('doctor.soap-notes.update');
             Route::post('/patient-prescriptions', 'DoctorController@storePatientPrescription')->name('doctor.patient-prescriptions.store');
             Route::post('/patient-test-requests', 'DoctorController@storePatientTestRequest')->name('doctor.patient-test-requests.store');
+
+
+             Route::get('/analytics', 'DoctorController@showAnalytics')->name('doctor.analytics');
         });
     });
 
@@ -182,6 +185,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/plans/{plan}/process-payment', 'PatientController@processPlanPayment')->name('patient.plans.process-payment');
             //payment routes
             Route::get('/payments/{payment}', 'PatientController@showPaymentDetails')->name('patient.payment');
+
+
+            // HTML <-> PHP SERVER 
+
+            // Model View Controller 
+
+            // -> Web -> controller -> model -> controller -> view
 
 
             //core plan routes

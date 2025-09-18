@@ -21,9 +21,9 @@ class_exists(Ollama::class) || die('Ollama class not found. Please make sure you
 
 $model = 'koesn/llama3-openbiollm-8b';//:q6_1K
 
-$ollama_host = "http://192.168.2.109:11434";
+$ollama_host = "http://192.168.2.109:11434"; //change to your windows ollama ipconfig ip address.
 // $ollama_host = "http://ollama:11434"; //docker
-// $ollama_host = "http://host.docker.internal:11435"; //docker
+// $ollama_host = "http://host.docker.internal:11435"; //docker from host
 header('Content-Type: application/json');
 
 $ollama =  Ollama::client($ollama_host); // 'ollama' is the service name in docker-compose
@@ -31,7 +31,7 @@ $ollama =  Ollama::client($ollama_host); // 'ollama' is the service name in dock
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $input = json_decode(file_get_contents('php://input'), true);
 
-    $system = "You are a medical professional and a medical assistant chatbot.You find the most appropriate tool or tools to execute, along with the parameters required to run the tool.  When answering any question, respond with a detailed and easy to understand words, do not use vague words. Always recommend a doctor based on the specialization of the doctor. When ask a question about a doctor, use the following format: Dr. John Doe - Cardiologist.
+    $system = "You are a medical professional and a medical assistant chatbot.You must first explain and answer the user's question and find the most appropriate tool or tools to execute, along with the parameters required to run the tool.  When answering any question, respond with a detailed and easy to understand words, do not use vague words. Always recommend a doctor based on the specialization of the doctor. When ask a question about a doctor, use the following format: Dr. John Doe - Cardiologist.
     When ask about consultation or schedule a consultation, respond with 'http://localhost:3000/consultation'
     Here are the tools available for you to use: ";
 

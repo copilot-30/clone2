@@ -60,10 +60,10 @@
                             <!-- <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->auditable_id }}</td> -->
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->auditable_type }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <textarea class="w-full" readonly>{{ json_encode($log->old_values) }}</textarea>
+                                <textarea class="w-full" readonly>{{ $log->old_values ? json_encode($log->old_values) : 'N/A' }}</textarea>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                <textarea class="w-full" readonly>{{ json_encode($log->new_values) }}</textarea>
+                                <textarea class="w-full" readonly>{{ $log->new_values ? json_encode($log->new_values) : 'N/A' }}</textarea>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ json_encode($log->tags) }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $log->ip_address }}</td>

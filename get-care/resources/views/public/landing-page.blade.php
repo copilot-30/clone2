@@ -30,7 +30,9 @@
 
   {{-- Hero Section --}}
   <section class="relative overflow-hidden min-h-screen flex items-center justify-center">
-    <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.pexels.com/photos/5206923/pexels-photo-5206923.jpeg?auto=compress&cs=tinysrgb&w=1000'); transform: scaleX(-1);"></div> {{-- Flipped background image --}}
+    <div class="absolute inset-0 bg-cover bg-center" 
+    style="background-image: url('https://images.pexels.com/photos/5206923/pexels-photo-5206923.jpeg?auto=compress&cs=tinysrgb&w=1000'); backdrop-filter: blur(10px); transform: scaleX(-1);"></div> {{-- Flipped background image with blur effect --}}
+    
     <div class="absolute inset-0 bg-black opacity-50"></div> {{-- Overlay for readability --}}
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-20 text-white">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">

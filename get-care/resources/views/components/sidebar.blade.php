@@ -29,6 +29,7 @@
                     ['id' => 'appointments', 'label' => 'Appointments', 'icon' => 'Calendar', 'url' => route('doctor.appointments.list')],
                     ['id' => 'patients', 'label' => 'My Patients', 'icon' => 'Users', 'url' => route('doctor.patients.view')],
                     ['id' => 'shared-cases', 'label' => 'Shared Cases', 'icon' => 'Files', 'url' => route('doctor.shared-cases.list', ['filter' => 'ALL'])],
+                    ['id' => 'analytics', 'label' => 'Analytics', 'icon' => 'BarChart3', 'url' => route('doctor.analytics')],
                     // Add other doctor-specific menu items as needed
                 ];
             @endphp

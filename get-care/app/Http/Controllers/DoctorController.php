@@ -35,6 +35,7 @@ use Google\Service\Calendar\ConferenceData;
 use Google\Service\Calendar\CreateConferenceRequest;
 use Google\Service\Calendar\ConferenceSolutionKey;
 use Laravel\Socialite\Facades\Socialite;
+use App\Plan;
 
 class DoctorController extends Controller
 {
@@ -1548,5 +1549,32 @@ private function getPatientAge($birthdate)
         });
 
         return redirect()->route('admin.subscriptions')->with('success', 'Subscription updated successfully.');
+    }
+
+
+      public function showAnalytics(Request $request)
+    {
+        $doctor = Auth::user()->doctor;
+ 
+        if (!$doctor) {
+            return redirect()->route('doctor.create')->withErrors('Please complete your doctor profile.');
+        }
+
+        //path
+        // return view('doctor.analytics');
+        //if u want to return with params
+        // return view('doctor.analytics', [
+        //     'param1' => 'value1',
+        //     'param2' => 'value2'
+        // ]);
+
+        $param1= Plan::all();
+
+ 
+        $param2 = 'Value 2';
+
+        return view('doctor.analytics', compact('param1','param2'));
+        
+
     }
 }

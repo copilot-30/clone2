@@ -26,6 +26,7 @@ class MembershipCheck
 
         $user = Auth::user();
         $patient = $user->patient;
+ 
 
         if (!$patient) {
             // If there's no patient profile, they can't have a subscription
@@ -34,14 +35,16 @@ class MembershipCheck
 
         $currentSubscription = $patient->subscriptions()->first();
 
+
         // If no active subscription, redirect to plans page
-        if (!$currentSubscription || $currentSubscription->status !== 'active') {
+        if (!$currentSubscription || $currentSubscription->status !== 'ACTIVE') {
             return redirect()->route('patient.plans')->with('error', 'You need an active subscription to access this feature.');
         }
 
+ 
         // If specific plan names are provided, check if the current subscription matches any of them
         if (!empty($planNames)) {
-            if (!in_array($currentSubscription->plan->name, $planNames)) {
+            if (!in_array(trim(strtolower($currentSubscription->plan->name)), $planNames)) {
                 return redirect()->route('patient.plans')->with('error', 'Your current subscription does not grant access to this feature.');
             }
         }

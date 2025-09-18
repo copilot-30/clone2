@@ -100,6 +100,7 @@ class PatientController extends Controller
         $user = Auth::user();
         $patient = $user->patient; // Assuming a one-to-one relationship between User and Patient
  
+ 
         if (!$patient) {
             // Redirect to profile completion if patient profile is missing
             return redirect()->route('patient-details')->with('error', 'Please complete your patient profile.');
