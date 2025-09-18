@@ -23,7 +23,7 @@
     @yield('styles')
   </head>
   <body class="bg-gray-100">
-    <div id="root" class="flex flex-col h-screen">
+    <div id="root" class="flex flex-col h-screen overflow-y-auto bg-gradient-to-br from-blue-100 to-gray-100 ">
       <!-- Patient Header -->
       @include('components.patient-header')
 
