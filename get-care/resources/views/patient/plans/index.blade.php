@@ -8,7 +8,8 @@
     background-blend-mode: soft-light;
         margin-top: -23px;
     ">
-    <div class="bg-gray-900 bg-opacity-50 h-full w-full" style="
+    
+    <div class="absolute inset-0 bg-cover bg-black bg-center opacity-30" style="
         background-size: cover; 
         background-image: inherit;
     "></div>
