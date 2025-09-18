@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4 py-12">
     <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white text-center">
-            <h1 class="text-3xl font-bold mb-2">Pending Payment Details</h1>
+            <h1 class="text-3xl font-bold mb-2">Payment Details</h1>
             <p class="text-lg">For the {{ strtoupper($plan->name) }} Plan</p>
         </div>
 
@@ -28,7 +28,17 @@
                     </div>
                     <div class="col-span-full mt-2">
                         <dt class="font-medium text-gray-600">Description:</dt>
-                        <dd class="text-gray-900">{{ $plan->description }}</dd>
+                        <dd class="text-gray-900">
+                            @php
+                                $benefits = explode(',', str_replace("\n", ",", e($plan->description)));
+                            @endphp
+                            @foreach ($benefits as $benefit)
+                                <li class="flex items-center">
+                                    <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    {{ trim($benefit) }}
+                                </li>
+                            @endforeach
+                        </dd>
                     </div>
                 </dl>
             </div>
