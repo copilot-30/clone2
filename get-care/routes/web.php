@@ -20,18 +20,20 @@ Route::post('/ask-ai', 'OpenLLMController@getMedicalSuggestion')->name('ask-ai')
 
 Route::get('/', 'PublicController@landingPage')->name('landing');
 
-Route::get('/login', 'PublicController@loginPage')->name('login');
-
-Route::get('/register', 'PublicController@registerPage')->name('register');
-
-Route::get('/account-recovery', 'PublicController@accountRecoveryPage')->name('account-recovery');
-
-Route::get('/privacy-policy', 'PublicController@privacyPolicyPage')->name('privacy-policy');
-
-
-Route::post('/login', 'AuthController@login');
+Route::middleware('guest')->group(function () {
+    Route::get('/login', 'PublicController@loginPage')->name('login');
+    Route::get('/register', 'PublicController@registerPage')->name('register');
+    Route::get('/account-recovery', 'PublicController@accountRecoveryPage')->name('account-recovery');
+    Route::get('/privacy-policy', 'PublicController@privacyPolicyPage')->name('privacy-policy');
+    Route::post('/login', 'AuthController@login');
 Route::post('/register', 'AuthController@register');
 Route::post('/account-recovery', 'AuthController@sendPasswordResetEmail')->name('send-password-reset-email');
+});
+
+
+
+
+
  
 
 Route::middleware('auth:sanctum')->group(function () {

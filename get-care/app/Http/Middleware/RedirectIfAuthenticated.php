@@ -19,7 +19,16 @@ class RedirectIfAuthenticated
     public function handle($request, Closure $next, $guard = null)
     {
         if (Auth::guard($guard)->check()) {
-            return redirect(RouteServiceProvider::HOME);
+            switch (Auth::user()->role) {
+                case 'ADMIN':
+                    return redirect('/admin/dashboard');
+                case 'DOCTOR':
+                    return redirect('/doctor/dashboard');
+                case 'PATIENT':
+                    return redirect('/patient/dashboard'); // Patient's default dashboard
+                default:
+                    return redirect('/login')->with('error', 'Unauthorized access.'); // Fallback
+            }
         }
 
         return $next($request);
