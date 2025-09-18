@@ -152,6 +152,10 @@ public function sendPasswordResetEmail(Request $request)
 }
     public function showResetForm(Request $request, $token = null)
     {
+        
+
+        PasswordReset::where('token', $token)->where('email', $request->email)->where('created_at', '>', Carbon::now()->subMinutes(config('auth.passwords.users.expire')))->firstOrFail();
+
         return view('auth.passwords.reset')->with(
             ['token' => $token, 'email' => $request->email]
         );

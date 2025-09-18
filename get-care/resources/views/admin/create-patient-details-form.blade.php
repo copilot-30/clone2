@@ -1,7 +1,7 @@
  
 <!-- <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4"> -->
     <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-5xl">
-        <h2 class="text-1xl text-emerald-600 mb-8 text-center">Create Patient Profile </h2>
+        <h2 class="text-3xl font-bold text-emerald-600 mb-8 text-center">Create Patient Profile</h2>
         <h4 class="text-1l font-bold  text-center">{{ $user->email }}</h4>
         <br/>
         <hr/>
@@ -11,13 +11,14 @@
 
             <!-- Left Column -->
             <div class="space-y-6">
+                <h3 class="text-2xl font-semibold text-emerald-700 border-b pb-2 mb-4">Personal Information</h3>
                 <div>
                     <label for="firstName" class="block text-gray-700 text-sm font-bold mb-2">First Name</label>
                     <input
                         type="text"
                         id="firstName"
                         name="firstName"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('firstName') }}"
                         required
                     />
@@ -28,7 +29,7 @@
                         type="text"
                         id="lastName"
                         name="lastName"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('lastName') }}"
                         required
                     />
@@ -39,7 +40,7 @@
                         type="text"
                         id="middleName"
                         name="middleName"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('middleName') }}"
                     />
                 </div>
@@ -49,7 +50,7 @@
                         type="text"
                         id="suffix"
                         name="suffix"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('suffix') }}"
                     />
                 </div>
@@ -58,39 +59,42 @@
                     <textarea
                         id="address"
                         name="address"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                         required
                     >{{ old('address') }}</textarea>
                 </div>
-                <div>
-                    <label for="sex" class="block text-gray-700 text-sm font-bold mb-2">Sex</label>
-                    <select
-                        id="sex"
-                        name="sex"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
-                        required
-                    >
-                        <option value="">Select</option>
-                        <option value="Male" {{ (old('sex') == 'Male') ? 'selected' : '' }}>Male</option>
-                        <option value="Female" {{ (old('sex') == 'Female') ? 'selected' : '' }}>Female</option>
-                        <option value="Other" {{ (old('sex') == 'Other') ? 'selected' : '' }}>Other</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="civilStatus" class="block text-gray-700 text-sm font-bold mb-2">Civil Status</label>
-                    <select
-                        id="civilStatus"
-                        name="civilStatus"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
-                        required
-                    >
-                        <option value="">Select</option>
-                        <option value="Single" {{ (old('civilStatus') == 'Single') ? 'selected' : '' }}>Single</option>
-                        <option value="Married" {{ (old('civilStatus') == 'Married') ? 'selected' : '' }}>Married</option>
-                        <option value="Widowed" {{ (old('civilStatus') == 'Widowed') ? 'selected' : '' }}>Widowed</option>
-                        <option value="Separated" {{ (old('civilStatus') == 'Separated') ? 'selected' : '' }}>Separated</option>
-                        <option value="Divorced" {{ (old('civilStatus') == 'Divorced') ? 'selected' : '' }}>Divorced</option>
-                    </select>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label for="sex" class="block text-gray-700 text-sm font-bold mb-2">Sex</label>
+                        <select
+                            id="sex"
+                            name="sex"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
+                            required
+                        >
+                            <option value="">Select</option>
+                            <option value="Male" {{ (old('sex') == 'Male') ? 'selected' : '' }}>Male</option>
+                            <option value="Female" {{ (old('sex') == 'Female') ? 'selected' : '' }}>Female</option>
+                            <option value="Other" {{ (old('sex') == 'Other') ? 'selected' : '' }}>Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="civilStatus" class="block text-gray-700 text-sm font-bold mb-2">Civil Status</label>
+                        <select
+                            id="civilStatus"
+                            name="civilStatus"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
+                            required
+                        >
+                            <option value="">Select</option>
+                            <option value="Single" {{ (old('civilStatus') == 'Single') ? 'selected' : '' }}>Single</option>
+                            <option value="Married" {{ (old('civilStatus') == 'Married') ? 'selected' : '' }}>Married</option>
+                            <option value="Widowed" {{ (old('civilStatus') == 'Widowed') ? 'selected' : '' }}>Widowed</option>
+                            <option value="Separated" {{ (old('civilStatus') == 'Separated') ? 'selected' : '' }}>Separated</option>
+                            <option value="Divorced" {{ (old('civilStatus') == 'Divorced') ? 'selected' : '' }}>Divorced</option>
+                        </select>
+                    </div>
                 </div>
                 <div>
                     <label for="dateOfBirth" class="block text-gray-700 text-sm font-bold mb-2">Date Of Birth</label>
@@ -98,7 +102,7 @@
                         type="date"
                         id="dateOfBirth"
                         name="dateOfBirth"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('dateOfBirth') }}"
                         required
                     />
@@ -109,7 +113,7 @@
                         type="text"
                         id="mobileNumber"
                         name="mobileNumber"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('mobileNumber') }}"
                         required
                     />
@@ -119,7 +123,7 @@
                     <select
                         id="bloodType"
                         name="bloodType"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                     >
                         <option value="">Select</option>
                         <option value="A+" {{ (old('bloodType') == 'A+') ? 'selected' : '' }}>A+</option>
@@ -138,7 +142,7 @@
                         type="text"
                         id="philhealthNo"
                         name="philhealthNo"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200"
                         value="{{ old('philhealthNo') }}"
                     />
                 </div>
@@ -146,12 +150,14 @@
 
             <!-- Right Column -->
             <div class="space-y-6">
+                <h3 class="text-2xl font-semibold text-emerald-700 border-b pb-2 mb-4">Medical Information</h3>
                 <div>
                     <label for="knownMedicalCondition" class="block text-gray-700 text-sm font-bold mb-2">KNOWN MEDICAL CONDITION</label>
                     <textarea
                         id="knownMedicalCondition"
                         name="knownMedicalCondition"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('knownMedicalCondition') }}</textarea>
                 </div>
                 <div>
@@ -159,7 +165,8 @@
                     <textarea
                         id="allergies"
                         name="allergies"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('allergies') }}</textarea>
                 </div>
                 <div>
@@ -167,7 +174,8 @@
                     <textarea
                         id="previousSurgeries"
                         name="previousSurgeries"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('previousSurgeries') }}</textarea>
                 </div>
                 <div>
@@ -175,7 +183,8 @@
                     <textarea
                         id="familyHistory"
                         name="familyHistory"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('familyHistory') }}</textarea>
                 </div>
                 <div>
@@ -183,7 +192,8 @@
                     <textarea
                         id="medication"
                         name="medication"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('medication') }}</textarea>
                 </div>
                 <div>
@@ -191,7 +201,8 @@
                     <textarea
                         id="supplements"
                         name="supplements"
-                        class="w-full border-b-2 border-gray-300 focus:border-emerald-500 outline-none p-2 h-24 resize-none"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition duration-200 resize-y"
                     >{{ old('supplements') }}</textarea>
                 </div>
                 <div class="flex justify-end mt-8">
@@ -199,7 +210,7 @@
                         type="submit"
                         class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300"
                     >
-                      <i class="fas fa-save mr-2"></i>  Create Patient
+                       <i class="fas fa-save mr-2"></i> Create Patient
                     </button>
                 </div>
             </div>
